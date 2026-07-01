@@ -11,7 +11,7 @@
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
 | Banked tests | 4 |
-| Total runs recorded | 28 |
+| Total runs recorded | 33 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -35,6 +35,9 @@ bundle — this is not self-healing without intervention.
 ### Run 3 — 2026-07-01T12:22:26.092Z · ✅ PASSED
 - runId: `14b5e407-f586-4af0-9018-209438ec6c7d` (source: cli)
 
+### Run 4 — 2026-07-01T12:23:36.952Z · ✅ PASSED
+- runId: `b3698abd-cf26-4222-89ac-15883ca4be23` (source: cli)
+
 ## Test — Projects API: create persists to Neon and lists back
 - **testId:** `b9033df7-8ae6-43e1-b50b-cad996525efa` · priority p1 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/b9033df7-8ae6-43e1-b50b-cad996525efa
@@ -56,6 +59,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 6 — 2026-07-01T12:22:16.270Z · ✅ PASSED
 - runId: `e9e27e4d-3a54-4980-beb3-784f1f8bdfdb` (source: cli)
+
+### Run 7 — 2026-07-01T12:23:18.022Z · ✅ PASSED
+- runId: `4749c0a4-ed77-407b-bee4-d667e2a18da7` (source: cli)
+
+### Run 8 — 2026-07-01T12:23:36.128Z · ✅ PASSED
+- runId: `b63e7d44-5eec-4e08-9f4f-db087c63cc20` (source: cli)
 
 ## Test — Insights + auth: AI insight shape, input validation, dummy login
 - **testId:** `27bb1a1a-299f-41aa-bdda-21c03186fc58` · priority p1 · latest: ✅ PASSED
@@ -84,6 +93,9 @@ bundle — this is not self-healing without intervention.
 
 ### Run 8 — 2026-07-01T12:22:35.507Z · ✅ PASSED
 - runId: `82b843d7-046b-4f46-b398-9547498c2bfb` (source: cli)
+
+### Run 9 — 2026-07-01T12:23:36.232Z · ✅ PASSED
+- runId: `e06c1a71-71b5-466e-b2fe-93a8b115306a` (source: cli)
 
 ## Test — Metrics API: health, churn calc, and input validation
 - **testId:** `b5b10e1a-5f08-4787-b873-d1b22beda16c` · priority p0 · latest: ✅ PASSED
@@ -126,6 +138,9 @@ bundle — this is not self-healing without intervention.
 ### Run 11 — 2026-07-01T12:22:40.310Z · ✅ PASSED
 - runId: `16f9e518-5563-43ed-b094-9a1ae8c42645` (source: cli)
 
+### Run 12 — 2026-07-01T12:23:36.670Z · ✅ PASSED
+- runId: `cbdff04b-9406-4313-b5be-5fdd7d415b0a` (source: cli)
+
 ---
 
-_Regenerated at 2026-07-01T12:22:49.901Z · HEAD 6146b13_
+_Regenerated at 2026-07-01T12:24:00.121Z · HEAD 5ae8249_
