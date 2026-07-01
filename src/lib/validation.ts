@@ -8,15 +8,14 @@ export const projectInputSchema = z
     churnedUsers: z.number().int().nonnegative(),
     monthlyRevenue: z.number().nonnegative(),
   })
-  // Cross-field sanity: you cannot have more active or churned users than the
-  // total, which would otherwise produce nonsensical >100% rates.
+  // Cross-field sanity: user counts cannot exceed total users.
   .refine((d) => d.activeUsers <= d.totalUsers, {
     message: 'activeUsers cannot exceed totalUsers',
     path: ['activeUsers'],
   })
-  // .refine((d) => d.churnedUsers <= d.totalUsers, {
-  //   message: 'churnedUsers cannot exceed totalUsers',
-  //   path: ['churnedUsers'],
-  // });
+  .refine((d) => d.churnedUsers <= d.totalUsers, {
+    message: 'churnedUsers cannot exceed totalUsers',
+    path: ['churnedUsers'],
+  });
 
 export type ProjectInputSchema = z.infer<typeof projectInputSchema>;

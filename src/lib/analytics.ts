@@ -6,7 +6,7 @@ export function calculateSaaSMetrics(data: ProjectInput): AnalyticsResult {
   }
 
   const churnRate = Number((data.churnedUsers / data.totalUsers).toFixed(4));
-  const retentionRate = Number((data.activeUsers / (data.totalUsers - data.churnedUsers)).toFixed(4));
+  const retentionRate = Number((data.activeUsers / data.totalUsers).toFixed(4));
   const arpu = Number((data.monthlyRevenue / data.totalUsers).toFixed(2));
 
   let riskStatus: 'Low' | 'Medium' | 'High' = 'Low';
