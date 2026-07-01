@@ -10,8 +10,8 @@
 | Live URL (target) | https://loop-analytics-nine.vercel.app |
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
-| Banked tests | 3 |
-| Total runs recorded | 14 |
+| Banked tests | 4 |
+| Total runs recorded | 21 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -21,6 +21,13 @@ automated via the CLI; the code fix is made by the coding agent reading the fail
 bundle — this is not self-healing without intervention.
 
 ---
+
+## Test — Stateful chain: create project -> list -> metrics -> insight
+- **testId:** `fa51e8c8-0121-4a93-aa01-0e7747666d78` · priority p0 · latest: ✅ PASSED
+- **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/fa51e8c8-0121-4a93-aa01-0e7747666d78
+
+### Run 1 — 2026-07-01T12:20:50.154Z · ✅ PASSED
+- runId: `23d74013-6562-4137-8011-6a6d3310ff2b` (source: cli)
 
 ## Test — Projects API: create persists to Neon and lists back
 - **testId:** `b9033df7-8ae6-43e1-b50b-cad996525efa` · priority p1 · latest: ✅ PASSED
@@ -34,6 +41,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 3 — 2026-07-01T11:51:33.009Z · ✅ PASSED
 - runId: `44cd4a2c-8c4c-4eb4-a511-b4150009c1a9` (source: cli)
+
+### Run 4 — 2026-07-01T11:53:46.934Z · ✅ PASSED
+- runId: `77b1c4d7-21a5-4fa7-8abb-eec016d558b2` (source: cli)
+
+### Run 5 — 2026-07-01T12:19:33.780Z · ✅ PASSED
+- runId: `7fabc693-d3e9-49f0-bc2c-113e12d1dee5` (source: cli)
 
 ## Test — Insights + auth: AI insight shape, input validation, dummy login
 - **testId:** `27bb1a1a-299f-41aa-bdda-21c03186fc58` · priority p1 · latest: ✅ PASSED
@@ -50,6 +63,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 4 — 2026-07-01T11:51:33.473Z · ✅ PASSED
 - runId: `6a3588b7-7c95-481f-8532-df9fa71dda51` (source: cli)
+
+### Run 5 — 2026-07-01T11:53:46.320Z · ✅ PASSED
+- runId: `6a2efda4-998c-4a70-b1b2-47ee4407b256` (source: cli)
+
+### Run 6 — 2026-07-01T12:19:33.819Z · ✅ PASSED
+- runId: `a17a7cef-45cb-4344-9136-9c2166180c0a` (source: cli)
 
 ## Test — Metrics API: health, churn calc, and input validation
 - **testId:** `b5b10e1a-5f08-4787-b873-d1b22beda16c` · priority p0 · latest: ✅ PASSED
@@ -80,6 +99,12 @@ bundle — this is not self-healing without intervention.
 ### Run 7 — 2026-07-01T11:51:33.499Z · ✅ PASSED
 - runId: `726f9368-666c-4777-a7a2-66f52d79aeef` (source: cli)
 
+### Run 8 — 2026-07-01T11:53:46.847Z · ✅ PASSED
+- runId: `1b9565b6-81c1-409a-9e47-f10de1396eb5` (source: cli)
+
+### Run 9 — 2026-07-01T12:19:33.751Z · ✅ PASSED
+- runId: `b7de45d9-13af-47dc-b7ab-7f7a30d62a77` (source: cli)
+
 ---
 
-_Regenerated at 2026-07-01T11:52:59.783Z · HEAD 28f88cc_
+_Regenerated at 2026-07-01T12:21:28.709Z · HEAD 4c8e456_
