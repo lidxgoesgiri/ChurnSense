@@ -10,8 +10,8 @@
 | Live URL (target) | https://loop-analytics-nine.vercel.app |
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
-| Banked tests | 4 |
-| Total runs recorded | 33 |
+| Banked tests | 5 |
+| Total runs recorded | 57 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -21,6 +21,22 @@ automated via the CLI; the code fix is made by the coding agent reading the fail
 bundle — this is not self-healing without intervention.
 
 ---
+
+## Test — Edge cases: cross-field validation and risk-status boundaries
+- **testId:** `74572c64-97f7-44e4-980b-ba321e3c88f3` · priority p1 · latest: ✅ PASSED
+- **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/74572c64-97f7-44e4-980b-ba321e3c88f3
+
+### Run 1 — 2026-07-01T12:37:44.086Z · ✅ PASSED
+- runId: `3dafa60b-c837-48d8-b739-17f64a4e6995` (source: cli)
+
+### Run 2 — 2026-07-01T14:51:04.027Z · ✅ PASSED
+- runId: `7b4b98eb-830c-4ba5-aa1c-fea00a79b902` (source: cli)
+
+### Run 3 — 2026-07-01T15:16:47.111Z · ✅ PASSED
+- runId: `ebe25bc4-3edc-4263-87dc-7dc85df3e578` (source: cli)
+
+### Run 4 — 2026-07-01T15:22:04.829Z · ✅ PASSED
+- runId: `af7170fb-5b27-4ea1-b256-bc74c5d2e036` (source: cli)
 
 ## Test — Stateful chain: create project -> list -> metrics -> insight
 - **testId:** `fa51e8c8-0121-4a93-aa01-0e7747666d78` · priority p0 · latest: ✅ PASSED
@@ -37,6 +53,21 @@ bundle — this is not self-healing without intervention.
 
 ### Run 4 — 2026-07-01T12:23:36.952Z · ✅ PASSED
 - runId: `b3698abd-cf26-4222-89ac-15883ca4be23` (source: cli)
+
+### Run 5 — 2026-07-01T12:25:38.552Z · ✅ PASSED
+- runId: `903f1e6a-ae78-4d50-9048-8fa90d742942` (source: cli)
+
+### Run 6 — 2026-07-01T12:36:11.571Z · ✅ PASSED
+- runId: `fd6930fc-cbb2-4df3-ad54-caaae696893c` (source: cli)
+
+### Run 7 — 2026-07-01T14:51:04.066Z · ✅ PASSED
+- runId: `b940ac80-eece-4121-9689-281f2d721c8d` (source: cli)
+
+### Run 8 — 2026-07-01T15:16:47.051Z · ✅ PASSED
+- runId: `72a9f76e-4d61-4051-88c1-5cb23486855f` (source: cli)
+
+### Run 9 — 2026-07-01T15:22:24.235Z · ✅ PASSED
+- runId: `12cec539-1475-42e9-99cf-b43b1cb80fa8` (source: cli)
 
 ## Test — Projects API: create persists to Neon and lists back
 - **testId:** `b9033df7-8ae6-43e1-b50b-cad996525efa` · priority p1 · latest: ✅ PASSED
@@ -65,6 +96,21 @@ bundle — this is not self-healing without intervention.
 
 ### Run 8 — 2026-07-01T12:23:36.128Z · ✅ PASSED
 - runId: `b63e7d44-5eec-4e08-9f4f-db087c63cc20` (source: cli)
+
+### Run 9 — 2026-07-01T12:24:34.714Z · ✅ PASSED
+- runId: `ab9567f2-7e55-4cd2-82ac-2299294ab32e` (source: cli)
+
+### Run 10 — 2026-07-01T12:36:10.888Z · ✅ PASSED
+- runId: `90f457e8-ae67-437c-beda-cb00e28aa636` (source: cli)
+
+### Run 11 — 2026-07-01T14:51:03.999Z · ✅ PASSED
+- runId: `489ea22b-7c4b-4afd-9c7a-afe38639b4ce` (source: cli)
+
+### Run 12 — 2026-07-01T15:16:46.934Z · ✅ PASSED
+- runId: `1016eae7-1e18-4f83-b4fd-5426cac40707` (source: cli)
+
+### Run 13 — 2026-07-01T15:22:28.390Z · ✅ PASSED
+- runId: `2b7f4979-b109-4ece-969c-6a417675666a` (source: cli)
 
 ## Test — Insights + auth: AI insight shape, input validation, dummy login
 - **testId:** `27bb1a1a-299f-41aa-bdda-21c03186fc58` · priority p1 · latest: ✅ PASSED
@@ -97,8 +143,23 @@ bundle — this is not self-healing without intervention.
 ### Run 9 — 2026-07-01T12:23:36.232Z · ✅ PASSED
 - runId: `e06c1a71-71b5-466e-b2fe-93a8b115306a` (source: cli)
 
+### Run 10 — 2026-07-01T12:25:39.187Z · ✅ PASSED
+- runId: `12160565-70b8-4179-b2e4-2f1e581723c1` (source: cli)
+
+### Run 11 — 2026-07-01T12:36:10.821Z · ✅ PASSED
+- runId: `65d828df-4035-4029-8501-d970c218cf7c` (source: cli)
+
+### Run 12 — 2026-07-01T14:51:03.828Z · ✅ PASSED
+- runId: `5faab046-6a1d-409d-a496-b3203432f69a` (source: cli)
+
+### Run 13 — 2026-07-01T15:16:46.913Z · ✅ PASSED
+- runId: `dbcfc345-b23e-412c-8c47-b2ef7bb64819` (source: cli)
+
+### Run 14 — 2026-07-01T15:22:48.170Z · ✅ PASSED
+- runId: `30636911-d097-49e4-b65c-84f48f524ad2` (source: cli)
+
 ## Test — Metrics API: health, churn calc, and input validation
-- **testId:** `b5b10e1a-5f08-4787-b873-d1b22beda16c` · priority p0 · latest: ✅ PASSED
+- **testId:** `b5b10e1a-5f08-4787-b873-d1b22beda16c` · priority p0 · latest: ❌ FAILED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/b5b10e1a-5f08-4787-b873-d1b22beda16c
 
 ### Run 1 — 2026-07-01T06:51:44.946Z · ✅ PASSED
@@ -141,6 +202,37 @@ bundle — this is not self-healing without intervention.
 ### Run 12 — 2026-07-01T12:23:36.670Z · ✅ PASSED
 - runId: `cbdff04b-9406-4313-b5be-5fdd7d415b0a` (source: cli)
 
+### Run 13 — 2026-07-01T12:25:38.795Z · ✅ PASSED
+- runId: `27025b7b-fcfd-4848-99eb-9cb346dd01d1` (source: cli)
+
+### Run 14 — 2026-07-01T12:36:10.870Z · ❌ FAILED
+- runId: `d0472734-413e-4c6a-806b-68fe4232eff3` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than 0"]}}}
+  ```
+
+### Run 15 — 2026-07-01T14:51:03.597Z · ❌ FAILED
+- runId: `902e3437-5443-4f19-aeaf-035e196411aa` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than 0"]}}}
+  ```
+
+### Run 16 — 2026-07-01T15:16:46.782Z · ❌ FAILED
+- runId: `7b0d12a8-259d-4f3e-ab47-d7af3337252c` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than 0"]}}}
+  ```
+
+### Run 17 — 2026-07-01T15:22:52.854Z · ❌ FAILED
+- runId: `f393461f-91d4-4438-9224-5941ea8dce1b` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than 0"]}}}
+  ```
+
 ---
 
-_Regenerated at 2026-07-01T12:24:00.121Z · HEAD 5ae8249_
+_Regenerated at 2026-07-01T15:23:07.948Z · HEAD 43b968c_
