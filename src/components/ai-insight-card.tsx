@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { AIInsightResult } from '@/types';
 
 type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
@@ -11,7 +12,26 @@ interface Props {
   disabled: boolean;
 }
 
+// Reveal text progressively for a subtle "streaming" feel while reading.
+function useTypewriter(text: string, speedMs = 14) {
+  const [shown, setShown] = useState('');
+  useEffect(() => {
+    setShown('');
+    if (!text) return;
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setShown(text.slice(0, i));
+      if (i >= text.length) clearInterval(id);
+    }, speedMs);
+    return () => clearInterval(id);
+  }, [text, speedMs]);
+  return shown;
+}
+
 export function AIInsightCard({ insight, loading, onGenerate, disabled }: Props) {
+  const streamedSummary = useTypewriter(insight?.summary ?? '');
+
   return (
     <div className="space-y-3 rounded-2xl border border-black/10 p-6 dark:border-white/15">
       <div className="flex items-center justify-between">
@@ -37,7 +57,7 @@ export function AIInsightCard({ insight, loading, onGenerate, disabled }: Props)
 
       {!loading && insight && (
         <div className="space-y-2">
-          <p className="text-sm leading-relaxed">{insight.summary}</p>
+          <p className="text-sm leading-relaxed">{streamedSummary}</p>
           <p className="text-sm leading-relaxed">
             <span className="font-semibold">Recommendation: </span>
             {insight.recommendation}

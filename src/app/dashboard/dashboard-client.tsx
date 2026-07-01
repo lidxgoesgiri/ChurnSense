@@ -22,7 +22,7 @@ export function DashboardClient({ email }: { email: string }) {
 
   const [history, setHistory] = useState<SavedProject[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [dbAvailable, setDbAvailable] = useState(true);
 
   const loadHistory = useCallback(async () => {
@@ -50,29 +50,10 @@ export function DashboardClient({ email }: { email: string }) {
     loadHistory();
   }, [loadHistory]);
 
-  async function handleSave() {
-    if (!input) return;
-    setError(null);
-    setSaving(true);
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Failed to save project');
-      await loadHistory();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save project');
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function handleAnalyze(values: ProjectInput) {
     setError(null);
     setInsight(null);
+    setJustSaved(false);
     setLoadingMetrics(true);
     try {
       const res = await fetch('/api/metrics', {
@@ -84,6 +65,26 @@ export function DashboardClient({ email }: { email: string }) {
       if (!res.ok) throw new Error(data.error ?? 'Failed to calculate metrics');
       setMetrics(data.metrics);
       setInput(values);
+
+      // Auto-persist every analysis so each project builds a history over time
+      // (this is what powers the trend/anomaly detection in the AI insight).
+      if (dbAvailable) {
+        try {
+          const saveRes = await fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(values),
+          });
+          if (saveRes.status === 503) {
+            setDbAvailable(false);
+          } else if (saveRes.ok) {
+            setJustSaved(true);
+            await loadHistory();
+          }
+        } catch {
+          /* saving is best-effort; metrics already shown */
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to calculate metrics');
     } finally {
@@ -117,6 +118,16 @@ export function DashboardClient({ email }: { email: string }) {
     router.push('/');
   }
 
+  // Churn history (oldest → newest) for the current project, for the sparkline.
+  const churnSeries =
+    input && history.length
+      ? history
+          .filter((p) => p.projectName === input.projectName)
+          .slice()
+          .reverse()
+          .map((p) => p.metrics.churnRate)
+      : [];
+
   return (
     <main className="mx-auto w-full max-w-5xl space-y-8 p-6 sm:p-10">
       <header className="flex items-center justify-between">
@@ -144,15 +155,11 @@ export function DashboardClient({ email }: { email: string }) {
         <div className="space-y-6">
           {metrics ? (
             <div className="space-y-3">
-              <MetricsSummary metrics={metrics} />
-              {dbAvailable && (
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !input}
-                  className="rounded-lg border border-black/15 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-black/5 disabled:opacity-40 dark:border-white/20 dark:hover:bg-white/10"
-                >
-                  {saving ? 'Saving…' : 'Save to history'}
-                </button>
+              <MetricsSummary metrics={metrics} churnSeries={churnSeries} />
+              {dbAvailable && justSaved && (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  Saved to history ✓
+                </p>
               )}
             </div>
           ) : (

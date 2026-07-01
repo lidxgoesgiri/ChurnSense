@@ -4,7 +4,7 @@ SaaS retention & churn analytics. Enter your user counts and revenue, and
 ChurnSense computes **churn rate, retention rate, and ARPU**, flags a **risk
 status**, and generates an **automated insight** on what to do next.
 
-Built for **Hackathon Season 3 — "Build the Loop"**, verified end-to-end with the
+Every change is verified end-to-end with the
 [TestSprite CLI](https://github.com/TestSprite/testsprite-cli) against the live
 deployment. See [`LOOP.md`](./LOOP.md) for the auto-generated record of the
 write → verify → fix → verify cycle.

@@ -34,12 +34,12 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
       <div className="max-w-xl space-y-5 text-center">
         <span className="inline-block rounded-full border border-black/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide dark:border-white/15">
-          Hackathon Season 3 · Build the Loop
+          SaaS retention analytics
         </span>
         <h1 className="text-5xl font-bold tracking-tight">ChurnSense</h1>
         <p className="text-lg text-gray-500">
-          Turn raw user counts into churn, retention, and ARPU — with an
-          automated AI insight on what to do next.
+          Turn raw user counts into churn, retention, and ARPU — track them over
+          time and get an automated insight on what to do next.
         </p>
       </div>
 

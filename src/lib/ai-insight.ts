@@ -1,4 +1,6 @@
 import { ProjectInput, AnalyticsResult, AIInsightResult } from '@/types';
+import { env, hasAiProvider } from '@/lib/env';
+import type { TrendResult } from '@/lib/trend';
 
 /**
  * Provider-agnostic AI insight generator.
@@ -22,10 +24,26 @@ export type Insight = AIInsightResult & { source: InsightSource };
 interface InsightArgs {
   project: ProjectInput;
   metrics: AnalyticsResult;
+  trend?: TrendResult;
 }
 
-function buildPrompt(project: ProjectInput, metrics: AnalyticsResult): string {
-  return [
+function trendSentence(trend?: TrendResult): string | null {
+  if (!trend || trend.anomaly === 'insufficient-data' || trend.movingAverage === null) {
+    return null;
+  }
+  const cur = (trend.deviation ?? 0) >= 0 ? 'above' : 'below';
+  const ma = (trend.movingAverage * 100).toFixed(1);
+  if (trend.anomaly === 'spike') {
+    return `Churn spiked to ${cur} its ${ma}% trailing average (last ${trend.points} periods) — an anomalous jump.`;
+  }
+  if (trend.anomaly === 'drop') {
+    return `Churn dropped ${cur} its ${ma}% trailing average (last ${trend.points} periods) — an anomalous improvement.`;
+  }
+  return `Churn is in line with its ${ma}% trailing average (last ${trend.points} periods).`;
+}
+
+function buildPrompt(project: ProjectInput, metrics: AnalyticsResult, trend?: TrendResult): string {
+  const lines = [
     'Analyze this SaaS product\'s retention health.',
     '',
     `Project: ${project.projectName}`,
@@ -39,10 +57,17 @@ function buildPrompt(project: ProjectInput, metrics: AnalyticsResult): string {
     `- Retention rate: ${(metrics.retentionRate * 100).toFixed(2)}%`,
     `- ARPU: $${metrics.arpu}`,
     `- Risk status: ${metrics.riskStatus}`,
+  ];
+  const ts = trendSentence(trend);
+  if (ts) {
+    lines.push('', `Historical trend: ${ts}`);
+  }
+  lines.push(
     '',
     'Respond ONLY with a compact JSON object of this exact shape:',
-    '{"summary": string (max 3 sentences), "recommendation": string (one actionable step), "riskLevel": "Low" | "Medium" | "High"}',
-  ].join('\n');
+    '{"summary": string (max 3 sentences), "recommendation": string (one actionable step), "riskLevel": "Low" | "Medium" | "High"}'
+  );
+  return lines.join('\n');
 }
 
 /** Best-effort extraction of the insight JSON from a model response. */
@@ -76,7 +101,11 @@ function parseInsight(content: string): AIInsightResult | null {
 }
 
 /** Deterministic fallback — no network, always available. */
-export function mockInsight(project: ProjectInput, metrics: AnalyticsResult): AIInsightResult {
+export function mockInsight(
+  project: ProjectInput,
+  metrics: AnalyticsResult,
+  trend?: TrendResult
+): AIInsightResult {
   const churnPct = (metrics.churnRate * 100).toFixed(1);
   const retPct = (metrics.retentionRate * 100).toFixed(1);
 
@@ -96,27 +125,25 @@ export function mockInsight(project: ProjectInput, metrics: AnalyticsResult): AI
   };
 
   const pick = byRisk[metrics.riskStatus];
-  return { ...pick, riskLevel: metrics.riskStatus };
+  const ts = trendSentence(trend);
+  const summary = ts ? `${pick.summary} ${ts}` : pick.summary;
+  return { summary, recommendation: pick.recommendation, riskLevel: metrics.riskStatus };
 }
 
-export async function generateInsight({ project, metrics }: InsightArgs): Promise<Insight> {
-  const apiKey = process.env.AI_API_KEY;
-  const baseUrl = process.env.AI_BASE_URL;
-  const model = process.env.AI_MODEL;
-
-  if (!apiKey || !baseUrl || !model) {
-    return { ...mockInsight(project, metrics), source: 'mock' };
+export async function generateInsight({ project, metrics, trend }: InsightArgs): Promise<Insight> {
+  if (!hasAiProvider) {
+    return { ...mockInsight(project, metrics, trend), source: 'mock' };
   }
 
   try {
-    const res = await fetch(`${baseUrl.replace(/\/+$/, '')}/chat/completions`, {
+    const res = await fetch(`${env.AI_BASE_URL!.replace(/\/+$/, '')}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${env.AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model,
+        model: env.AI_MODEL,
         temperature: 0.4,
         max_tokens: 400,
         messages: [
@@ -125,7 +152,7 @@ export async function generateInsight({ project, metrics }: InsightArgs): Promis
             content:
               'You are a SaaS retention analyst. Reply with a single compact JSON object only — no prose, no markdown fences.',
           },
-          { role: 'user', content: buildPrompt(project, metrics) },
+          { role: 'user', content: buildPrompt(project, metrics, trend) },
         ],
       }),
       // Never let a slow provider hang the request.
@@ -140,6 +167,6 @@ export async function generateInsight({ project, metrics }: InsightArgs): Promis
     return { ...parsed, source: 'ai' };
   } catch {
     // Graceful degradation — the product stays usable even if the provider fails.
-    return { ...mockInsight(project, metrics), source: 'mock' };
+    return { ...mockInsight(project, metrics, trend), source: 'mock' };
   }
 }
