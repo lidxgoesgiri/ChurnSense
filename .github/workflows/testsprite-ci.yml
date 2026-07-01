@@ -1,0 +1,54 @@
+name: TestSprite Loop
+
+# Runs the banked TestSprite suite against the live Vercel deployment on every
+# push to main. Vercel auto-deploys the same commit in parallel; this job waits
+# until the deployed commit matches the pushed SHA, then verifies it.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install TestSprite CLI
+        run: npm install -g @testsprite/cli
+
+      - name: Configure TestSprite (from secret)
+        env:
+          TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
+        run: testsprite setup --from-env --yes --agent claude
+
+      - name: Read project config
+        id: cfg
+        run: |
+          echo "projectId=$(jq -r .projectId .testsprite/config.json)" >> "$GITHUB_OUTPUT"
+          echo "targetUrl=$(jq -r .targetUrl .testsprite/config.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Vercel to deploy this commit
+        run: |
+          url="${{ steps.cfg.outputs.targetUrl }}/api/health"
+          want="${GITHUB_SHA:0:7}"
+          echo "Waiting for deployed commit $want at $url"
+          for i in $(seq 1 40); do
+            got=$(curl -s "$url" | jq -r .commit 2>/dev/null | cut -c1-7 || true)
+            echo "  attempt $i: live commit=$got"
+            if [ "$got" = "$want" ]; then echo "✅ deploy matches"; exit 0; fi
+            sleep 15
+          done
+          echo "❌ deployed commit never matched $want"; exit 1
+
+      - name: Run backend suite (the loop's verify step)
+        run: |
+          testsprite test run --all \
+            --project "${{ steps.cfg.outputs.projectId }}" \
+            --wait --timeout 600 --output json
