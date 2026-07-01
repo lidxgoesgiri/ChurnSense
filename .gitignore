@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# testsprite run artifacts (bundles) — keep config.json tracked
+.testsprite/runs/
+.testsprite/failure/
