@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { AnalyticsResult, AIInsightResult, ProjectInput } from '@/types';
 import type { TrendResult } from '@/lib/trend';
 import { ProjectForm } from '@/components/project-form';
+import { CsvUploader } from '@/components/csv-uploader';
 import { MetricsSummary } from '@/components/metrics-summary';
 import { RetentionChart } from '@/components/retention-chart';
 import { AIInsightCard } from '@/components/ai-insight-card';
@@ -30,6 +31,7 @@ export function DashboardClient({ email }: { email: string }) {
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [inputMode, setInputMode] = useState<'manual' | 'batch'>('manual');
   const [aiModel, setAiModel] = useState(getStoredModel);
   const [history, setHistory] = useState<SavedProject[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -184,8 +186,28 @@ export function DashboardClient({ email }: { email: string }) {
         )}
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div id="project-form">
-            <ProjectForm onAnalyze={handleAnalyze} loading={loadingMetrics} />
+          <div id="project-form" className="space-y-3">
+            <div className="inline-flex rounded-lg border border-black/10 p-0.5 text-sm dark:border-white/15">
+              {(['manual', 'batch'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setInputMode(mode)}
+                  className={`rounded-md px-3 py-1 capitalize transition-colors ${
+                    inputMode === mode
+                      ? 'bg-foreground text-background'
+                      : 'text-gray-500 hover:text-foreground'
+                  }`}
+                >
+                  {mode === 'manual' ? 'Manual' : 'Batch upload'}
+                </button>
+              ))}
+            </div>
+            {inputMode === 'manual' ? (
+              <ProjectForm onAnalyze={handleAnalyze} loading={loadingMetrics} />
+            ) : (
+              <CsvUploader />
+            )}
           </div>
 
           <div className="space-y-6">

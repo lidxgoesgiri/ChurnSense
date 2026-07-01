@@ -18,3 +18,26 @@ export interface AIInsightResult {
   recommendation: string;
   riskLevel: 'Low' | 'Medium' | 'High';
 }
+
+// --- CSV batch upload ---
+
+export interface BatchRowResult {
+  projectName: string;
+  metrics: AnalyticsResult;
+}
+
+export interface BatchError {
+  /** 1-based data-row index (excludes the header row). */
+  row: number;
+  error: string;
+}
+
+export interface AggregateResult {
+  avgChurnRate: number;
+  avgRetentionRate: number;
+  avgArpu: number;
+  totalMonthlyRevenue: number;
+  highRiskProjects: number;
+  anomaliesDetected: boolean;
+  anomalyDetails: string[];
+}
