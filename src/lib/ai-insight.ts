@@ -1,0 +1,145 @@
+import { ProjectInput, AnalyticsResult, AIInsightResult } from '@/types';
+
+/**
+ * Provider-agnostic AI insight generator.
+ *
+ * Works with ANY OpenAI-compatible chat-completions endpoint — set:
+ *   AI_BASE_URL   e.g. https://api.groq.com/openai/v1
+ *   AI_API_KEY    the provider key
+ *   AI_MODEL      e.g. llama-3.3-70b-versatile
+ *
+ * Free options that expose this contract: Groq, OpenRouter (free models),
+ * Google Gemini (OpenAI-compatible mode), Mistral, Together, DeepInfra.
+ *
+ * When no key is configured (or the provider errors), it falls back to a
+ * deterministic rule-based insight so the endpoint always returns 200 and the
+ * app builds/deploys/tests green without any paid dependency.
+ */
+
+export type InsightSource = 'ai' | 'mock';
+export type Insight = AIInsightResult & { source: InsightSource };
+
+interface InsightArgs {
+  project: ProjectInput;
+  metrics: AnalyticsResult;
+}
+
+function buildPrompt(project: ProjectInput, metrics: AnalyticsResult): string {
+  return [
+    'Analyze this SaaS product\'s retention health.',
+    '',
+    `Project: ${project.projectName}`,
+    `Total users: ${project.totalUsers}`,
+    `Active users: ${project.activeUsers}`,
+    `Churned users: ${project.churnedUsers}`,
+    `Monthly revenue: $${project.monthlyRevenue}`,
+    '',
+    'Computed metrics:',
+    `- Churn rate: ${(metrics.churnRate * 100).toFixed(2)}%`,
+    `- Retention rate: ${(metrics.retentionRate * 100).toFixed(2)}%`,
+    `- ARPU: $${metrics.arpu}`,
+    `- Risk status: ${metrics.riskStatus}`,
+    '',
+    'Respond ONLY with a compact JSON object of this exact shape:',
+    '{"summary": string (max 3 sentences), "recommendation": string (one actionable step), "riskLevel": "Low" | "Medium" | "High"}',
+  ].join('\n');
+}
+
+/** Best-effort extraction of the insight JSON from a model response. */
+function parseInsight(content: string): AIInsightResult | null {
+  const tryParse = (s: string): AIInsightResult | null => {
+    try {
+      const o = JSON.parse(s);
+      if (typeof o.summary === 'string' && typeof o.recommendation === 'string') {
+        const level = ['Low', 'Medium', 'High'].includes(o.riskLevel) ? o.riskLevel : undefined;
+        return {
+          summary: o.summary,
+          recommendation: o.recommendation,
+          riskLevel: level ?? 'Medium',
+        };
+      }
+    } catch {
+      /* fallthrough */
+    }
+    return null;
+  };
+
+  const direct = tryParse(content.trim());
+  if (direct) return direct;
+
+  const start = content.indexOf('{');
+  const end = content.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    return tryParse(content.slice(start, end + 1));
+  }
+  return null;
+}
+
+/** Deterministic fallback — no network, always available. */
+export function mockInsight(project: ProjectInput, metrics: AnalyticsResult): AIInsightResult {
+  const churnPct = (metrics.churnRate * 100).toFixed(1);
+  const retPct = (metrics.retentionRate * 100).toFixed(1);
+
+  const byRisk: Record<AnalyticsResult['riskStatus'], { summary: string; recommendation: string }> = {
+    Low: {
+      summary: `${project.projectName} is healthy: ${retPct}% retention with churn at just ${churnPct}% and ARPU of $${metrics.arpu}. Growth fundamentals look solid.`,
+      recommendation: 'Double down on the acquisition channels driving these retained users and introduce an expansion-revenue upsell.',
+    },
+    Medium: {
+      summary: `${project.projectName} shows moderate risk: churn is ${churnPct}% against ${retPct}% retention, with ARPU of $${metrics.arpu}. Retention is workable but trending sensitive.`,
+      recommendation: 'Instrument an early-warning cohort on first-30-day activation and trigger a re-engagement campaign for at-risk accounts.',
+    },
+    High: {
+      summary: `${project.projectName} is at high churn risk: ${churnPct}% of users churned versus ${retPct}% retained, with ARPU of $${metrics.arpu}. Revenue is exposed.`,
+      recommendation: 'Run churn-reason interviews this week and ship the single highest-impact retention fix before scaling spend.',
+    },
+  };
+
+  const pick = byRisk[metrics.riskStatus];
+  return { ...pick, riskLevel: metrics.riskStatus };
+}
+
+export async function generateInsight({ project, metrics }: InsightArgs): Promise<Insight> {
+  const apiKey = process.env.AI_API_KEY;
+  const baseUrl = process.env.AI_BASE_URL;
+  const model = process.env.AI_MODEL;
+
+  if (!apiKey || !baseUrl || !model) {
+    return { ...mockInsight(project, metrics), source: 'mock' };
+  }
+
+  try {
+    const res = await fetch(`${baseUrl.replace(/\/+$/, '')}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.4,
+        max_tokens: 400,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a SaaS retention analyst. Reply with a single compact JSON object only — no prose, no markdown fences.',
+          },
+          { role: 'user', content: buildPrompt(project, metrics) },
+        ],
+      }),
+      // Never let a slow provider hang the request.
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) throw new Error(`AI provider returned ${res.status}`);
+    const data = await res.json();
+    const content: string = data?.choices?.[0]?.message?.content ?? '';
+    const parsed = parseInsight(content);
+    if (!parsed) throw new Error('Could not parse AI response as insight JSON');
+    return { ...parsed, source: 'ai' };
+  } catch {
+    // Graceful degradation — the product stays usable even if the provider fails.
+    return { ...mockInsight(project, metrics), source: 'mock' };
+  }
+}
