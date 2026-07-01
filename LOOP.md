@@ -11,7 +11,7 @@
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
 | Banked tests | 5 |
-| Total runs recorded | 57 |
+| Total runs recorded | 68 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -37,6 +37,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 4 — 2026-07-01T15:22:04.829Z · ✅ PASSED
 - runId: `af7170fb-5b27-4ea1-b256-bc74c5d2e036` (source: cli)
+
+### Run 5 — 2026-07-01T15:24:26.513Z · ✅ PASSED
+- runId: `763a7e88-c03c-499a-8a89-1174cfe1bfbc` (source: cli)
+
+### Run 6 — 2026-07-01T15:24:52.919Z · ✅ PASSED
+- runId: `e06ab6fc-9e30-46d8-8f6d-7c0a719e1ac3` (source: cli)
 
 ## Test — Stateful chain: create project -> list -> metrics -> insight
 - **testId:** `fa51e8c8-0121-4a93-aa01-0e7747666d78` · priority p0 · latest: ✅ PASSED
@@ -68,6 +74,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 9 — 2026-07-01T15:22:24.235Z · ✅ PASSED
 - runId: `12cec539-1475-42e9-99cf-b43b1cb80fa8` (source: cli)
+
+### Run 10 — 2026-07-01T15:24:41.226Z · ✅ PASSED
+- runId: `42d0dc24-014f-4e30-83a7-d5f911be6860` (source: cli)
+
+### Run 11 — 2026-07-01T15:25:01.197Z · ✅ PASSED
+- runId: `3f73e70e-36dd-4b3c-9c23-9b618d0c931f` (source: cli)
 
 ## Test — Projects API: create persists to Neon and lists back
 - **testId:** `b9033df7-8ae6-43e1-b50b-cad996525efa` · priority p1 · latest: ✅ PASSED
@@ -111,6 +123,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 13 — 2026-07-01T15:22:28.390Z · ✅ PASSED
 - runId: `2b7f4979-b109-4ece-969c-6a417675666a` (source: cli)
+
+### Run 14 — 2026-07-01T15:24:26.454Z · ✅ PASSED
+- runId: `a15cac54-5a9d-42be-88b3-57850ba43de8` (source: cli)
+
+### Run 15 — 2026-07-01T15:25:06.749Z · ✅ PASSED
+- runId: `b97ad884-a42e-4c15-bcad-f1776cb98824` (source: cli)
 
 ## Test — Insights + auth: AI insight shape, input validation, dummy login
 - **testId:** `27bb1a1a-299f-41aa-bdda-21c03186fc58` · priority p1 · latest: ✅ PASSED
@@ -157,6 +175,12 @@ bundle — this is not self-healing without intervention.
 
 ### Run 14 — 2026-07-01T15:22:48.170Z · ✅ PASSED
 - runId: `30636911-d097-49e4-b65c-84f48f524ad2` (source: cli)
+
+### Run 15 — 2026-07-01T15:24:33.650Z · ✅ PASSED
+- runId: `7d79f44a-03f5-4ab3-9a56-c19603535f40` (source: cli)
+
+### Run 16 — 2026-07-01T15:25:20.516Z · ✅ PASSED
+- runId: `068b5b4d-8207-4b44-879e-7783bd36d797` (source: cli)
 
 ## Test — Metrics API: health, churn calc, and input validation
 - **testId:** `b5b10e1a-5f08-4787-b873-d1b22beda16c` · priority p0 · latest: ❌ FAILED
@@ -233,6 +257,27 @@ bundle — this is not self-healing without intervention.
   expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than 0"]}}}
   ```
 
+### Run 18 — 2026-07-01T15:23:16.513Z · ❌ FAILED
+- runId: `0dad642d-de72-4207-8012-e0c363f0deeb` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than 0"]}}}
+  ```
+
+### Run 19 — 2026-07-01T15:24:26.560Z · ❌ FAILED
+- runId: `a9c86c7c-488b-45ab-be4c-1adde2f03692` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than zero"]}}}
+  ```
+
+### Run 20 — 2026-07-01T15:25:25.982Z · ❌ FAILED
+- runId: `4164f956-f05d-4ad5-a525-a32604ecfd30` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected field-level validation message, got: {"error":"Missing or invalid fields","details":{"formErrors":[],"fieldErrors":{"totalUsers":["Total users must be greater than zero"]}}}
+  ```
+
 ---
 
-_Regenerated at 2026-07-01T15:23:07.948Z · HEAD 43b968c_
+_Regenerated at 2026-07-01T15:25:39.403Z · HEAD cf573b0_
