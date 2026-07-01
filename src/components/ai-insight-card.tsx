@@ -41,6 +41,7 @@ export function AIInsightCard({ insight, loading, onGenerate, disabled }: Props)
         <button
           onClick={onGenerate}
           disabled={disabled || loading}
+          aria-label={loading ? 'Analyzing data' : 'Generate AI insight'}
           className="rounded-lg border border-black/15 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5 disabled:opacity-40 dark:border-white/20 dark:hover:bg-white/10"
         >
           {loading ? 'Analyzing…' : 'Generate AI insight'}

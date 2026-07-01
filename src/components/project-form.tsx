@@ -76,6 +76,7 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
       <button
         type="submit"
         disabled={loading}
+        aria-label={loading ? 'Calculating metrics' : 'Calculate metrics'}
         className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {loading ? 'Calculating…' : 'Calculate metrics'}

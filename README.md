@@ -16,8 +16,14 @@ write → verify → fix → verify cycle.
 
 - `POST /api/metrics` — churn/retention/ARPU + risk status from project input (Zod-validated).
 - `POST /api/insights` — metrics + an AI insight (provider-agnostic).
+- `POST /api/chat` — interactive AI chat about your project data.
 - `GET /api/health` — health check.
 - Dummy email session gate on the dashboard.
+- Dark mode with manual toggle + system preference detection.
+- Anomaly detection badge — highlights unexpected churn spikes/drops.
+- Animated metric counters — smooth number transitions on data change.
+- Command palette (`Cmd+K` / `Ctrl+K`) for quick navigation.
+- AI Chat — ask questions about your data interactively.
 
 ## AI provider (optional, free-friendly)
 
@@ -49,3 +55,20 @@ npm run dev
 node agent-orchestrator.js run    # rerun the banked test, regenerate LOOP.md
 node agent-orchestrator.js regen  # rebuild LOOP.md from platform history only
 ```
+
+## Roadmap & Vision
+
+### In progress (next sprint)
+- **Metric number animations** — implemented
+- **Anomaly detection badge** — backend logic + UI badge implemented
+- **Dark mode toggle** — manual toggle with localStorage persistence
+- **AI Chat Query** — interactive chat on dashboard
+- **Command palette** — `Cmd+K` quick navigation
+
+### Future vision
+- **Cohort retention heatmap** — visualise retention per time cohort (Amplitude/Mixpanel-style)
+- **Multi-user real-time collaboration** — WebSocket-based shared dashboards
+- **Predictive churn modeling** — time-series ML model for churn forecasting
+- **Custom dashboard builder** — drag-and-drop widget layout
+- **White-label theming** — full design token system for multi-tenant branding
+- **Automated PDF/email reports** — scheduled report delivery

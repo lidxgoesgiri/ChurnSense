@@ -1,0 +1,16 @@
+{
+  "projectId": "a10b164c-86d7-43d4-98b1-be35c1b78d09",
+  "type": "frontend",
+  "name": "Signed-in user calculates metrics and gets an AI insight",
+  "description": "After signing in with an email, calculating metrics on the dashboard shows churn, retention, ARPU and a risk status; generating an AI insight then shows a written summary of the project's retention health.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage" },
+    { "type": "action", "description": "Type a valid email address into the sign-in field" },
+    { "type": "action", "description": "Click the button that enters the dashboard" },
+    { "type": "action", "description": "Click the button that calculates metrics from the pre-filled project form" },
+    { "type": "assertion", "description": "Verify the metrics area shows a churn rate percentage, a retention rate percentage, an ARPU dollar value, and a risk status label" },
+    { "type": "action", "description": "Click the button that generates an AI insight" },
+    { "type": "assertion", "description": "Verify the AI insight panel shows a written summary sentence describing the project's churn or retention health" }
+  ]
+}

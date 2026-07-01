@@ -18,7 +18,7 @@ export function RetentionChart({ project }: { project: ProjectInput }) {
   ];
 
   return (
-    <div className="rounded-2xl border border-black/10 p-4 dark:border-white/15">
+    <div className="rounded-2xl border border-black/10 p-4 dark:border-white/15" role="figure" aria-label="Bar chart comparing active vs churned users">
       <h3 className="mb-3 text-sm font-medium text-gray-500">
         Active vs. churned users
       </h3>
