@@ -5,7 +5,7 @@ export function calculateSaaSMetrics(data: ProjectInput): AnalyticsResult {
     throw new Error('Total users must be greater than zero');
   }
 
-  const churnRate = Number((data.churnedUsers / data.activeUsers).toFixed(4));
+  const churnRate = Number((data.churnedUsers / data.totalUsers).toFixed(4));
   const retentionRate = Number((data.activeUsers / data.totalUsers).toFixed(4));
   const arpu = Number((data.monthlyRevenue / data.totalUsers).toFixed(2));
 

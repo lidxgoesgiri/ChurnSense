@@ -1,0 +1,5 @@
+{
+  "rootCauseHypothesis": "{'churnRate': 0.1765, 'retentionRate': 0.85, 'arpu': 5, 'riskStatus': 'High'}",
+  "recommendedFixTarget": null,
+  "evidence": []
+}
