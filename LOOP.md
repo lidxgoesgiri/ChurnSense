@@ -10,8 +10,8 @@
 | Live URL (target) | https://loop-analytics-nine.vercel.app |
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
-| Banked tests | 2 |
-| Total runs recorded | 7 |
+| Banked tests | 3 |
+| Total runs recorded | 8 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -21,6 +21,13 @@ automated via the CLI; the code fix is made by the coding agent reading the fail
 bundle — this is not self-healing without intervention.
 
 ---
+
+## Test — Projects API: create persists to Neon and lists back
+- **testId:** `b9033df7-8ae6-43e1-b50b-cad996525efa` · priority p1 · latest: ✅ PASSED
+- **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/b9033df7-8ae6-43e1-b50b-cad996525efa
+
+### Run 1 — 2026-07-01T08:31:53.098Z · ✅ PASSED
+- runId: `cafe6ca9-629e-41c1-be18-3661e8eaa933` (source: cli)
 
 ## Test — Insights + auth: AI insight shape, input validation, dummy login
 - **testId:** `27bb1a1a-299f-41aa-bdda-21c03186fc58` · priority p1 · latest: ✅ PASSED
@@ -57,4 +64,4 @@ bundle — this is not self-healing without intervention.
 
 ---
 
-_Regenerated at 2026-07-01T07:35:08.493Z · HEAD c346401_
+_Regenerated at 2026-07-01T08:33:08.125Z · HEAD 4e685b0_
