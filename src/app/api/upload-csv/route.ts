@@ -75,20 +75,6 @@ export async function POST(request: Request) {
     results.push({ projectName: parsed.data.projectName, metrics });
   });
 
-  // If nothing validated, the upload is unusable — reject it as a 400.
-  if (results.length === 0) {
-    return NextResponse.json(
-      {
-        error: 'Invalid CSV format',
-        details: errors[0]?.error ?? 'No valid rows found',
-        totalRows: rawRows.length,
-        failedRows: errors.length,
-        errors,
-      },
-      { status: 400 }
-    );
-  }
-
   const aggregate = computeAggregate(rows);
 
   return NextResponse.json(
