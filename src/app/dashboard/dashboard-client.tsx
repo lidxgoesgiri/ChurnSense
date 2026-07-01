@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AnalyticsResult, AIInsightResult, ProjectInput } from '@/types';
 import { ProjectForm } from '@/components/project-form';
 import { MetricsSummary } from '@/components/metrics-summary';
 import { RetentionChart } from '@/components/retention-chart';
 import { AIInsightCard } from '@/components/ai-insight-card';
+import { ProjectsHistory, type SavedProject } from '@/components/projects-history';
 
 type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
 
@@ -18,6 +19,56 @@ export function DashboardClient({ email }: { email: string }) {
   const [loadingMetrics, setLoadingMetrics] = useState(false);
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [history, setHistory] = useState<SavedProject[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dbAvailable, setDbAvailable] = useState(true);
+
+  const loadHistory = useCallback(async () => {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch('/api/projects');
+      if (res.status === 503) {
+        setDbAvailable(false);
+        setHistory([]);
+        return;
+      }
+      const data = await res.json();
+      if (res.ok) {
+        setDbAvailable(true);
+        setHistory(data.projects ?? []);
+      }
+    } catch {
+      /* leave history as-is */
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  async function handleSave() {
+    if (!input) return;
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed to save project');
+      await loadHistory();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save project');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleAnalyze(values: ProjectInput) {
     setError(null);
@@ -92,7 +143,18 @@ export function DashboardClient({ email }: { email: string }) {
 
         <div className="space-y-6">
           {metrics ? (
-            <MetricsSummary metrics={metrics} />
+            <div className="space-y-3">
+              <MetricsSummary metrics={metrics} />
+              {dbAvailable && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !input}
+                  className="rounded-lg border border-black/15 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-black/5 disabled:opacity-40 dark:border-white/20 dark:hover:bg-white/10"
+                >
+                  {saving ? 'Saving…' : 'Save to history'}
+                </button>
+              )}
+            </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-black/15 p-6 text-sm text-gray-400 dark:border-white/20">
               Enter your project data and calculate metrics to see churn,
@@ -110,6 +172,8 @@ export function DashboardClient({ email }: { email: string }) {
       </div>
 
       {input && metrics && <RetentionChart project={input} />}
+
+      {dbAvailable && <ProjectsHistory projects={history} loading={loadingHistory} />}
     </main>
   );
 }
