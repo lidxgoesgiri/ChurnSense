@@ -11,7 +11,7 @@
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
 | Banked tests | 3 |
-| Total runs recorded | 11 |
+| Total runs recorded | 14 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -32,6 +32,9 @@ bundle — this is not self-healing without intervention.
 ### Run 2 — 2026-07-01T08:55:25.655Z · ✅ PASSED
 - runId: `71d5ce3c-6579-41b2-91ab-5380da998a5e` (source: cli)
 
+### Run 3 — 2026-07-01T11:51:33.009Z · ✅ PASSED
+- runId: `44cd4a2c-8c4c-4eb4-a511-b4150009c1a9` (source: cli)
+
 ## Test — Insights + auth: AI insight shape, input validation, dummy login
 - **testId:** `27bb1a1a-299f-41aa-bdda-21c03186fc58` · priority p1 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/27bb1a1a-299f-41aa-bdda-21c03186fc58
@@ -44,6 +47,9 @@ bundle — this is not self-healing without intervention.
 
 ### Run 3 — 2026-07-01T08:55:30.548Z · ✅ PASSED
 - runId: `6770e20e-0da9-4fb8-9e6a-5d80ef2f457d` (source: cli)
+
+### Run 4 — 2026-07-01T11:51:33.473Z · ✅ PASSED
+- runId: `6a3588b7-7c95-481f-8532-df9fa71dda51` (source: cli)
 
 ## Test — Metrics API: health, churn calc, and input validation
 - **testId:** `b5b10e1a-5f08-4787-b873-d1b22beda16c` · priority p0 · latest: ✅ PASSED
@@ -71,6 +77,9 @@ bundle — this is not self-healing without intervention.
 ### Run 6 — 2026-07-01T08:55:35.036Z · ✅ PASSED
 - runId: `c12dfd75-206c-45ed-af03-c4a26b48d583` (source: cli)
 
+### Run 7 — 2026-07-01T11:51:33.499Z · ✅ PASSED
+- runId: `726f9368-666c-4777-a7a2-66f52d79aeef` (source: cli)
+
 ---
 
-_Regenerated at 2026-07-01T08:55:42.166Z · HEAD aa248ae_
+_Regenerated at 2026-07-01T11:52:59.783Z · HEAD 28f88cc_
