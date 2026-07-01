@@ -4,7 +4,7 @@ import { env, hasAiProvider } from '@/lib/env';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { message, context } = body;
+    const { message, context, model } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${env.AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: env.AI_MODEL,
+        model: model ?? env.AI_MODEL,
         temperature: 0.4,
         max_tokens: 600,
         messages: [

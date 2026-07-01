@@ -25,6 +25,7 @@ interface InsightArgs {
   project: ProjectInput;
   metrics: AnalyticsResult;
   trend?: TrendResult;
+  model?: string;
 }
 
 function trendSentence(trend?: TrendResult): string | null {
@@ -130,7 +131,7 @@ export function mockInsight(
   return { summary, recommendation: pick.recommendation, riskLevel: metrics.riskStatus };
 }
 
-export async function generateInsight({ project, metrics, trend }: InsightArgs): Promise<Insight> {
+export async function generateInsight({ project, metrics, trend, model }: InsightArgs): Promise<Insight> {
   if (!hasAiProvider) {
     return { ...mockInsight(project, metrics, trend), source: 'mock' };
   }
@@ -143,7 +144,7 @@ export async function generateInsight({ project, metrics, trend }: InsightArgs):
         Authorization: `Bearer ${env.AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: env.AI_MODEL,
+        model: model ?? env.AI_MODEL,
         temperature: 0.4,
         max_tokens: 400,
         messages: [

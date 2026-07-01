@@ -15,6 +15,8 @@ import { RetentionTable } from '@/components/retention-table';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useCommandPalette } from '@/components/command-palette';
+import { ModelSelector } from '@/components/model-selector';
+import { getStoredModel } from '@/lib/models';
 
 type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
 
@@ -28,6 +30,7 @@ export function DashboardClient({ email }: { email: string }) {
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [aiModel, setAiModel] = useState(getStoredModel);
   const [history, setHistory] = useState<SavedProject[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [justSaved, setJustSaved] = useState(false);
@@ -107,7 +110,7 @@ export function DashboardClient({ email }: { email: string }) {
       const res = await fetch('/api/insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify({ ...input, model: aiModel }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to generate insight');
@@ -157,6 +160,7 @@ export function DashboardClient({ email }: { email: string }) {
             <p className="text-sm text-gray-400">Signed in as {email}</p>
           </div>
           <div className="flex items-center gap-2">
+            <ModelSelector onModelChange={setAiModel} />
             <ThemeToggle />
             <button
               onClick={handleLogout}
@@ -215,7 +219,7 @@ export function DashboardClient({ email }: { email: string }) {
 
         {input && metrics && <RetentionChart project={input} />}
 
-        <AIChat project={input} metrics={metrics} />
+        <AIChat project={input} metrics={metrics} model={aiModel} />
 
         <div id="retention-table">
           {dbAvailable && (

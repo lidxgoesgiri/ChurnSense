@@ -28,7 +28,8 @@ async function loadTrend(projectName: string, currentChurn: number): Promise<Tre
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parsed = projectInputSchema.safeParse(body);
+    const { model, ...rest } = body;
+    const parsed = projectInputSchema.safeParse(rest);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
     const metrics = calculateSaaSMetrics(parsed.data);
     const trend = await loadTrend(parsed.data.projectName, metrics.churnRate);
-    const insight = await generateInsight({ project: parsed.data, metrics, trend });
+    const insight = await generateInsight({ project: parsed.data, metrics, trend, model });
 
     return NextResponse.json(
       {
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
         projectName: parsed.data.projectName,
         metrics,
         trend: trend ?? null,
+        model: model ?? null,
         insight,
         timestamp: new Date().toISOString(),
       },

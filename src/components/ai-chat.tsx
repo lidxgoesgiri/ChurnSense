@@ -11,9 +11,10 @@ interface ChatMessage {
 interface Props {
   project: ProjectInput | null;
   metrics: AnalyticsResult | null;
+  model?: string;
 }
 
-export function AIChat({ project, metrics }: Props) {
+export function AIChat({ project, metrics, model }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: 'Ask me anything about your churn data — trends, benchmarks, or what to improve.' },
   ]);
@@ -37,6 +38,7 @@ export function AIChat({ project, metrics }: Props) {
         body: JSON.stringify({
           message: input,
           context: project && metrics ? { project, metrics } : null,
+          model,
         }),
       });
       const data = await res.json();
