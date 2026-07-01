@@ -14,9 +14,9 @@ export const projectInputSchema = z
     message: 'activeUsers cannot exceed totalUsers',
     path: ['activeUsers'],
   })
-  .refine((d) => d.churnedUsers <= d.totalUsers, {
-    message: 'churnedUsers cannot exceed totalUsers',
-    path: ['churnedUsers'],
-  });
+  // .refine((d) => d.churnedUsers <= d.totalUsers, {
+  //   message: 'churnedUsers cannot exceed totalUsers',
+  //   path: ['churnedUsers'],
+  // });
 
 export type ProjectInputSchema = z.infer<typeof projectInputSchema>;
