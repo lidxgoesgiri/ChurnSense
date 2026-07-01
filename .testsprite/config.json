@@ -1,5 +1,8 @@
 {
   "projectId": "3f03871e-9e3d-4452-9811-ea32aaff6fb8",
+  "projectName": "ChurnSense API",
   "type": "backend",
-  "targetUrl": "https://loop-analytics-nine.vercel.app"
+  "targetUrl": "https://loop-analytics-nine.vercel.app",
+  "testId": "b5b10e1a-5f08-4787-b873-d1b22beda16c",
+  "repo": "https://github.com/lidxgoesgiri/ChurnSense"
 }
