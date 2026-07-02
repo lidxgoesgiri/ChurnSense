@@ -41,6 +41,42 @@ function detectSeparator(headerLine: string): string {
 }
 
 /**
+ * Split one CSV line on `sep`, honoring double-quoted fields so a separator
+ * inside quotes (e.g. `"Acme, Inc."`) is not treated as a delimiter. `""`
+ * inside a quoted field is an escaped quote. Handles the common Excel export.
+ */
+function splitCsvLine(line: string, sep: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (line[i + 1] === '"') {
+          current += '"';
+          i++; // consume the escaped quote
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += char;
+      }
+    } else if (char === '"') {
+      inQuotes = true;
+    } else if (char === sep) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+/**
  * Parse a CSV string into raw row objects keyed by the camelCase ProjectInput
  * fields. Numeric columns are coerced with Number() — invalid values become NaN,
  * which the downstream Zod schema (projectInputSchema) rejects, so parsing stays
@@ -61,7 +97,7 @@ export function parseCSV(input: string): Record<string, unknown>[] {
   if (lines.length === 0) return [];
 
   const separator = detectSeparator(lines[0]);
-  const headers = lines[0].split(separator).map((h) => h.trim().toLowerCase());
+  const headers = splitCsvLine(lines[0], separator).map((h) => h.toLowerCase());
 
   const missing = REQUIRED_HEADERS.filter((h) => !headers.includes(h));
   if (missing.length > 0) {
@@ -72,7 +108,7 @@ export function parseCSV(input: string): Record<string, unknown>[] {
 
   const rows: Record<string, unknown>[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const cells = lines[i].split(separator).map((c) => c.trim());
+    const cells = splitCsvLine(lines[i], separator);
     const row: Record<string, unknown> = {};
     headers.forEach((header, idx) => {
       const field = HEADER_TO_FIELD[header];

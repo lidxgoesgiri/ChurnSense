@@ -9,6 +9,7 @@ import { projects } from '@/lib/db/schema';
 import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { validateModelId } from '@/lib/models';
+import { getCachedInsight, setCachedInsight } from '@/lib/insight-cache';
 
 // Pull the project's prior churn history so the insight can reason about trend.
 async function loadTrend(projectName: string, currentChurn: number): Promise<TrendResult | undefined> {
@@ -50,12 +51,17 @@ export async function POST(request: Request) {
 
     const metrics = calculateSaaSMetrics(parsed.data);
     const trend = await loadTrend(parsed.data.projectName, metrics.churnRate);
-    const insight = await generateInsight({
-      project: parsed.data,
-      metrics,
-      trend,
-      model: validatedModel,
-    });
+
+    // Serve a cached insight for identical input within the TTL to avoid a
+    // repeat AI call (#23).
+    const { projectName, totalUsers, churnedUsers } = parsed.data;
+    const cached = getCachedInsight(projectName, totalUsers, churnedUsers, validatedModel);
+    const insight =
+      cached ??
+      (await generateInsight({ project: parsed.data, metrics, trend, model: validatedModel }));
+    if (!cached) {
+      setCachedInsight(projectName, totalUsers, churnedUsers, validatedModel, insight);
+    }
 
     return NextResponse.json(
       {
@@ -65,6 +71,7 @@ export async function POST(request: Request) {
         trend: trend ?? null,
         model: validatedModel,
         insight,
+        cached: Boolean(cached),
         timestamp: new Date().toISOString(),
       },
       { status: 200 }

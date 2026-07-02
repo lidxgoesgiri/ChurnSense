@@ -53,6 +53,17 @@ def test_csv_invalid_data_rejected():
     assert r.status_code == 400, f"expected 400, got {r.status_code}: {r.text}"
 
 
+def test_csv_quoted_fields_with_commas():
+    # A quoted project name containing a comma must parse as one field (#19).
+    s = login()
+    csv = f'{HEADER}\n"Acme, Inc.",1000,850,150,5000'
+    r = s.post(URL, files={"file": ("q.csv", csv, "text/csv")}, headers=CSRF)
+    assert r.status_code == 200, f"expected 200, got {r.status_code}: {r.text}"
+    data = r.json()
+    assert data["validRows"] == 1, data
+    assert data["results"][0]["projectName"] == "Acme, Inc.", data["results"][0]
+
+
 def test_csv_too_large_rejected():
     # >5MB body must be rejected with 413.
     s = login()
@@ -65,4 +76,5 @@ test_csv_valid_upload()
 test_csv_empty_rejected()
 test_csv_wrong_header_rejected()
 test_csv_invalid_data_rejected()
+test_csv_quoted_fields_with_commas()
 test_csv_too_large_rejected()

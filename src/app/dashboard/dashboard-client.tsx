@@ -125,6 +125,18 @@ export function DashboardClient({ email }: { email: string }) {
     router.push('/');
   }
 
+  async function handleDelete(id: number) {
+    try {
+      const res = await fetch(`/api/projects?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'X-Requested-With': 'ChurnSense' },
+      });
+      if (res.ok) await loadHistory();
+    } catch {
+      /* best-effort */
+    }
+  }
+
   const churnSeries =
     input && history.length
       ? history
@@ -248,7 +260,9 @@ export function DashboardClient({ email }: { email: string }) {
           )}
         </div>
 
-        {dbAvailable && <ProjectsHistory projects={history} loading={loadingHistory} />}
+        {dbAvailable && (
+          <ProjectsHistory projects={history} loading={loadingHistory} onDelete={handleDelete} />
+        )}
       </main>
     </ErrorBoundary>
   );
