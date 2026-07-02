@@ -208,7 +208,7 @@ export function DashboardClient({ email }: { email: string }) {
             {metrics ? (
               <div className="space-y-3">
                 <MetricsSummary metrics={metrics} churnSeries={churnSeries} />
-                {trend && <AnomalyBadge anomaly={trend.anomaly} />}
+                {trend && <AnomalyBadge trend={trend} />}
                 {dbAvailable && justSaved && (
                   <p className="text-sm text-green-600 dark:text-green-400">
                     Saved to history ✓
@@ -233,7 +233,7 @@ export function DashboardClient({ email }: { email: string }) {
           </div>
         </div>
 
-        {input && metrics && <RetentionChart project={input} />}
+        {input && metrics && <RetentionChart project={input} history={history} />}
 
         <AIChat project={input} metrics={metrics} model={aiModel} />
 

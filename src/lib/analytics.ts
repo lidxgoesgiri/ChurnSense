@@ -21,5 +21,10 @@ export function calculateSaaSMetrics(data: ProjectInput): AnalyticsResult {
   if (churnRate > 0.15) riskStatus = 'High';
   else if (churnRate > 0.05) riskStatus = 'Medium';
 
-  return { churnRate, retentionRate, arpu, riskStatus };
+  // MRR is the current monthly recurring revenue; estimated LTV projects
+  // average revenue per user across their expected lifetime (1 / churn).
+  const mrr = Number(data.monthlyRevenue.toFixed(2));
+  const estimatedLtv = churnRate > 0 ? Number((arpu / churnRate).toFixed(2)) : 0;
+
+  return { churnRate, retentionRate, arpu, riskStatus, mrr, estimatedLtv };
 }

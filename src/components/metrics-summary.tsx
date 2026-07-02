@@ -96,6 +96,20 @@ export function MetricsSummary({
           prefix="$"
           decimals={2}
         />
+        <Stat
+          label="MRR"
+          value={`$${metrics.mrr.toFixed(2)}`}
+          rawValue={metrics.mrr}
+          prefix="$"
+          decimals={2}
+        />
+        <Stat
+          label="Est. LTV"
+          value={`$${metrics.estimatedLtv.toFixed(2)}`}
+          rawValue={metrics.estimatedLtv}
+          prefix="$"
+          decimals={2}
+        />
       </div>
       <div
         className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${RISK_STYLES[metrics.riskStatus]}`}

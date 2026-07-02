@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AnalyticsResult, ProjectInput } from '@/types';
 
 interface ChatMessage {
@@ -14,13 +14,52 @@ interface Props {
   model?: string;
 }
 
+const STORAGE_KEY = 'churnsense-chat-history';
+const GREETING: ChatMessage = {
+  role: 'assistant',
+  content: 'Ask me anything about your churn data — trends, benchmarks, or what to improve.',
+};
+
+function loadHistory(): ChatMessage[] {
+  if (typeof window === 'undefined') return [GREETING];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const parsed = stored ? (JSON.parse(stored) as ChatMessage[]) : null;
+    return parsed && parsed.length > 0 ? parsed : [GREETING];
+  } catch {
+    return [GREETING];
+  }
+}
+
 export function AIChat({ project, metrics, model }: Props) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', content: 'Ask me anything about your churn data — trends, benchmarks, or what to improve.' },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Load persisted history after mount (avoids SSR/hydration mismatch).
+  useEffect(() => {
+    setMessages(loadHistory());
+  }, []);
+
+  // Persist the last 50 messages whenever the conversation changes.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50)));
+    } catch {
+      /* storage full or unavailable — non-fatal */
+    }
+  }, [messages]);
+
+  function clearHistory() {
+    setMessages([GREETING]);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -62,10 +101,20 @@ export function AIChat({ project, metrics, model }: Props) {
 
   return (
     <div className="rounded-2xl border border-black/10 dark:border-white/15">
-      <div className="px-4 pt-4 pb-2">
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
           AI chat
         </span>
+        {messages.length > 1 && (
+          <button
+            type="button"
+            onClick={clearHistory}
+            aria-label="Clear chat history"
+            className="text-xs text-gray-400 transition-colors hover:text-foreground"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       <div

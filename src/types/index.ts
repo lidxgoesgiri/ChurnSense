@@ -11,6 +11,8 @@ export interface AnalyticsResult {
   retentionRate: number;
   arpu: number; // Average Revenue Per User
   riskStatus: 'Low' | 'Medium' | 'High';
+  mrr: number; // Monthly Recurring Revenue
+  estimatedLtv: number; // Estimated Lifetime Value = ARPU / churnRate
 }
 
 export interface AIInsightResult {
