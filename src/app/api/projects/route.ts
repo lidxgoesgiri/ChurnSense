@@ -5,6 +5,13 @@ import { projects } from '@/lib/db/schema';
 import { projectInputSchema } from '@/lib/validation';
 import { calculateSaaSMetrics } from '@/lib/analytics';
 import type { ProjectInput } from '@/types';
+import {
+  getSession,
+  unauthorizedResponse,
+  csrfCheck,
+  forbiddenResponse,
+  parseJsonBody,
+} from '@/lib/auth';
 
 function dbUnavailable() {
   return NextResponse.json(
@@ -15,6 +22,7 @@ function dbUnavailable() {
 
 // GET /api/projects — list saved projects (most recent first) with computed metrics.
 export async function GET() {
+  if (!(await getSession())) return unauthorizedResponse();
   if (!isDbConfigured()) return dbUnavailable();
   try {
     const rows = await getDb().select().from(projects).orderBy(desc(projects.createdAt));
@@ -37,16 +45,14 @@ export async function GET() {
 
 // POST /api/projects — persist a project after validation.
 export async function POST(request: Request) {
+  if (!(await getSession())) return unauthorizedResponse();
+  if (!csrfCheck(request)) return forbiddenResponse();
   if (!isDbConfigured()) return dbUnavailable();
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+  const parsedBody = await parseJsonBody(request);
+  if ('error' in parsedBody) return parsedBody.error;
 
-  const parsed = projectInputSchema.safeParse(body);
+  const parsed = projectInputSchema.safeParse(parsedBody.data);
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Missing or invalid fields', details: parsed.error.flatten() },

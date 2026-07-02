@@ -4,12 +4,22 @@ import { projectInputSchema } from '@/lib/validation';
 import { calculateSaaSMetrics } from '@/lib/analytics';
 import { computeAggregate, type BatchRow } from '@/lib/batch-analytics';
 import type { BatchError, BatchRowResult } from '@/types';
+import {
+  getSession,
+  unauthorizedResponse,
+  csrfCheck,
+  forbiddenResponse,
+} from '@/lib/auth';
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_ROWS = 500;
 
 // POST /api/upload-csv — accept a multipart CSV, validate & analyze each row,
 // and return per-row metrics plus a batch aggregate.
 export async function POST(request: Request) {
+  if (!(await getSession())) return unauthorizedResponse();
+  if (!csrfCheck(request)) return forbiddenResponse();
+
   let formData: FormData;
   try {
     formData = await request.formData();
@@ -54,6 +64,13 @@ export async function POST(request: Request) {
 
   if (rawRows.length === 0) {
     return NextResponse.json({ error: 'CSV file has no data rows' }, { status: 400 });
+  }
+
+  if (rawRows.length > MAX_ROWS) {
+    return NextResponse.json(
+      { error: `Too many rows. Maximum ${MAX_ROWS} rows per upload.` },
+      { status: 400 }
+    );
   }
 
   const rows: BatchRow[] = [];

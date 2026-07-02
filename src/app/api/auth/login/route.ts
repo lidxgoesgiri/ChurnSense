@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { COOKIE_NAME, signValue } from '@/lib/auth';
 
 const loginSchema = z.object({
   email: z.string().email('A valid email is required'),
@@ -24,9 +25,10 @@ export async function POST(request: Request) {
   }
 
   const res = NextResponse.json({ success: true, email: parsed.data.email });
-  res.cookies.set('cs_session', encodeURIComponent(parsed.data.email), {
+  res.cookies.set(COOKIE_NAME, signValue(encodeURIComponent(parsed.data.email)), {
     httpOnly: true,
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
     maxAge: 60 * 60 * 8, // 8 hours
   });

@@ -59,7 +59,11 @@ export function CsvUploader() {
     try {
       const body = new FormData();
       body.append('file', file);
-      const res = await fetch('/api/upload-csv', { method: 'POST', body });
+      const res = await fetch('/api/upload-csv', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'ChurnSense' },
+        body,
+      });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.details || data.error || 'Upload failed');

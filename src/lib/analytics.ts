@@ -1,8 +1,16 @@
 import { ProjectInput, AnalyticsResult } from '@/types';
 
+/** Thrown when input is semantically invalid (maps to HTTP 400, not 500). */
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
 export function calculateSaaSMetrics(data: ProjectInput): AnalyticsResult {
   if (data.totalUsers <= 0) {
-    throw new Error('Total users must be greater than zero');
+    throw new ValidationError('Total users must be greater than zero');
   }
 
   const churnRate = Number((data.churnedUsers / data.totalUsers).toFixed(4));

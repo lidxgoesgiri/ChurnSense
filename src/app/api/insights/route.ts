@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { eq, asc } from 'drizzle-orm';
-import { calculateSaaSMetrics } from '@/lib/analytics';
+import { calculateSaaSMetrics, ValidationError } from '@/lib/analytics';
 import { generateInsight } from '@/lib/ai-insight';
 import { detectChurnTrend, type TrendResult } from '@/lib/trend';
 import { projectInputSchema } from '@/lib/validation';
 import { getDb, isDbConfigured } from '@/lib/db';
 import { projects } from '@/lib/db/schema';
+import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateModelId } from '@/lib/models';
 
 // Pull the project's prior churn history so the insight can reason about trend.
 async function loadTrend(projectName: string, currentChurn: number): Promise<TrendResult | undefined> {
@@ -26,9 +29,16 @@ async function loadTrend(projectName: string, currentChurn: number): Promise<Tre
 }
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session) return unauthorizedResponse();
+
+  if (!rateLimit(`insight:${session}`, 10).allowed) return rateLimitResponse();
+
   try {
-    const body = await request.json();
-    const { model, ...rest } = body;
+    const parsedBody = await parseJsonBody(request);
+    if ('error' in parsedBody) return parsedBody.error;
+    const { model, ...rest } = (parsedBody.data ?? {}) as Record<string, unknown>;
+    const validatedModel = validateModelId(model);
     const parsed = projectInputSchema.safeParse(rest);
 
     if (!parsed.success) {
@@ -40,7 +50,12 @@ export async function POST(request: Request) {
 
     const metrics = calculateSaaSMetrics(parsed.data);
     const trend = await loadTrend(parsed.data.projectName, metrics.churnRate);
-    const insight = await generateInsight({ project: parsed.data, metrics, trend, model });
+    const insight = await generateInsight({
+      project: parsed.data,
+      metrics,
+      trend,
+      model: validatedModel,
+    });
 
     return NextResponse.json(
       {
@@ -48,7 +63,7 @@ export async function POST(request: Request) {
         projectName: parsed.data.projectName,
         metrics,
         trend: trend ?? null,
-        model: model ?? null,
+        model: validatedModel,
         insight,
         timestamp: new Date().toISOString(),
       },
@@ -56,10 +71,9 @@ export async function POST(request: Request) {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
-    const isValidationError = message.includes('greater than zero');
     return NextResponse.json(
       { error: message },
-      { status: isValidationError ? 400 : 500 }
+      { status: error instanceof ValidationError ? 400 : 500 }
     );
   }
 }

@@ -1,15 +1,23 @@
-"""Backend verification for /api/insights and the dummy auth endpoints.
+"""Backend verification for /api/insights: shape, validation, model whitelist (#3).
 
 Runs in the TestSprite sandbox (stdlib + requests). TARGET_URL is injected.
-Test functions are invoked explicitly at the bottom — no auto-discovery.
 """
 import requests
 
 BASE = TARGET_URL.rstrip("/")
+DEFAULT_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
+
+
+def login():
+    s = requests.Session()
+    r = s.post(f"{BASE}/api/auth/login", json={"email": "demo@churnsense.app"})
+    assert r.status_code == 200, f"login failed: {r.status_code} {r.text}"
+    return s
 
 
 def test_insights_returns_metrics_and_insight():
-    r = requests.post(
+    s = login()
+    r = s.post(
         f"{BASE}/api/insights",
         json={
             "projectName": "Beta Client A",
@@ -30,17 +38,33 @@ def test_insights_returns_metrics_and_insight():
 
 
 def test_insights_rejects_invalid_input():
-    r = requests.post(
+    s = login()
+    r = s.post(
         f"{BASE}/api/insights",
-        json={
-            "projectName": "Invalid",
-            "totalUsers": 0,
-            "activeUsers": 0,
-            "churnedUsers": 0,
-            "monthlyRevenue": 0,
-        },
+        json={"projectName": "Invalid", "totalUsers": 0, "activeUsers": 0,
+              "churnedUsers": 0, "monthlyRevenue": 0},
     )
     assert r.status_code == 400, f"expected 400, got {r.status_code}: {r.text}"
+
+
+def test_insights_rejects_unknown_model_falls_back_to_default():
+    # A client-supplied model not on the allow-list must NOT be used; the
+    # server should fall back to the default (#3).
+    s = login()
+    r = s.post(
+        f"{BASE}/api/insights",
+        json={
+            "projectName": "Model Check",
+            "totalUsers": 1000,
+            "activeUsers": 700,
+            "churnedUsers": 300,
+            "monthlyRevenue": 9000,
+            "model": "evil/expensive-model-999",
+        },
+    )
+    assert r.status_code == 200, f"expected 200, got {r.status_code}: {r.text}"
+    used = r.json().get("model")
+    assert used == DEFAULT_MODEL, f"unknown model should fall back to default, got: {used}"
 
 
 def test_login_accepts_valid_email():
@@ -54,8 +78,8 @@ def test_login_rejects_bad_email():
     assert r.status_code == 400, f"expected 400, got {r.status_code}: {r.text}"
 
 
-# Required: actually invoke the tests so their assertions run.
 test_insights_returns_metrics_and_insight()
 test_insights_rejects_invalid_input()
+test_insights_rejects_unknown_model_falls_back_to_default()
 test_login_accepts_valid_email()
 test_login_rejects_bad_email()

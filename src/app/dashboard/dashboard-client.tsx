@@ -84,7 +84,10 @@ export function DashboardClient({ email }: { email: string }) {
         try {
           const saveRes = await fetch('/api/projects', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'ChurnSense',
+            },
             body: JSON.stringify(values),
           });
           if (saveRes.status === 503) {

@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
-import { calculateSaaSMetrics } from '@/lib/analytics';
+import { calculateSaaSMetrics, ValidationError } from '@/lib/analytics';
 import { projectInputSchema } from '@/lib/validation';
+import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
 
 export async function POST(request: Request) {
+  if (!(await getSession())) return unauthorizedResponse();
+
   try {
-    const body = await request.json();
-    const parsed = projectInputSchema.safeParse(body);
+    const parsedBody = await parseJsonBody(request);
+    if ('error' in parsedBody) return parsedBody.error;
+    const parsed = projectInputSchema.safeParse(parsedBody.data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -27,10 +31,9 @@ export async function POST(request: Request) {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
-    const isValidationError = message.includes('greater than zero');
     return NextResponse.json(
       { error: message },
-      { status: isValidationError ? 400 : 500 }
+      { status: error instanceof ValidationError ? 400 : 500 }
     );
   }
 }

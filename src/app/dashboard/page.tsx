@@ -1,14 +1,12 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/auth';
 import { DashboardClient } from './dashboard-client';
 
-// Server-side auth gate: no session cookie -> back to the landing/login page.
+// Server-side auth gate: no valid signed session cookie -> back to login.
 export default async function DashboardPage() {
-  const store = await cookies();
-  const session = store.get('cs_session');
-  if (!session?.value) {
+  const email = await getSession();
+  if (!email) {
     redirect('/');
   }
-  const email = decodeURIComponent(session.value);
   return <DashboardClient email={email} />;
 }
