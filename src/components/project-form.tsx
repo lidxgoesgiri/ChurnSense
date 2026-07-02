@@ -15,14 +15,22 @@ interface Props {
   loading: boolean;
 }
 
+const PLACEHOLDERS: Record<string, string> = {
+  totalUsers: 'e.g. 1000',
+  activeUsers: 'e.g. 850',
+  churnedUsers: 'e.g. 150',
+  monthlyRevenue: 'e.g. 5000',
+};
+
 export function ProjectForm({ onAnalyze, loading }: Props) {
-  const [projectName, setProjectName] = useState('Beta Client A');
+  const [projectName, setProjectName] = useState('');
   const [values, setValues] = useState<Record<string, string>>({
-    totalUsers: '1000',
-    activeUsers: '850',
-    churnedUsers: '150',
-    monthlyRevenue: '5000',
+    totalUsers: '',
+    activeUsers: '',
+    churnedUsers: '',
+    monthlyRevenue: '',
   });
+  const [submitted, setSubmitted] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +41,8 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
       churnedUsers: Number(values.churnedUsers),
       monthlyRevenue: Number(values.monthlyRevenue),
     });
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 2500);
   }
 
   return (
@@ -49,7 +59,8 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           required
-          className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20"
+          placeholder="e.g. Beta Client A"
+          className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-accent dark:border-white/20"
         />
       </div>
 
@@ -67,7 +78,8 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
               value={values[f.key]}
               onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               required
-              className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20"
+              placeholder={PLACEHOLDERS[f.key]}
+              className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-accent dark:border-white/20"
             />
           </div>
         ))}
@@ -81,6 +93,12 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
       >
         {loading ? 'Calculating…' : 'Calculate metrics'}
       </button>
+
+      {submitted && !loading && (
+        <p className="text-center text-sm text-green-600 dark:text-green-400" role="status">
+          ✓ Analysis submitted
+        </p>
+      )}
     </form>
   );
 }

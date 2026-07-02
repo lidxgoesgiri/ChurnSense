@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
-import type { AnalyticsResult, AIInsightResult, ProjectInput } from '@/types';
-import type { TrendResult } from '@/lib/trend';
+import type { ProjectInput } from '@/types';
 import { ProjectForm } from '@/components/project-form';
 import { CsvUploader } from '@/components/csv-uploader';
 import { MetricsSummary } from '@/components/metrics-summary';
@@ -18,44 +17,37 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { useCommandPalette } from '@/components/command-palette';
 import { ModelSelector } from '@/components/model-selector';
 import { getStoredModel } from '@/lib/models';
-
-type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
+import { dashboardReducer, makeInitialState } from './dashboard-reducer';
 
 export function DashboardClient({ email }: { email: string }) {
   const router = useRouter();
-  const [input, setInput] = useState<ProjectInput | null>(null);
-  const [metrics, setMetrics] = useState<AnalyticsResult | null>(null);
-  const [insight, setInsight] = useState<Insight | null>(null);
-  const [trend, setTrend] = useState<TrendResult | null>(null);
-  const [loadingMetrics, setLoadingMetrics] = useState(false);
-  const [loadingInsight, setLoadingInsight] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [inputMode, setInputMode] = useState<'manual' | 'batch'>('manual');
-  const [aiModel, setAiModel] = useState(getStoredModel);
-  const [history, setHistory] = useState<SavedProject[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(true);
-  const [justSaved, setJustSaved] = useState(false);
-  const [dbAvailable, setDbAvailable] = useState(true);
+  const [state, dispatch] = useReducer(
+    dashboardReducer,
+    getStoredModel(),
+    makeInitialState
+  );
+  const {
+    input, metrics, insight, trend, loadingMetrics, loadingInsight, error,
+    inputMode, aiModel, history, loadingHistory, justSaved, dbAvailable,
+  } = state;
 
   const loadHistory = useCallback(async () => {
-    setLoadingHistory(true);
+    dispatch({ type: 'HISTORY_LOADING' });
     try {
       const res = await fetch('/api/projects');
       if (res.status === 503) {
-        setDbAvailable(false);
-        setHistory([]);
+        dispatch({ type: 'DB_UNAVAILABLE' });
+        dispatch({ type: 'HISTORY_DONE' });
         return;
       }
       const data = await res.json();
       if (res.ok) {
-        setDbAvailable(true);
-        setHistory(data.projects ?? []);
+        dispatch({ type: 'HISTORY_LOADED', history: data.projects ?? [] });
+      } else {
+        dispatch({ type: 'HISTORY_DONE' });
       }
     } catch {
-      /* leave history as-is */
-    } finally {
-      setLoadingHistory(false);
+      dispatch({ type: 'HISTORY_DONE' });
     }
   }, []);
 
@@ -64,11 +56,7 @@ export function DashboardClient({ email }: { email: string }) {
   }, [loadHistory]);
 
   async function handleAnalyze(values: ProjectInput) {
-    setError(null);
-    setInsight(null);
-    setTrend(null);
-    setJustSaved(false);
-    setLoadingMetrics(true);
+    dispatch({ type: 'ANALYZE_START' });
     try {
       const res = await fetch('/api/metrics', {
         method: 'POST',
@@ -77,8 +65,7 @@ export function DashboardClient({ email }: { email: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to calculate metrics');
-      setMetrics(data.metrics);
-      setInput(values);
+      dispatch({ type: 'ANALYZE_SUCCESS', input: values, metrics: data.metrics });
 
       if (dbAvailable) {
         try {
@@ -91,9 +78,9 @@ export function DashboardClient({ email }: { email: string }) {
             body: JSON.stringify(values),
           });
           if (saveRes.status === 503) {
-            setDbAvailable(false);
+            dispatch({ type: 'DB_UNAVAILABLE' });
           } else if (saveRes.ok) {
-            setJustSaved(true);
+            dispatch({ type: 'SAVED' });
             await loadHistory();
           }
         } catch {
@@ -101,16 +88,16 @@ export function DashboardClient({ email }: { email: string }) {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to calculate metrics');
-    } finally {
-      setLoadingMetrics(false);
+      dispatch({
+        type: 'ANALYZE_ERROR',
+        error: err instanceof Error ? err.message : 'Failed to calculate metrics',
+      });
     }
   }
 
   async function handleGenerate() {
     if (!input) return;
-    setError(null);
-    setLoadingInsight(true);
+    dispatch({ type: 'INSIGHT_START' });
     try {
       const res = await fetch('/api/insights', {
         method: 'POST',
@@ -119,13 +106,17 @@ export function DashboardClient({ email }: { email: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to generate insight');
-      setMetrics(data.metrics);
-      setInsight(data.insight);
-      setTrend(data.trend ?? null);
+      dispatch({
+        type: 'INSIGHT_SUCCESS',
+        metrics: data.metrics,
+        insight: data.insight,
+        trend: data.trend ?? null,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate insight');
-    } finally {
-      setLoadingInsight(false);
+      dispatch({
+        type: 'INSIGHT_ERROR',
+        error: err instanceof Error ? err.message : 'Failed to generate insight',
+      });
     }
   }
 
@@ -158,14 +149,14 @@ export function DashboardClient({ email }: { email: string }) {
   return (
     <ErrorBoundary>
       {palette}
-      <main className="mx-auto w-full max-w-5xl space-y-8 p-6 sm:p-10">
-        <header className="flex items-center justify-between">
+      <main id="main-content" className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6 md:p-10">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">ChurnSense</h1>
-            <p className="text-sm text-gray-400">Signed in as {email}</p>
+            <p className="truncate text-sm text-gray-400">Signed in as {email}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <ModelSelector onModelChange={setAiModel} />
+          <div className="flex flex-wrap items-center gap-2">
+            <ModelSelector onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })} />
             <ThemeToggle />
             <button
               onClick={handleLogout}
@@ -195,7 +186,7 @@ export function DashboardClient({ email }: { email: string }) {
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => setInputMode(mode)}
+                  onClick={() => dispatch({ type: 'SET_INPUT_MODE', mode })}
                   className={`rounded-md px-3 py-1 capitalize transition-colors ${
                     inputMode === mode
                       ? 'bg-foreground text-background'

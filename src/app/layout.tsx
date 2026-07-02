@@ -31,6 +31,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:top-3 focus:left-3 focus:rounded-lg focus:bg-foreground focus:px-4 focus:py-2 focus:text-background focus:shadow-lg"
+        >
+          Skip to main content
+        </a>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

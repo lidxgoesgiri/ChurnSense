@@ -29,13 +29,10 @@ export class ErrorBoundary extends Component<Props, State> {
           {this.state.error?.message || 'An unexpected error occurred.'}
         </p>
         <button
-          onClick={() => {
-            this.setState({ hasError: false, error: null });
-            window.location.reload();
-          }}
+          onClick={() => this.setState({ hasError: false, error: null })}
           className="rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90"
         >
-          Reload page
+          Try again
         </button>
       </div>
     );

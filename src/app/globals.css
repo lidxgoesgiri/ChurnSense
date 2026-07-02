@@ -1,31 +1,107 @@
 @import "tailwindcss";
 
+/* Drive Tailwind `dark:` utilities from the data-theme attribute set by the
+   theme toggle (not prefers-color-scheme), so the in-app switch fully works. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 :root {
-  --background: #ffffff;
+  --background: #f7f8fa;
   --foreground: #171717;
+  --card: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --muted: #6b7280;
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
 }
 
 :root[data-theme='dark'] {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  /* Cinematic dark: deep near-black blues with elevated card surfaces. */
+  --background: #07080d;
+  --foreground: #e7e9ee;
+  --card: #10131c;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --muted: #8b93a7;
+  --accent: #818cf8;
+  --accent-foreground: #0b0d14;
+}
+
+/* Pre-mount fallback for users whose OS prefers dark (avoids a light flash). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: #07080d;
+    --foreground: #e7e9ee;
+    --card: #10131c;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --muted: #8b93a7;
+    --accent: #818cf8;
+    --accent-foreground: #0b0d14;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  min-height: 100dvh;
+}
+
+/* Cinematic depth: soft radial glows behind the content in dark mode. */
+:root[data-theme='dark'] body {
+  background-image:
+    radial-gradient(60rem 60rem at 15% -10%, rgba(99, 102, 241, 0.12), transparent 60%),
+    radial-gradient(50rem 50rem at 110% 10%, rgba(56, 189, 248, 0.10), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* Visible, consistent keyboard focus ring across the app. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Themed, slim scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 40%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+  border-radius: 9999px;
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

@@ -23,6 +23,15 @@ export function AnimatedMetric({
   const raf = useRef<number>(0);
 
   useEffect(() => {
+    // Respect reduced-motion: snap straight to the final value.
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      setDisplay(value);
+      return;
+    }
+
     const start = performance.now();
 
     function tick(now: number) {
@@ -40,5 +49,12 @@ export function AnimatedMetric({
     return () => cancelAnimationFrame(raf.current);
   }, [value, duration]);
 
-  return <span>{prefix}{display.toFixed(decimals)}{suffix}</span>;
+  // aria-live so assistive tech announces the settled figure, not each frame.
+  return (
+    <span aria-live="polite" aria-atomic="true">
+      {prefix}
+      {display.toFixed(decimals)}
+      {suffix}
+    </span>
+  );
 }
