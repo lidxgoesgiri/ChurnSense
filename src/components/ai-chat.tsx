@@ -35,6 +35,7 @@ export function AIChat({ project, metrics, model }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Load persisted history after mount (avoids SSR/hydration mismatch).
@@ -61,12 +62,25 @@ export function AIChat({ project, metrics, model }: Props) {
     }
   }
 
+  const scrollToEnd = () =>
+    requestAnimationFrame(() => {
+      listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
+    });
+
+  function replaceLast(content: string) {
+    setMessages((prev) => {
+      const copy = [...prev];
+      copy[copy.length - 1] = { role: 'assistant', content };
+      return copy;
+    });
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    const text = input.trim();
+    if (!text || loading || streaming) return;
 
-    const userMsg: ChatMessage = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setInput('');
     setLoading(true);
 
@@ -75,27 +89,49 @@ export function AIChat({ project, metrics, model }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: input,
+          message: text,
           context: project && metrics ? { project, metrics } : null,
           model,
+          stream: true,
         }),
       });
-      const data = await res.json();
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: data.reply || 'No response.' },
-      ]);
+
+      const contentType = res.headers.get('content-type') ?? '';
+      if (res.ok && res.body && contentType.includes('text/plain')) {
+        // Streaming response — append tokens into a growing assistant message.
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+        setLoading(false);
+        setStreaming(true);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = '';
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          replaceLast(acc);
+          scrollToEnd();
+        }
+        replaceLast(acc || 'No response.');
+        setStreaming(false);
+      } else {
+        // Fallback: non-streaming JSON reply (e.g. provider not configured / error).
+        const data = await res.json().catch(() => ({}));
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: data.reply || data.error || 'No response.' },
+        ]);
+        setLoading(false);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: 'Sorry, something went wrong. Try again.' },
       ]);
-    } finally {
       setLoading(false);
-      // Scroll to bottom after render
-      requestAnimationFrame(() => {
-        listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
-      });
+      setStreaming(false);
+    } finally {
+      scrollToEnd();
     }
   }
 
@@ -133,7 +169,7 @@ export function AIChat({ project, metrics, model }: Props) {
             {m.content}
           </div>
         ))}
-        {loading && (
+        {loading && !streaming && (
           <div className="max-w-[85%] rounded-xl bg-black/5 px-3 py-2 text-sm dark:bg-white/10">
             <span className="animate-pulse">Thinking...</span>
           </div>
@@ -145,13 +181,13 @@ export function AIChat({ project, metrics, model }: Props) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={project ? 'Ask about your data...' : 'Analyze a project first...'}
-          disabled={!project || loading}
+          disabled={!project || loading || streaming}
           aria-label="Chat message"
           className="min-w-0 flex-1 rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/40 disabled:opacity-40 dark:border-white/20 dark:focus:border-white/50"
         />
         <button
           type="submit"
-          disabled={!project || loading || !input.trim()}
+          disabled={!project || loading || streaming || !input.trim()}
           aria-label="Send message"
           className="rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
         >

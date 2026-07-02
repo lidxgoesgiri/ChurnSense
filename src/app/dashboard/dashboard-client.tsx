@@ -16,7 +16,9 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useCommandPalette } from '@/components/command-palette';
 import { ModelSelector } from '@/components/model-selector';
+import { ComparisonView } from '@/components/comparison-view';
 import { getStoredModel } from '@/lib/models';
+import { exportProjectsCsv } from '@/lib/export';
 import { dashboardReducer, makeInitialState } from './dashboard-reducer';
 
 export function DashboardClient({ email }: { email: string }) {
@@ -169,6 +171,15 @@ export function DashboardClient({ email }: { email: string }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ModelSelector onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })} />
+            {history.length > 0 && (
+              <button
+                onClick={() => exportProjectsCsv(history)}
+                aria-label="Export saved projects as CSV"
+                className="rounded-lg border border-black/15 px-3 py-1.5 text-sm transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+              >
+                Export CSV
+              </button>
+            )}
             <ThemeToggle />
             <button
               onClick={handleLogout}
@@ -259,6 +270,8 @@ export function DashboardClient({ email }: { email: string }) {
             </>
           )}
         </div>
+
+        {dbAvailable && history.length >= 2 && <ComparisonView projects={history} />}
 
         {dbAvailable && (
           <ProjectsHistory projects={history} loading={loadingHistory} onDelete={handleDelete} />

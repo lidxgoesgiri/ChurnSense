@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
   const parsedBody = await parseJsonBody(request);
   if ('error' in parsedBody) return parsedBody.error;
-  const { message, context, model } = (parsedBody.data ?? {}) as Record<string, unknown>;
+  const { message, context, model, stream } = (parsedBody.data ?? {}) as Record<string, unknown>;
 
   if (!message || typeof message !== 'string') {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -66,26 +66,96 @@ export async function POST(request: Request) {
     });
   }
 
-  try {
-    const systemPrompt = `You are a SaaS retention analyst assistant embedded in the ChurnSense dashboard. You have access to the following current project context:\n\n${sanitizeContext(
-      context
-    )}\n\nAnswer the user's question concisely in Indonesian or English (match their language). Be direct and actionable.`;
+  const systemPrompt = `You are a SaaS retention analyst assistant embedded in the ChurnSense dashboard. You have access to the following current project context:\n\n${sanitizeContext(
+    context
+  )}\n\nAnswer the user's question concisely in Indonesian or English (match their language). Be direct and actionable.`;
 
-    const res = await fetch(`${env.AI_BASE_URL!.replace(/\/+$/, '')}/chat/completions`, {
+  const providerUrl = `${env.AI_BASE_URL!.replace(/\/+$/, '')}/chat/completions`;
+  const providerBody = (streamed: boolean) =>
+    JSON.stringify({
+      model: validateModelId(model),
+      temperature: 0.4,
+      max_tokens: 600,
+      stream: streamed,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
+      ],
+    });
+  const providerHeaders = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${env.AI_API_KEY}`,
+  };
+
+  // Streaming path (#27): forward the model's tokens as a plain-text stream.
+  if (stream === true) {
+    try {
+      const res = await fetch(providerUrl, {
+        method: 'POST',
+        headers: providerHeaders,
+        body: providerBody(true),
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!res.ok || !res.body) throw new Error(`AI provider returned ${res.status}`);
+
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+      const outStream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          const reader = res.body!.getReader();
+          let buffer = '';
+          try {
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() ?? '';
+              for (const line of lines) {
+                const t = line.trim();
+                if (!t.startsWith('data:')) continue;
+                const payload = t.slice(5).trim();
+                if (payload === '[DONE]') {
+                  controller.close();
+                  return;
+                }
+                try {
+                  const delta = JSON.parse(payload)?.choices?.[0]?.delta?.content;
+                  if (delta) controller.enqueue(encoder.encode(delta));
+                } catch {
+                  /* skip keep-alives / partial frames */
+                }
+              }
+            }
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        },
+      });
+
+      return new Response(outStream, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'X-Accel-Buffering': 'no',
+        },
+      });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Chat failed';
+      return NextResponse.json(
+        { error: msg, reply: `Maaf, terjadi kesalahan: ${msg}. Silakan coba lagi.` },
+        { status: 502 }
+      );
+    }
+  }
+
+  // Non-streaming path.
+  try {
+    const res = await fetch(providerUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.AI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: validateModelId(model),
-        temperature: 0.4,
-        max_tokens: 600,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message },
-        ],
-      }),
+      headers: providerHeaders,
+      body: providerBody(false),
       signal: AbortSignal.timeout(20_000),
     });
 
