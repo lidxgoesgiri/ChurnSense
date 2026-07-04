@@ -49,7 +49,7 @@ export function RetentionChart({
 
     return (
       <div
-        className="rounded-2xl border border-black/10 p-4 dark:border-white/15"
+        className="glass-card anim-fade-up delay-3 p-5"
         role="figure"
         aria-label="Line chart of churn and retention over time"
       >
@@ -64,8 +64,8 @@ export function RetentionChart({
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={40} unit="%" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Legend />
-              <Line type="monotone" dataKey="churn" name="Churn %" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="retention" name="Retention %" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="churn" name="Churn %" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} animationBegin={100} animationDuration={900} />
+              <Line type="monotone" dataKey="retention" name="Retention %" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} animationBegin={250} animationDuration={900} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -81,7 +81,7 @@ export function RetentionChart({
 
   return (
     <div
-      className="rounded-2xl border border-black/10 p-4 dark:border-white/15"
+      className="glass-card anim-fade-up delay-3 p-5"
       role="figure"
       aria-label="Bar chart comparing active vs churned users"
     >
@@ -95,7 +95,7 @@ export function RetentionChart({
             <XAxis dataKey="name" tickLine={false} axisLine={false} />
             <YAxis tickLine={false} axisLine={false} width={48} />
             <Tooltip cursor={{ fill: 'rgba(125,125,125,0.08)' }} contentStyle={TOOLTIP_STYLE} />
-            <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+            <Bar dataKey="value" radius={[6, 6, 0, 0]} animationBegin={100} animationDuration={800} animationEasing="ease-out">
               {data.map((d) => (
                 <Cell key={d.name} fill={d.fill} />
               ))}

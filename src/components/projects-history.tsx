@@ -1,6 +1,8 @@
 'use client';
 
 import type { AnalyticsResult } from '@/types';
+import { timeAgo } from '@/lib/format';
+import { HistoryRowSkeleton } from './skeleton';
 
 export interface SavedProject {
   id: number;
@@ -25,12 +27,18 @@ export function ProjectsHistory({
   onDelete?: (id: number) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-black/10 p-6 dark:border-white/15">
+    <div className="glass-card anim-fade-up delay-5 p-6">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
         Saved projects
       </h3>
 
-      {loading && <p className="text-sm text-gray-400">Loading…</p>}
+      {loading && (
+        <div className="divide-y divide-black/5 dark:divide-white/10">
+          {[1, 2, 3].map((i) => (
+            <HistoryRowSkeleton key={i} />
+          ))}
+        </div>
+      )}
 
       {!loading && projects.length === 0 && (
         <p className="text-sm text-gray-400">
@@ -44,9 +52,7 @@ export function ProjectsHistory({
             <li key={p.id} className="flex items-center justify-between py-3">
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{p.projectName}</div>
-                <div className="text-xs text-gray-400">
-                  {new Date(p.createdAt).toLocaleString()}
-                </div>
+                <div className="text-xs text-gray-400">{timeAgo(p.createdAt)}</div>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <span>{(p.metrics.churnRate * 100).toFixed(1)}% churn</span>

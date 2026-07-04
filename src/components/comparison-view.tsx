@@ -21,7 +21,7 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
   const b = projects.find((p) => p.id === bId) ?? projects[1];
 
   return (
-    <div className="rounded-2xl border border-black/10 p-6 dark:border-white/15">
+    <div className="glass-card anim-fade-up delay-3 p-6">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
         Compare projects
       </h3>

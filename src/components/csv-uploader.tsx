@@ -87,7 +87,7 @@ export function CsvUploader() {
   }
 
   return (
-    <div className="space-y-4 rounded-2xl border border-black/10 p-6 dark:border-white/15">
+    <div className="glass-card space-y-4 p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">Batch upload (CSV)</h2>
         <button
@@ -156,7 +156,7 @@ export function CsvUploader() {
         type="button"
         onClick={analyze}
         disabled={!file || loading}
-        className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="btn-primary w-full px-4 py-2.5 text-sm"
       >
         {loading ? 'Analyzing…' : 'Analyze batch'}
       </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import type { SavedProject } from './projects-history';
+import { Skeleton } from './skeleton';
 
 interface Props {
   projects: SavedProject[];
@@ -10,11 +11,11 @@ interface Props {
 export function RetentionTable({ projects, loading }: Props) {
   if (loading) {
     return (
-      <div className="rounded-2xl border border-black/10 p-6 dark:border-white/15">
-        <div className="mb-4 h-4 w-32 animate-pulse rounded bg-gray-300/40" />
+      <div className="glass-card p-6">
+        <Skeleton width={128} height={16} className="mb-4" />
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-8 animate-pulse rounded bg-gray-300/30" />
+            <Skeleton key={i} height={32} />
           ))}
         </div>
       </div>
@@ -23,14 +24,14 @@ export function RetentionTable({ projects, loading }: Props) {
 
   if (projects.length === 0) {
     return (
-      <div className="rounded-2xl border border-black/10 p-6 text-sm text-gray-400 dark:border-white/15">
+      <div className="glass-card p-6 text-sm text-gray-400">
         No saved projects yet.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-black/10 dark:border-white/15">
+    <div className="glass-card anim-fade-up delay-4 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm" aria-label="Project retention data">
           <thead>

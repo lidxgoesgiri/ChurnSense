@@ -138,7 +138,7 @@ export function AIChat({ project, metrics, model }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-black/10 dark:border-white/15">
+    <div className="glass-card anim-fade-up delay-6 overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
           AI chat
@@ -162,18 +162,33 @@ export function AIChat({ project, metrics, model }: Props) {
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
-              m.role === 'user'
-                ? 'ml-auto bg-foreground text-background'
-                : 'bg-black/5 dark:bg-white/10'
+            className={`anim-fade max-w-[85%] px-3 py-2 text-sm leading-relaxed ${
+              m.role === 'user' ? 'ml-auto text-white' : ''
             }`}
+            style={
+              m.role === 'user'
+                ? {
+                    background: 'linear-gradient(135deg, var(--accent), #4f46e5)',
+                    borderRadius: '16px',
+                    borderBottomRightRadius: '6px',
+                  }
+                : {
+                    background: 'color-mix(in srgb, var(--muted) 12%, transparent)',
+                    borderRadius: '16px',
+                    borderBottomLeftRadius: '6px',
+                  }
+            }
           >
             {m.content}
           </div>
         ))}
         {loading && !streaming && (
-          <div className="max-w-[85%] rounded-xl bg-black/5 px-3 py-2 text-sm dark:bg-white/10">
-            <span className="animate-pulse">Thinking...</span>
+          <div className="anim-fade flex justify-start">
+            <div className="typing-dots" role="status" aria-label="AI is typing">
+              <span />
+              <span />
+              <span />
+            </div>
           </div>
         )}
       </div>

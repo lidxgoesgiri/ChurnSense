@@ -46,10 +46,8 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
   }
 
   return (
-    <form
-      onSubmit={submit}
-      className="space-y-4 rounded-2xl border border-black/10 p-6 dark:border-white/15"
-    >
+    <form onSubmit={submit} className="glass-card space-y-4 p-6">
+
       <div className="space-y-1">
         <label htmlFor="projectName" className="block text-sm font-medium">
           Project name
@@ -60,7 +58,7 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
           onChange={(e) => setProjectName(e.target.value)}
           required
           placeholder="e.g. Beta Client A"
-          className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-accent dark:border-white/20"
+          className="input-glow px-3 py-2 text-sm"
         />
       </div>
 
@@ -79,7 +77,7 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
               onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               required
               placeholder={PLACEHOLDERS[f.key]}
-              className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-accent dark:border-white/20"
+              className="input-glow px-3 py-2 text-sm"
             />
           </div>
         ))}
@@ -89,9 +87,19 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
         type="submit"
         disabled={loading}
         aria-label={loading ? 'Calculating metrics' : 'Calculate metrics'}
-        className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="btn-primary w-full px-4 py-2.5 text-sm"
       >
-        {loading ? 'Calculating…' : 'Calculate metrics'}
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <span
+              className="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+              style={{ animation: 'spin-slow 0.8s linear infinite' }}
+            />
+            Calculating…
+          </span>
+        ) : (
+          'Calculate metrics'
+        )}
       </button>
 
       {submitted && !loading && (

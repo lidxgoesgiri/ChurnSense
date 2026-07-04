@@ -4,10 +4,18 @@ import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import type { AnalyticsResult } from '@/types';
 import { AnimatedMetric } from './animated-metric';
 
-const RISK_STYLES: Record<AnalyticsResult['riskStatus'], string> = {
-  Low: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  Medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  High: 'bg-red-500/10 text-red-600 dark:text-red-400',
+const GRADIENTS = {
+  churn: 'linear-gradient(135deg, #ef4444, #f97316)',
+  retention: 'linear-gradient(135deg, #10b981, #06b6d4)',
+  arpu: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+  mrr: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+  ltv: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+};
+
+const RISK_STYLES: Record<AnalyticsResult['riskStatus'], { bg: string; color: string; glow: string }> = {
+  Low: { bg: 'rgba(16,185,129,0.1)', color: '#10b981', glow: 'rgba(16,185,129,0.25)' },
+  Medium: { bg: 'rgba(245,158,11,0.1)', color: '#f59e0b', glow: 'rgba(245,158,11,0.25)' },
+  High: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', glow: 'rgba(239,68,68,0.25)' },
 };
 
 function Sparkline({ series }: { series: number[] }) {
@@ -32,32 +40,41 @@ function Sparkline({ series }: { series: number[] }) {
   );
 }
 
-function Stat({
+function StatCard({
   label,
-  value,
+  icon,
+  gradient,
   rawValue,
+  prefix,
+  suffix,
   decimals = 2,
-  prefix = '',
-  suffix = '',
   series,
+  delay,
 }: {
   label: string;
-  value: string;
-  rawValue?: number;
-  decimals?: number;
+  icon: string;
+  gradient: string;
+  rawValue: number;
   prefix?: string;
   suffix?: string;
+  decimals?: number;
   series?: number[];
+  delay: number;
 }) {
   return (
-    <div className="rounded-xl border border-black/10 p-4 dark:border-white/15">
-      <div className="text-xs uppercase tracking-wide text-gray-400">{label}</div>
-      <div className="mt-1 text-2xl font-semibold" aria-label={`${label}: ${value}`}>
-        {rawValue !== undefined ? (
-          <AnimatedMetric value={rawValue} prefix={prefix} suffix={suffix} decimals={decimals} />
-        ) : (
-          value
-        )}
+    <div
+      className="glass-card anim-fade-up relative overflow-hidden p-4"
+      style={{ animationDelay: `${delay * 0.06}s` }}
+    >
+      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: gradient }} />
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-base">{icon}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+          {label}
+        </span>
+      </div>
+      <div className="font-mono text-xl font-bold" aria-label={`${label}: ${prefix ?? ''}${rawValue}${suffix ?? ''}`}>
+        <AnimatedMetric value={rawValue} prefix={prefix} suffix={suffix} decimals={decimals} />
       </div>
       {series && <Sparkline series={series} />}
     </div>
@@ -71,50 +88,34 @@ export function MetricsSummary({
   metrics: AnalyticsResult;
   churnSeries?: number[];
 }) {
+  const risk = RISK_STYLES[metrics.riskStatus];
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Stat
+        <StatCard
           label="Churn rate"
-          value={`${(metrics.churnRate * 100).toFixed(2)}%`}
+          icon="📉"
+          gradient={GRADIENTS.churn}
           rawValue={metrics.churnRate * 100}
           suffix="%"
-          decimals={2}
           series={churnSeries.length >= 2 ? churnSeries : undefined}
+          delay={1}
         />
-        <Stat
-          label="Retention"
-          value={`${(metrics.retentionRate * 100).toFixed(2)}%`}
-          rawValue={metrics.retentionRate * 100}
-          suffix="%"
-          decimals={2}
-        />
-        <Stat
-          label="ARPU"
-          value={`$${metrics.arpu.toFixed(2)}`}
-          rawValue={metrics.arpu}
-          prefix="$"
-          decimals={2}
-        />
-        <Stat
-          label="MRR"
-          value={`$${metrics.mrr.toFixed(2)}`}
-          rawValue={metrics.mrr}
-          prefix="$"
-          decimals={2}
-        />
-        <Stat
-          label="Est. LTV"
-          value={`$${metrics.estimatedLtv.toFixed(2)}`}
-          rawValue={metrics.estimatedLtv}
-          prefix="$"
-          decimals={2}
-        />
+        <StatCard label="Retention" icon="💪" gradient={GRADIENTS.retention} rawValue={metrics.retentionRate * 100} suffix="%" delay={2} />
+        <StatCard label="ARPU" icon="💰" gradient={GRADIENTS.arpu} rawValue={metrics.arpu} prefix="$" delay={3} />
+        <StatCard label="MRR" icon="📈" gradient={GRADIENTS.mrr} rawValue={metrics.mrr} prefix="$" delay={4} />
+        <StatCard label="Est. LTV" icon="🏆" gradient={GRADIENTS.ltv} rawValue={metrics.estimatedLtv} prefix="$" delay={5} />
       </div>
-      <div
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${RISK_STYLES[metrics.riskStatus]}`}
-      >
-        Risk status: {metrics.riskStatus}
+
+      <div className="anim-fade-up" style={{ animationDelay: '0.36s' }}>
+        <span
+          className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold"
+          style={{ background: risk.bg, color: risk.color, boxShadow: `0 0 12px ${risk.glow}` }}
+        >
+          <span className="h-2 w-2 rounded-full" style={{ background: risk.color }} />
+          Risk status: {metrics.riskStatus}
+        </span>
       </div>
     </div>
   );
