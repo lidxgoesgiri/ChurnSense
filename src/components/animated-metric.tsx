@@ -51,11 +51,17 @@ export function AnimatedMetric({
     return () => cancelAnimationFrame(raf.current);
   }, [value, duration]);
 
+  // Thousands separators + fixed decimals (e.g. 1,250.00).
+  const formatted = display.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+
   // aria-live so assistive tech announces the settled figure, not each frame.
   return (
     <span aria-live="polite" aria-atomic="true">
       {prefix}
-      {display.toFixed(decimals)}
+      {formatted}
       {suffix}
     </span>
   );
