@@ -2,6 +2,8 @@ export interface ModelOption {
   id: string;
   label: string;
   provider: string;
+  /** false = not a general chat model, so it is never used as an auto-fallback. */
+  chat?: boolean;
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
@@ -14,6 +16,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'nvidia/nemotron-3.5-content-safety:free',
     label: 'Nemotron 3.5 Content Safety',
     provider: 'NVIDIA (OpenRouter)',
+    // A safety classifier — keep selectable, but never auto-fall-back to it.
+    chat: false,
   },
   {
     id: 'poolside/laguna-m.1:free',

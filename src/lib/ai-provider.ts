@@ -13,8 +13,13 @@ export interface ChatMsg {
  */
 export function modelFallbackOrder(preferred?: unknown): string[] {
   const first = validateModelId(preferred);
-  const rest = AVAILABLE_MODELS.map((m) => m.id).filter((id) => id !== first);
-  return [first, ...rest];
+  // Only genuine chat models are used as fallbacks (excludes classifiers).
+  const rest = AVAILABLE_MODELS.filter((m) => m.chat !== false)
+    .map((m) => m.id)
+    .filter((id) => id !== first);
+  // Retry the preferred model once (empty replies are often transient) before
+  // moving on to the chat-capable fallbacks.
+  return [first, first, ...rest];
 }
 
 /** Call one model (non-streaming). Returns trimmed content ('' if empty). Throws on HTTP/network error. */
