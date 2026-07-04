@@ -50,6 +50,7 @@ function StatCard({
   decimals = 2,
   series,
   delay,
+  hint,
 }: {
   label: string;
   icon: string;
@@ -60,6 +61,7 @@ function StatCard({
   decimals?: number;
   series?: number[];
   delay: number;
+  hint: string;
 }) {
   return (
     <div
@@ -67,10 +69,19 @@ function StatCard({
       style={{ animationDelay: `${delay * 0.06}s` }}
     >
       <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: gradient }} />
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-2 flex items-center gap-1.5">
         <span className="text-base">{icon}</span>
         <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
           {label}
+        </span>
+        <span
+          className="ml-auto cursor-help text-[10px] text-gray-400 transition-colors hover:text-foreground"
+          title={hint}
+          tabIndex={0}
+          role="note"
+          aria-label={`${label}: ${hint}`}
+        >
+          ⓘ
         </span>
       </div>
       <div className="font-mono text-xl font-bold" aria-label={`${label}: ${prefix ?? ''}${rawValue}${suffix ?? ''}`}>
@@ -101,11 +112,12 @@ export function MetricsSummary({
           suffix="%"
           series={churnSeries.length >= 2 ? churnSeries : undefined}
           delay={1}
+          hint="Share of users lost this period (churned ÷ total users). Lower is better."
         />
-        <StatCard label="Retention" icon="💪" gradient={GRADIENTS.retention} rawValue={metrics.retentionRate * 100} suffix="%" delay={2} />
-        <StatCard label="ARPU" icon="💰" gradient={GRADIENTS.arpu} rawValue={metrics.arpu} prefix="$" delay={3} />
-        <StatCard label="MRR" icon="📈" gradient={GRADIENTS.mrr} rawValue={metrics.mrr} prefix="$" delay={4} />
-        <StatCard label="Est. LTV" icon="🏆" gradient={GRADIENTS.ltv} rawValue={metrics.estimatedLtv} prefix="$" delay={5} />
+        <StatCard label="Retention" icon="💪" gradient={GRADIENTS.retention} rawValue={metrics.retentionRate * 100} suffix="%" delay={2} hint="Share of users retained (active ÷ total users). Higher is better." />
+        <StatCard label="ARPU" icon="💰" gradient={GRADIENTS.arpu} rawValue={metrics.arpu} prefix="$" delay={3} hint="Average Revenue Per User = monthly revenue ÷ total users." />
+        <StatCard label="MRR" icon="📈" gradient={GRADIENTS.mrr} rawValue={metrics.mrr} prefix="$" delay={4} hint="Monthly Recurring Revenue — total revenue booked this month." />
+        <StatCard label="Est. LTV" icon="🏆" gradient={GRADIENTS.ltv} rawValue={metrics.estimatedLtv} prefix="$" delay={5} hint="Estimated Lifetime Value = ARPU ÷ churn rate (expected revenue per user)." />
       </div>
 
       <div className="anim-fade-up" style={{ animationDelay: '0.36s' }}>

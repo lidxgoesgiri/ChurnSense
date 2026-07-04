@@ -177,6 +177,12 @@ body {
   from { width: 5%; }
   to { width: 92%; }
 }
+@keyframes remove-row {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(20px); }
+}
+
+.anim-remove { animation: remove-row 0.28s ease-in forwards; }
 
 /* Entry animation utilities (reuse existing fade-in-up/float keyframes). */
 .anim-fade-up { animation: fade-in-up 0.5s ease-out both; }

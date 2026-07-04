@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { AnalyticsResult } from '@/types';
 import { timeAgo } from '@/lib/format';
 import { HistoryRowSkeleton } from './skeleton';
@@ -26,6 +27,18 @@ export function ProjectsHistory({
   loading: boolean;
   onDelete?: (id: number) => void;
 }) {
+  const [removingId, setRemovingId] = useState<number | null>(null);
+
+  // Play a fade-out on the row before asking the parent to delete it.
+  function requestDelete(id: number) {
+    if (!onDelete) return;
+    setRemovingId(id);
+    setTimeout(() => {
+      onDelete(id);
+      setRemovingId(null);
+    }, 280);
+  }
+
   return (
     <div className="glass-card anim-fade-up delay-5 p-6">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
@@ -49,7 +62,10 @@ export function ProjectsHistory({
       {!loading && projects.length > 0 && (
         <ul className="divide-y divide-black/5 dark:divide-white/10">
           {projects.map((p) => (
-            <li key={p.id} className="flex items-center justify-between py-3">
+            <li
+              key={p.id}
+              className={`flex items-center justify-between py-3 ${removingId === p.id ? 'anim-remove' : ''}`}
+            >
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{p.projectName}</div>
                 <div className="text-xs text-gray-400">{timeAgo(p.createdAt)}</div>
@@ -63,9 +79,10 @@ export function ProjectsHistory({
                 {onDelete && (
                   <button
                     type="button"
-                    onClick={() => onDelete(p.id)}
+                    onClick={() => requestDelete(p.id)}
+                    disabled={removingId === p.id}
                     aria-label={`Delete ${p.projectName}`}
-                    className="rounded-md px-1.5 text-gray-400 transition-colors hover:text-red-500"
+                    className="rounded-md px-1.5 text-gray-400 transition-colors hover:text-red-500 disabled:opacity-50"
                   >
                     ✕
                   </button>
