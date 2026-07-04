@@ -47,10 +47,18 @@ export function CommandPalette({ actions, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+      className="anim-fade fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        background: 'rgba(0,0,0,0.35)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
     >
-      <div className="w-full max-w-lg rounded-2xl border border-black/15 bg-background shadow-2xl dark:border-white/20">
+      <div
+        className="anim-scale w-full max-w-lg glass-card overflow-hidden"
+        style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.25)' }}
+      >
         <div className="border-b border-black/10 p-3 dark:border-white/15">
           <input
             ref={inputRef}

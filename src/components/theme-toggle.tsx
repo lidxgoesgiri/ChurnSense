@@ -9,9 +9,18 @@ export function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      className="rounded-lg border border-black/15 p-2 text-sm transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+      className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-110"
+      style={{
+        background: 'color-mix(in srgb, var(--muted) 10%, transparent)',
+        border: '1px solid var(--card-border)',
+      }}
     >
-      {theme === 'light' ? '🌙' : '☀️'}
+      <span
+        className="text-base transition-transform duration-500"
+        style={{ transform: theme === 'dark' ? 'rotate(360deg)' : 'rotate(0deg)' }}
+      >
+        {theme === 'light' ? '🌙' : '☀️'}
+      </span>
     </button>
   );
 }

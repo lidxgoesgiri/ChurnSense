@@ -12,17 +12,18 @@ import { AnomalyBadge } from '@/components/anomaly-badge';
 import { AIChat } from '@/components/ai-chat';
 import { ProjectsHistory } from '@/components/projects-history';
 import { RetentionTable } from '@/components/retention-table';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { Navbar } from '@/components/navbar';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useCommandPalette } from '@/components/command-palette';
-import { ModelSelector } from '@/components/model-selector';
 import { ComparisonView } from '@/components/comparison-view';
+import { useToast } from '@/components/toast';
 import { getStoredModel } from '@/lib/models';
 import { exportProjectsCsv } from '@/lib/export';
 import { dashboardReducer, makeInitialState } from './dashboard-reducer';
 
 export function DashboardClient({ email }: { email: string }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [state, dispatch] = useReducer(
     dashboardReducer,
     getStoredModel(),
@@ -68,6 +69,7 @@ export function DashboardClient({ email }: { email: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to calculate metrics');
       dispatch({ type: 'ANALYZE_SUCCESS', input: values, metrics: data.metrics });
+      toast('Metrics calculated', 'success');
 
       if (dbAvailable) {
         try {
@@ -83,6 +85,7 @@ export function DashboardClient({ email }: { email: string }) {
             dispatch({ type: 'DB_UNAVAILABLE' });
           } else if (saveRes.ok) {
             dispatch({ type: 'SAVED' });
+            toast('Saved to history', 'success');
             await loadHistory();
           }
         } catch {
@@ -90,10 +93,9 @@ export function DashboardClient({ email }: { email: string }) {
         }
       }
     } catch (err) {
-      dispatch({
-        type: 'ANALYZE_ERROR',
-        error: err instanceof Error ? err.message : 'Failed to calculate metrics',
-      });
+      const msg = err instanceof Error ? err.message : 'Failed to calculate metrics';
+      dispatch({ type: 'ANALYZE_ERROR', error: msg });
+      toast(msg, 'error');
     }
   }
 
@@ -114,11 +116,11 @@ export function DashboardClient({ email }: { email: string }) {
         insight: data.insight,
         trend: data.trend ?? null,
       });
+      toast('AI insight generated', 'info');
     } catch (err) {
-      dispatch({
-        type: 'INSIGHT_ERROR',
-        error: err instanceof Error ? err.message : 'Failed to generate insight',
-      });
+      const msg = err instanceof Error ? err.message : 'Failed to generate insight';
+      dispatch({ type: 'INSIGHT_ERROR', error: msg });
+      toast(msg, 'error');
     }
   }
 
@@ -133,7 +135,10 @@ export function DashboardClient({ email }: { email: string }) {
         method: 'DELETE',
         headers: { 'X-Requested-With': 'ChurnSense' },
       });
-      if (res.ok) await loadHistory();
+      if (res.ok) {
+        toast('Project deleted', 'success');
+        await loadHistory();
+      }
     } catch {
       /* best-effort */
     }
@@ -163,46 +168,28 @@ export function DashboardClient({ email }: { email: string }) {
   return (
     <ErrorBoundary>
       {palette}
+      <Navbar
+        email={email}
+        onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })}
+        onExport={() => exportProjectsCsv(history)}
+        showExport={history.length > 0}
+        onLogout={handleLogout}
+      />
       <main id="main-content" className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6 md:p-10">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">ChurnSense</h1>
-            <p className="truncate text-sm text-gray-400">Signed in as {email}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <ModelSelector onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })} />
-            {history.length > 0 && (
-              <button
-                onClick={() => exportProjectsCsv(history)}
-                aria-label="Export saved projects as CSV"
-                className="rounded-lg border border-black/15 px-3 py-1.5 text-sm transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-              >
-                Export CSV
-              </button>
-            )}
-            <ThemeToggle />
-            <button
-              onClick={handleLogout}
-              aria-label="Sign out"
-              className="rounded-lg border border-black/15 px-3 py-1.5 text-sm transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-            >
-              Sign out
-            </button>
-          </div>
-        </header>
+        <p className="truncate text-sm text-gray-400">Signed in as {email}</p>
 
-        <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/5 px-4 py-2 text-xs text-indigo-600 dark:text-indigo-400">
+        <div className="anim-fade-down delay-1 rounded-lg border border-indigo-500/20 bg-indigo-500/5 px-4 py-2 text-xs text-indigo-600 dark:text-indigo-400">
           Press <kbd className="rounded border border-current px-1 font-mono">Cmd+K</kbd> or{' '}
           <kbd className="rounded border border-current px-1 font-mono">Ctrl+K</kbd> to open the command palette.
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+          <div className="anim-fade-down rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
             {error}
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="anim-fade-up delay-2 grid gap-6 lg:grid-cols-2">
           <div id="project-form" className="space-y-3">
             <div className="inline-flex rounded-lg border border-black/10 p-0.5 text-sm dark:border-white/15">
               {(['manual', 'batch'] as const).map((mode) => (

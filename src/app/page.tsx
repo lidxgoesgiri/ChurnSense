@@ -95,8 +95,13 @@ export default function Home() {
         className="animate-fade-in-up w-full max-w-sm space-y-3 rounded-2xl border border-black/10 bg-white/50 p-6 shadow-xl backdrop-blur-md dark:border-white/15 dark:bg-white/5"
         style={{ animationDelay: '0.6s' }}
       >
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
+          <span className="text-[10px] font-semibold tracking-widest text-gray-400">SIGN IN</span>
+          <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
+        </div>
         <label htmlFor="email" className="block text-sm font-medium">
-          Sign in to continue
+          Email address
         </label>
         <input
           id="email"
@@ -105,15 +110,23 @@ export default function Home() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@company.com"
-          className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-accent dark:border-white/20"
+          className="input-glow px-3 py-2.5 text-sm"
         />
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-all hover:opacity-90 hover:shadow-lg disabled:opacity-50"
-        >
-          {loading ? 'Entering…' : 'Enter dashboard'}
+        {error && (
+          <p className="anim-fade-down text-sm text-red-500">{error}</p>
+        )}
+        <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span
+                className="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+                style={{ animation: 'spin-slow 0.8s linear infinite' }}
+              />
+              Entering…
+            </span>
+          ) : (
+            'Enter dashboard →'
+          )}
         </button>
         <p className="text-center text-xs text-gray-400">Demo access — any valid email works.</p>
       </form>
