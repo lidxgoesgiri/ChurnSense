@@ -27,10 +27,6 @@ export function CommandPalette({ actions, onClose }: Props) {
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    setSelected(0);
-  }, [query]);
-
   const handleKey = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
@@ -59,7 +55,10 @@ export function CommandPalette({ actions, onClose }: Props) {
           <input
             ref={inputRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelected(0); // reset highlight when the query changes
+            }}
             onKeyDown={handleKey}
             placeholder="Search actions..."
             aria-label="Command palette search"

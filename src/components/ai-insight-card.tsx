@@ -16,6 +16,8 @@ interface Props {
 function useTypewriter(text: string, speedMs = 14) {
   const [shown, setShown] = useState('');
   useEffect(() => {
+    // Intentional: reset + interval-driven reveal is a legitimate animation.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShown('');
     if (!text) return;
     let i = 0;

@@ -40,6 +40,8 @@ export function AIChat({ project, metrics, model }: Props) {
 
   // Load persisted history after mount (avoids SSR/hydration mismatch).
   useEffect(() => {
+    // Intentional: read localStorage only on the client, post-hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages(loadHistory());
   }, []);
 

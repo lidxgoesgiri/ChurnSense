@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Node (CommonJS) tooling — not part of the Next app.
+    "agent-orchestrator.js",
   ]),
 ]);
 

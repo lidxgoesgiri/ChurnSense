@@ -3,6 +3,7 @@ import { env, hasAiProvider } from '@/lib/env';
 import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { validateModelId } from '@/lib/models';
+import { completeWithFallback, type ChatMsg } from '@/lib/ai-provider';
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -70,30 +71,27 @@ export async function POST(request: Request) {
     context
   )}\n\nAnswer the user's question concisely in Indonesian or English (match their language). Be direct and actionable.`;
 
-  const providerUrl = `${env.AI_BASE_URL!.replace(/\/+$/, '')}/chat/completions`;
-  const providerBody = (streamed: boolean) =>
-    JSON.stringify({
-      model: validateModelId(model),
-      temperature: 0.4,
-      max_tokens: 600,
-      stream: streamed,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message },
-      ],
-    });
-  const providerHeaders = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${env.AI_API_KEY}`,
-  };
+  const messages: ChatMsg[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: message },
+  ];
 
   // Streaming path (#27): forward the model's tokens as a plain-text stream.
   if (stream === true) {
     try {
-      const res = await fetch(providerUrl, {
+      const res = await fetch(`${env.AI_BASE_URL!.replace(/\/+$/, '')}/chat/completions`, {
         method: 'POST',
-        headers: providerHeaders,
-        body: providerBody(true),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${env.AI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: validateModelId(model),
+          temperature: 0.4,
+          max_tokens: 600,
+          stream: true,
+          messages,
+        }),
         signal: AbortSignal.timeout(30_000),
       });
       if (!res.ok || !res.body) throw new Error(`AI provider returned ${res.status}`);
@@ -104,8 +102,10 @@ export async function POST(request: Request) {
         async start(controller) {
           const reader = res.body!.getReader();
           let buffer = '';
+          let enqueuedAny = false;
           try {
-            for (;;) {
+            let finished = false;
+            while (!finished) {
               const { done, value } = await reader.read();
               if (done) break;
               buffer += decoder.decode(value, { stream: true });
@@ -116,16 +116,25 @@ export async function POST(request: Request) {
                 if (!t.startsWith('data:')) continue;
                 const payload = t.slice(5).trim();
                 if (payload === '[DONE]') {
-                  controller.close();
-                  return;
+                  finished = true;
+                  break;
                 }
                 try {
                   const delta = JSON.parse(payload)?.choices?.[0]?.delta?.content;
-                  if (delta) controller.enqueue(encoder.encode(delta));
+                  if (delta) {
+                    controller.enqueue(encoder.encode(delta));
+                    enqueuedAny = true;
+                  }
                 } catch {
                   /* skip keep-alives / partial frames */
                 }
               }
+            }
+            // #2 fallback: if the primary model streamed nothing, fill the
+            // response from the next model(s) so the user always gets an answer.
+            if (!enqueuedAny) {
+              const fb = await completeWithFallback(messages, model, { maxTokens: 600, timeoutMs: 20_000 });
+              if (fb) controller.enqueue(encoder.encode(fb));
             }
             controller.close();
           } catch (err) {
@@ -150,24 +159,15 @@ export async function POST(request: Request) {
     }
   }
 
-  // Non-streaming path.
+  // Non-streaming path — cycles through models on empty responses (#2).
   try {
-    const res = await fetch(providerUrl, {
-      method: 'POST',
-      headers: providerHeaders,
-      body: providerBody(false),
-      signal: AbortSignal.timeout(20_000),
-    });
-
-    if (!res.ok) throw new Error(`AI provider returned ${res.status}`);
-    const data = await res.json();
-    const reply: string = data?.choices?.[0]?.message?.content ?? 'No response.';
-
+    const reply = await completeWithFallback(messages, model, { maxTokens: 600, timeoutMs: 20_000 });
+    if (!reply) throw new Error('All models returned an empty response');
     return NextResponse.json({ reply });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Chat failed';
+    const msg = error instanceof Error ? error.message : 'Chat failed';
     return NextResponse.json(
-      { error: message, reply: `Maaf, terjadi kesalahan: ${message}. Silakan coba lagi.` },
+      { error: msg, reply: `Maaf, terjadi kesalahan: ${msg}. Silakan coba lagi.` },
       { status: 502 }
     );
   }

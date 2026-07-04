@@ -10,7 +10,7 @@ import { RetentionChart } from '@/components/retention-chart';
 import { AIInsightCard } from '@/components/ai-insight-card';
 import { AnomalyBadge } from '@/components/anomaly-badge';
 import { AIChat } from '@/components/ai-chat';
-import { ProjectsHistory, type SavedProject } from '@/components/projects-history';
+import { ProjectsHistory } from '@/components/projects-history';
 import { RetentionTable } from '@/components/retention-table';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ErrorBoundary } from '@/components/error-boundary';

@@ -1,5 +1,6 @@
 import { ProjectInput, AnalyticsResult, AIInsightResult } from '@/types';
-import { env, hasAiProvider } from '@/lib/env';
+import { hasAiProvider } from '@/lib/env';
+import { callModel, modelFallbackOrder } from '@/lib/ai-provider';
 import type { TrendResult } from '@/lib/trend';
 
 /**
@@ -136,38 +137,27 @@ export async function generateInsight({ project, metrics, trend, model }: Insigh
     return { ...mockInsight(project, metrics, trend), source: 'mock' };
   }
 
-  try {
-    const res = await fetch(`${env.AI_BASE_URL!.replace(/\/+$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.AI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: model ?? env.AI_MODEL,
-        temperature: 0.4,
-        max_tokens: 400,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are a SaaS retention analyst. Reply with a single compact JSON object only — no prose, no markdown fences.',
-          },
-          { role: 'user', content: buildPrompt(project, metrics, trend) },
-        ],
-      }),
-      // Never let a slow provider hang the request.
-      signal: AbortSignal.timeout(15_000),
-    });
+  const messages = [
+    {
+      role: 'system' as const,
+      content:
+        'You are a SaaS retention analyst. Reply with a single compact JSON object only — no prose, no markdown fences.',
+    },
+    { role: 'user' as const, content: buildPrompt(project, metrics, trend) },
+  ];
 
-    if (!res.ok) throw new Error(`AI provider returned ${res.status}`);
-    const data = await res.json();
-    const content: string = data?.choices?.[0]?.message?.content ?? '';
-    const parsed = parseInsight(content);
-    if (!parsed) throw new Error('Could not parse AI response as insight JSON');
-    return { ...parsed, source: 'ai' };
-  } catch {
-    // Graceful degradation — the product stays usable even if the provider fails.
-    return { ...mockInsight(project, metrics, trend), source: 'mock' };
+  // Try the preferred model, then fall back through the other allow-listed
+  // models on empty/unparseable/failed responses before the rule-based mock.
+  for (const candidate of modelFallbackOrder(model)) {
+    try {
+      const content = await callModel(candidate, messages, { maxTokens: 400, timeoutMs: 15_000 });
+      const parsed = parseInsight(content);
+      if (parsed) return { ...parsed, source: 'ai' };
+    } catch {
+      /* try the next model */
+    }
   }
+
+  // Graceful degradation — the product stays usable even if every model fails.
+  return { ...mockInsight(project, metrics, trend), source: 'mock' };
 }

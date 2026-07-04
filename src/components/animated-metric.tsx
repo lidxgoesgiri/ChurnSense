@@ -28,6 +28,8 @@ export function AnimatedMetric({
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
+      // Intentional: snap to the final value for reduced-motion users.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplay(value);
       return;
     }
