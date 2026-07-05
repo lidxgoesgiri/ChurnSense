@@ -1,0 +1,16 @@
+{
+  "projectId": "3f03871e-9e3d-4452-9811-ea32aaff6fb8",
+  "type": "frontend",
+  "name": "Comparison view and CSV export are available on the dashboard",
+  "description": "With saved project history, the dashboard shows a side-by-side comparison view and an Export CSV control.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage" },
+    { "type": "action", "description": "Type a valid email address (for example demo@churnsense.app) into the sign-in email field" },
+    { "type": "action", "description": "Click the button that enters the dashboard" },
+    { "type": "action", "description": "Scroll down to find the 'Compare projects' section" },
+    { "type": "assertion", "description": "Verify a 'Compare projects' section is visible with two project selectors and a table of metric rows (Churn Rate, Retention, ARPU)" },
+    { "type": "assertion", "description": "Verify an 'Export CSV' button is visible in the top navigation bar" },
+    { "type": "action", "description": "Click the 'Export CSV' button" }
+  ]
+}

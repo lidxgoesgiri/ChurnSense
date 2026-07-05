@@ -1,0 +1,14 @@
+{
+  "projectId": "3f03871e-9e3d-4452-9811-ea32aaff6fb8",
+  "type": "frontend",
+  "name": "Dark mode toggle switches the color scheme",
+  "description": "The landing page has a theme toggle button. Clicking it switches the interface between light and dark color schemes.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage" },
+    { "type": "action", "description": "Click the theme toggle button (a moon or sun emoji icon) in the top-right corner of the page" },
+    { "type": "assertion", "description": "Verify the interface switches to a dark color scheme (the page background becomes dark/near-black)" },
+    { "type": "action", "description": "Click the theme toggle button again" },
+    { "type": "assertion", "description": "Verify the interface switches back to a light color scheme (the page background becomes light)" }
+  ]
+}

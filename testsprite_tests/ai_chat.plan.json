@@ -1,0 +1,19 @@
+{
+  "projectId": "3f03871e-9e3d-4452-9811-ea32aaff6fb8",
+  "type": "frontend",
+  "name": "AI chat query answers a question about the analyzed project",
+  "description": "After signing in and calculating metrics, the user asks the AI chat a question about their churn data and receives a written assistant response in the conversation.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage" },
+    { "type": "action", "description": "Type a valid email address (for example demo@churnsense.app) into the sign-in email field" },
+    { "type": "action", "description": "Click the button that enters the dashboard" },
+    { "type": "action", "description": "Type a project name such as 'Beta Client A' into the Project name field" },
+    { "type": "action", "description": "Type 1000 into the Total users field, 850 into Active users, 150 into Churned users, and 5000 into Monthly revenue" },
+    { "type": "action", "description": "Click the Calculate metrics button" },
+    { "type": "action", "description": "Scroll down to the AI chat section at the bottom of the dashboard" },
+    { "type": "action", "description": "Type the question 'What is my churn rate and how can I improve retention?' into the AI chat message input" },
+    { "type": "action", "description": "Click the Send button in the chat" },
+    { "type": "assertion", "description": "Verify a new assistant response message appears in the chat conversation area (a non-empty reply bubble from the assistant)" }
+  ]
+}
