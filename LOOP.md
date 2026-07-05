@@ -438,3 +438,14 @@ end-to-end via the TestSprite CLI.
 - **Caught:** an unauthorized model id was **silently accepted** (HTTP 200) instead of being rejected.
 - assertion: `expected 400, got 200` for `model: "evil/unauthorized-model-999"` on `/api/insights`
 - root cause: the whitelist mapped unknown models to the default (silent fallback) rather than rejecting them — a model-injection gap, and the new OpenRouter roster models were not yet accepted.
+
+### Run 22 — 2026-07-05T04:15Z · ✅ PASSED (GREEN)
+- test: **Guarded: AI model whitelist gateway (Step6)**
+- runId: `1a237a45-8410-4f40-8182-a87331e22d3e` · target HEAD `2e80095`
+- **Fix:** `/api/insights` and `/api/chat` now reject a non-whitelisted model with
+  `400 "Invalid or unauthorized AI model requested"` instead of silently accepting it;
+  the OpenRouter roster (Step4) is whitelisted with `nemotron-3-ultra-550b` as the default.
+- Verified live: illegal model → 400 + message; `openai/gpt-oss-120b` honored; no model → default.
+- Full backend suite: **13/13 passed**.
+
+_Loop: RED (Run 21) → fix → GREEN (Run 22). Failure detected by TestSprite CLI; fix authored by the coding agent._
