@@ -9,7 +9,7 @@ then get **automated AI insights** on what to do next.
 
 **🌐 Live:** [loop-analytics-nine.vercel.app](https://loop-analytics-nine.vercel.app) · **📦 Repo:** [github.com/lidxgoesgiri/ChurnSense](https://github.com/lidxgoesgiri/ChurnSense)
 
-_Hackathon Season 3: "Build the Loop"_
+_Hackathon Season 3: "Build the Loop" — organized by [**TestSprite**](https://www.testsprite.com)_
 
 </div>
 
@@ -249,9 +249,17 @@ Features **not yet** built (long-term vision, stated honestly):
 
 ---
 
+## 🏆 Hackathon & Acknowledgements
+
+Built for **Hackathon Season 3: "Build the Loop"**, organized by
+[**TestSprite**](https://www.testsprite.com) — whose CLI powers the continuous
+`write → verify → fix → verify` loop at the core of this project (see [`LOOP.md`](./LOOP.md)).
+
+---
+
 ## 📜 License
 
-Built for Hackathon Season 3 "Build the Loop".
+Built for Hackathon Season 3 "Build the Loop" (organized by TestSprite).
 © 2026 **Ida Bagus Giri Krisnabhawa**.
 
 <div align="center">
