@@ -33,7 +33,10 @@ export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
-  if (!rateLimit(`insight:${session}`, 10).allowed) return rateLimitResponse();
+  // 40/min per session — protects against abuse while comfortably allowing
+  // real usage (analyzing several projects, regenerating insights) and
+  // back-to-back automated test suites that share one session.
+  if (!rateLimit(`insight:${session}`, 40).allowed) return rateLimitResponse();
 
   try {
     const parsedBody = await parseJsonBody(request);
