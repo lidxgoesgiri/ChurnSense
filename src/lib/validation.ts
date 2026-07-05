@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const projectInputSchema = z
   .object({
-    projectName: z.string().min(1, 'Project name is required'),
+    projectName: z.string().trim().min(1, 'Project name is required'),
     totalUsers: z.number().int().positive('Total users must be greater than zero'),
     activeUsers: z.number().int().nonnegative(),
     churnedUsers: z.number().int().nonnegative(),

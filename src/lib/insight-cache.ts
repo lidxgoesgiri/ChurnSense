@@ -1,4 +1,4 @@
-import type { AIInsightResult } from '@/types';
+import type { AIInsightResult, ProjectInput } from '@/types';
 
 // In-memory insight cache. Identical inputs within the TTL return the prior
 // AI result instead of paying for another provider call. Per-instance and
@@ -11,17 +11,16 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 const TTL = 5 * 60 * 1000; // 5 minutes
 
-function makeKey(projectName: string, totalUsers: number, churnedUsers: number, model: string): string {
-  return `${model}:${projectName}:${totalUsers}:${churnedUsers}`;
+// Key covers the model plus EVERY input field that affects the computed
+// metrics/insight — changing activeUsers or monthlyRevenue must produce a
+// fresh insight, not a stale cached one.
+function makeKey(input: ProjectInput, model: string): string {
+  const { projectName, totalUsers, activeUsers, churnedUsers, monthlyRevenue } = input;
+  return `${model}:${projectName}:${totalUsers}:${activeUsers}:${churnedUsers}:${monthlyRevenue}`;
 }
 
-export function getCachedInsight(
-  projectName: string,
-  totalUsers: number,
-  churnedUsers: number,
-  model: string
-): AIInsightResult | null {
-  const key = makeKey(projectName, totalUsers, churnedUsers, model);
+export function getCachedInsight(input: ProjectInput, model: string): AIInsightResult | null {
+  const key = makeKey(input, model);
   const entry = cache.get(key);
   if (!entry) return null;
   if (Date.now() > entry.expiresAt) {
@@ -31,13 +30,6 @@ export function getCachedInsight(
   return entry.insight;
 }
 
-export function setCachedInsight(
-  projectName: string,
-  totalUsers: number,
-  churnedUsers: number,
-  model: string,
-  insight: AIInsightResult
-): void {
-  const key = makeKey(projectName, totalUsers, churnedUsers, model);
-  cache.set(key, { insight, expiresAt: Date.now() + TTL });
+export function setCachedInsight(input: ProjectInput, model: string, insight: AIInsightResult): void {
+  cache.set(makeKey(input, model), { insight, expiresAt: Date.now() + TTL });
 }

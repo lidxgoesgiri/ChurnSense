@@ -62,14 +62,14 @@ export async function POST(request: Request) {
     const trend = await loadTrend(parsed.data.projectName, metrics.churnRate);
 
     // Serve a cached insight for identical input within the TTL to avoid a
-    // repeat AI call (#23).
-    const { projectName, totalUsers, churnedUsers } = parsed.data;
-    const cached = getCachedInsight(projectName, totalUsers, churnedUsers, validatedModel);
+    // repeat AI call (#23). The key covers every input field, so changing any
+    // number (e.g. activeUsers or monthlyRevenue) yields a fresh insight.
+    const cached = getCachedInsight(parsed.data, validatedModel);
     const insight =
       cached ??
       (await generateInsight({ project: parsed.data, metrics, trend, model: validatedModel }));
     if (!cached) {
-      setCachedInsight(projectName, totalUsers, churnedUsers, validatedModel, insight);
+      setCachedInsight(parsed.data, validatedModel, insight);
     }
 
     return NextResponse.json(

@@ -33,7 +33,8 @@ export type DashboardAction =
   | { type: 'INSIGHT_ERROR'; error: string }
   | { type: 'HISTORY_LOADING' }
   | { type: 'HISTORY_LOADED'; history: SavedProject[] }
-  | { type: 'HISTORY_DONE' };
+  | { type: 'HISTORY_DONE' }
+  | { type: 'RESET_ANALYSIS' };
 
 export function makeInitialState(aiModel: string): DashboardState {
   return {
@@ -84,6 +85,16 @@ export function dashboardReducer(
       return { ...state, history: action.history, dbAvailable: true, loadingHistory: false };
     case 'HISTORY_DONE':
       return { ...state, loadingHistory: false };
+    case 'RESET_ANALYSIS':
+      return {
+        ...state,
+        input: null,
+        metrics: null,
+        insight: null,
+        trend: null,
+        error: null,
+        justSaved: false,
+      };
     default:
       return state;
   }

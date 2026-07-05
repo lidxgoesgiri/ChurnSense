@@ -42,4 +42,27 @@ def test_insight_schema_and_cache():
     assert r2.json().get("cached") is True, f"second call should be cached: {r2.json().get('cached')}"
 
 
+def test_changing_a_field_bypasses_cache():
+    # Changing monthlyRevenue (same project name) must NOT return the stale
+    # cached insight — the cache key covers every input field.
+    s = login()
+    base = {
+        "projectName": "Cache Key Field",
+        "totalUsers": 1000,
+        "activeUsers": 700,
+        "churnedUsers": 300,
+        "monthlyRevenue": 9000,
+    }
+    r1 = s.post(f"{BASE}/api/insights", json=base)
+    assert r1.status_code == 200, r1.text
+    assert r1.json().get("cached") is False, "first call should not be cached"
+
+    r2 = s.post(f"{BASE}/api/insights", json={**base, "monthlyRevenue": 12000})
+    assert r2.status_code == 200, r2.text
+    assert r2.json().get("cached") is False, (
+        "changing monthlyRevenue must bypass the cache, got cached=True"
+    )
+
+
 test_insight_schema_and_cache()
+test_changing_a_field_bypasses_cache()

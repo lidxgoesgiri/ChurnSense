@@ -130,6 +130,9 @@ export function DashboardClient({ email }: { email: string }) {
   }
 
   async function handleDelete(id: number) {
+    // Remember the deleted row's name so we can clear the active view if it
+    // was the project currently on screen (avoids showing stale data).
+    const deletedName = history.find((p) => p.id === id)?.projectName;
     try {
       const res = await fetch(`/api/projects?id=${id}`, {
         method: 'DELETE',
@@ -137,6 +140,9 @@ export function DashboardClient({ email }: { email: string }) {
       });
       if (res.ok) {
         toast('Project deleted', 'success');
+        if (deletedName && deletedName === input?.projectName) {
+          dispatch({ type: 'RESET_ANALYSIS' });
+        }
         await loadHistory();
       }
     } catch {
