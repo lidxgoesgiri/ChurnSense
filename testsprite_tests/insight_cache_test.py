@@ -2,9 +2,15 @@
 
 Runs in the TestSprite sandbox (stdlib + requests). TARGET_URL is injected.
 """
+import random
 import requests
 
 BASE = TARGET_URL.rstrip("/")
+
+# Unique project name per run so the server's 5-minute cache is never
+# pre-primed from a previous run (keeps the "first call not cached" assertion
+# reliable across repeated suite runs).
+RUN_ID = random.randint(1, 1_000_000_000)
 
 
 def login():
@@ -15,7 +21,7 @@ def login():
 
 
 PAYLOAD = {
-    "projectName": "Cache Suite",
+    "projectName": f"Cache Suite {RUN_ID}",
     "totalUsers": 1000,
     "activeUsers": 700,
     "churnedUsers": 300,
@@ -47,7 +53,7 @@ def test_changing_a_field_bypasses_cache():
     # cached insight — the cache key covers every input field.
     s = login()
     base = {
-        "projectName": "Cache Key Field",
+        "projectName": f"Cache Key Field {RUN_ID}",
         "totalUsers": 1000,
         "activeUsers": 700,
         "churnedUsers": 300,
