@@ -47,9 +47,9 @@ def test_insights_rejects_invalid_input():
     assert r.status_code == 400, f"expected 400, got {r.status_code}: {r.text}"
 
 
-def test_insights_rejects_unknown_model_falls_back_to_default():
-    # A client-supplied model not on the allow-list must NOT be used; the
-    # server should fall back to the default (#3).
+def test_insights_rejects_unauthorized_model():
+    # A client-supplied model not on the allow-list must be REJECTED with 400
+    # (whitelist gateway against model injection) — Step6.
     s = login()
     r = s.post(
         f"{BASE}/api/insights",
@@ -62,9 +62,19 @@ def test_insights_rejects_unknown_model_falls_back_to_default():
             "model": "evil/expensive-model-999",
         },
     )
-    assert r.status_code == 200, f"expected 200, got {r.status_code}: {r.text}"
-    used = r.json().get("model")
-    assert used == DEFAULT_MODEL, f"unknown model should fall back to default, got: {used}"
+    assert r.status_code == 400, f"expected 400, got {r.status_code}: {r.text}"
+    assert "Invalid or unauthorized AI model requested" in r.text, r.text
+
+
+def test_insights_default_model_echoed_without_model():
+    s = login()
+    r = s.post(
+        f"{BASE}/api/insights",
+        json={"projectName": "Default Model", "totalUsers": 1000, "activeUsers": 700,
+              "churnedUsers": 300, "monthlyRevenue": 9000},
+    )
+    assert r.status_code == 200, r.text
+    assert r.json().get("model") == DEFAULT_MODEL, r.json().get("model")
 
 
 def test_login_accepts_valid_email():
@@ -80,6 +90,7 @@ def test_login_rejects_bad_email():
 
 test_insights_returns_metrics_and_insight()
 test_insights_rejects_invalid_input()
-test_insights_rejects_unknown_model_falls_back_to_default()
+test_insights_rejects_unauthorized_model()
+test_insights_default_model_echoed_without_model()
 test_login_accepts_valid_email()
 test_login_rejects_bad_email()

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { env, hasAiProvider } from '@/lib/env';
 import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
-import { validateModelId } from '@/lib/models';
+import { isAllowedModel, DEFAULT_MODEL } from '@/lib/models';
 import { completeWithFallback, type ChatMsg } from '@/lib/ai-provider';
 
 const MAX_MESSAGE_LENGTH = 2000;
@@ -60,6 +60,15 @@ export async function POST(request: Request) {
     );
   }
 
+  // Whitelist gateway: reject an unauthorized model (Step6).
+  if (model != null && model !== '' && !isAllowedModel(model)) {
+    return NextResponse.json(
+      { error: 'Invalid or unauthorized AI model requested' },
+      { status: 400 }
+    );
+  }
+  const resolvedModel = isAllowedModel(model) ? model : DEFAULT_MODEL;
+
   if (!hasAiProvider) {
     return NextResponse.json({
       reply:
@@ -86,7 +95,7 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${env.AI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: validateModelId(model),
+          model: resolvedModel,
           temperature: 0.4,
           max_tokens: 600,
           stream: true,
@@ -133,7 +142,7 @@ export async function POST(request: Request) {
             // #2 fallback: if the primary model streamed nothing, fill the
             // response from the next model(s) so the user always gets an answer.
             if (!enqueuedAny) {
-              const fb = await completeWithFallback(messages, model, { maxTokens: 600, timeoutMs: 20_000 });
+              const fb = await completeWithFallback(messages, resolvedModel, { maxTokens: 600, timeoutMs: 20_000 });
               if (fb) controller.enqueue(encoder.encode(fb));
             }
             controller.close();
@@ -161,7 +170,7 @@ export async function POST(request: Request) {
 
   // Non-streaming path — cycles through models on empty responses (#2).
   try {
-    const reply = await completeWithFallback(messages, model, { maxTokens: 600, timeoutMs: 20_000 });
+    const reply = await completeWithFallback(messages, resolvedModel, { maxTokens: 600, timeoutMs: 20_000 });
     if (!reply) throw new Error('All models returned an empty response');
     return NextResponse.json({ reply });
   } catch (error: unknown) {

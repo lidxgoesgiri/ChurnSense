@@ -423,3 +423,18 @@ bundle — this is not self-healing without intervention.
 ---
 
 _Regenerated at 2026-07-01T18:03:57.524Z · HEAD 652b1b3_
+
+---
+
+## 🔁 Cycle: AI Model Whitelist Gateway (Step6)
+
+Feature: multi-model AI selection (OpenRouter roster) with a server-side
+whitelist gateway to prevent model/prompt injection. Loop demonstrated
+end-to-end via the TestSprite CLI.
+
+### Run 21 — 2026-07-05T03:46Z · ❌ FAILED (RED)
+- test: **Guarded: AI model whitelist gateway (Step6)**
+- runId: `a6485f09-a378-418c-a3b8-32570842522e` · target HEAD `5f2b5d7`
+- **Caught:** an unauthorized model id was **silently accepted** (HTTP 200) instead of being rejected.
+- assertion: `expected 400, got 200` for `model: "evil/unauthorized-model-999"` on `/api/insights`
+- root cause: the whitelist mapped unknown models to the default (silent fallback) rather than rejecting them — a model-injection gap, and the new OpenRouter roster models were not yet accepted.

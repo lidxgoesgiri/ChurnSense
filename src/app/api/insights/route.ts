@@ -8,7 +8,7 @@ import { getDb, isDbConfigured } from '@/lib/db';
 import { projects } from '@/lib/db/schema';
 import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
-import { validateModelId } from '@/lib/models';
+import { isAllowedModel, DEFAULT_MODEL } from '@/lib/models';
 import { getCachedInsight, setCachedInsight } from '@/lib/insight-cache';
 
 // Pull the project's prior churn history so the insight can reason about trend.
@@ -39,7 +39,16 @@ export async function POST(request: Request) {
     const parsedBody = await parseJsonBody(request);
     if ('error' in parsedBody) return parsedBody.error;
     const { model, ...rest } = (parsedBody.data ?? {}) as Record<string, unknown>;
-    const validatedModel = validateModelId(model);
+
+    // Whitelist gateway: reject an unauthorized model rather than silently
+    // swapping it — prevents model/prompt injection (Step6).
+    if (model != null && model !== '' && !isAllowedModel(model)) {
+      return NextResponse.json(
+        { error: 'Invalid or unauthorized AI model requested' },
+        { status: 400 }
+      );
+    }
+    const validatedModel = isAllowedModel(model) ? model : DEFAULT_MODEL;
     const parsed = projectInputSchema.safeParse(rest);
 
     if (!parsed.success) {
