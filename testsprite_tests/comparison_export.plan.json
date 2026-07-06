@@ -6,7 +6,8 @@
   "priority": "p1",
   "planSteps": [
     { "type": "action", "description": "Navigate to the homepage" },
-    { "type": "action", "description": "Type a valid email address (for example demo@churnsense.app) into the sign-in email field" },
+    { "type": "action", "description": "Click the 'Sign in' button (or 'Get started') to open the sign-in dialog" },
+    { "type": "action", "description": "Type a valid email address (for example demo@churnsense.app) into the sign-in email field in the dialog" },
     { "type": "action", "description": "Click the button that enters the dashboard" },
     { "type": "action", "description": "Scroll down to find the 'Compare projects' section" },
     { "type": "assertion", "description": "Verify a 'Compare projects' section is visible with two project selectors and a table of metric rows (Churn Rate, Retention, ARPU)" },

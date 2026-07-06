@@ -6,7 +6,8 @@
   "priority": "p0",
   "planSteps": [
     { "type": "action", "description": "Navigate to the homepage" },
-    { "type": "action", "description": "Type a valid email address (for example demo@churnsense.app) into the sign-in email field" },
+    { "type": "action", "description": "Click the 'Sign in' button (or 'Get started') to open the sign-in dialog" },
+    { "type": "action", "description": "Type a valid email address (for example demo@churnsense.app) into the sign-in email field in the dialog" },
     { "type": "action", "description": "Click the button that enters the dashboard" },
     { "type": "action", "description": "Type a project name such as 'Beta Client A' into the Project name field" },
     { "type": "action", "description": "Type 1000 into the Total users field, 850 into Active users, 150 into Churned users, and 5000 into Monthly revenue" },

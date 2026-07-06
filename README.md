@@ -39,6 +39,20 @@ fallback.
 
 ---
 
+## 🌿 Logo & Philosophy
+
+<img src="./public/churn.jpg" alt="ChurnSense logo" width="120" align="right" />
+
+The ChurnSense logo depicts a **healthy seedling growing straight out of a rising
+bar chart** — a visual promise that retention grows from data-driven decisions.
+
+- **🌱 Seedling (healthy growth)** — the start of a healthy customer lifecycle; a business growing dynamically.
+- **📊 Bar-chart foundation (data-driven growth)** — leaves and stem sprout directly from a rising bar chart: growth is supported by accurate, data-backed decisions.
+- **🎨 Sage Green & Pastel Blue** — a soft, natural palette that feels calm, professional, and clean.
+- **🤝 Friendly & minimalist** — gentle soft curves keep the platform approachable for every user.
+
+---
+
 ## ✨ Key Features
 
 ### 📈 Advanced SaaS Analytics
