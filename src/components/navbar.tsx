@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { ThemeToggle } from './theme-toggle';
 import { ModelSelector } from './model-selector';
 
@@ -23,20 +24,16 @@ export function Navbar({ email, onModelChange, onExport, showExport, onLogout }:
       }}
     >
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <div className="gradient-bg flex h-9 w-9 items-center justify-center rounded-xl text-lg shadow-sm">
-            📊
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/churn.jpg"
+            alt="ChurnSense logo"
+            width={36}
+            height={36}
+            priority
+            className="rounded-xl shadow-sm ring-1 ring-white/10"
+          />
           <span className="gradient-text text-lg font-bold">ChurnSense</span>
-          <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-            style={{
-              background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-              color: 'var(--accent)',
-            }}
-          >
-            BETA
-          </span>
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">

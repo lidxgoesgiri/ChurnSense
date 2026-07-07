@@ -15,9 +15,9 @@ interface BatchResponse {
 }
 
 const SAMPLE_CSV = `project_name,total_users,active_users,churned_users,monthly_revenue
-Beta Client A,1000,850,150,5000
-Beta Client B,500,400,100,2000
-Gamma Corp,2000,1800,200,15000`;
+Acme Inc,1000,850,150,5000
+Globex,500,400,100,2000
+Initech,2000,1800,200,15000`;
 
 export function CsvUploader({
   onSelectProject,

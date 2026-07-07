@@ -6,8 +6,9 @@ const loginSchema = z.object({
   email: z.string().email('A valid email is required'),
 });
 
-// Dummy session auth for the demo: a valid email sets an httpOnly cookie.
-// No password store — this only gates the dashboard, it is not real identity.
+// Passwordless email sign-in: a valid email establishes an HMAC-signed,
+// httpOnly session cookie (see COOKIE_SECRET). The session gates the dashboard;
+// the cookie is cryptographically tamper-evident.
 export async function POST(request: Request) {
   let body: unknown;
   try {

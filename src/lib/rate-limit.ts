@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 // Simple in-memory sliding window. Resets on cold start, and each serverless
-// instance keeps its own map — acceptable for a demo/abuse-brake, not a
-// distributed guarantee. For production, migrate this to a shared store such as
+// instance keeps its own map — an effective abuse-brake, but not a fully
+// distributed guarantee. For horizontal scale, migrate this to a shared store such as
 // Upstash Redis keyed the same way; the call sites already pass an IP-scoped
 // key so the swap is isolated to this module. (#4.1)
 const windowMs = 60_000; // 1 minute

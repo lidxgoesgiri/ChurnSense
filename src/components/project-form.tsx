@@ -59,7 +59,7 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           required
-          placeholder="e.g. Beta Client A"
+          placeholder="e.g. Acme Inc"
           className="input-glow px-3 py-2 text-sm"
         />
       </div>

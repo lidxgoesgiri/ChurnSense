@@ -12,13 +12,15 @@ interface ThemeCtx {
 const ThemeContext = createContext<ThemeCtx>({ theme: 'light', toggle: () => {} });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  // ChurnSense ships in Cinematic Dark by default — the brand's primary look.
+  // Users can still switch to light via the toggle (persisted).
+  const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('churnsense-theme') as Theme | null;
-    const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initial = stored || preferred;
+    // Default to the cinematic dark theme unless the user has explicitly chosen.
+    const initial = stored ?? 'dark';
     // Intentional: resolve the persisted/preferred theme once, on the client.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initial);

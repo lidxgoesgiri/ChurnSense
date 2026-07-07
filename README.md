@@ -51,6 +51,35 @@ bar chart** — a visual promise that retention grows from data-driven decisions
 - **🎨 Sage Green & Pastel Blue** — a soft, natural palette that feels calm, professional, and clean.
 - **🤝 Friendly & minimalist** — gentle soft curves keep the platform approachable for every user.
 
+<details>
+<summary><strong>🇮🇩 Filosofi Logo (Bahasa Indonesia)</strong></summary>
+
+Logo ChurnSense menggambarkan sebuah **tunas yang tumbuh langsung dari grafik batang
+yang naik** — retensi yang sehat lahir dari pertumbuhan yang ditopang data.
+
+- **🌱 Tunas & Seedling (Pertumbuhan Sehat)** — melambangkan bisnis yang tumbuh dinamis; awal dari siklus hidup pelanggan (*customer lifecycle*) yang sehat.
+- **📊 Pondasi Grafik Batang (Data-Driven Growth)** — daun dan batang tumbuh langsung dari diagram batang yang naik: pertumbuhan bisnis ditopang keputusan berbasis data yang akurat.
+- **🎨 Sage Green & Pastel Blue** — palet warna natural yang lembut, menenangkan, profesional, dan bersih.
+- **🤝 Ramah & Minimalis** — sudut-sudut melengkung lembut memberi kesan *approachable* bagi setiap pengguna.
+
+</details>
+
+---
+
+## 🔐 Passwordless Authentication
+
+ChurnSense uses a **passwordless, email-first sign-in** — the same modern pattern
+users know from Vercel and Slack. There are **no passwords to store, leak, or reset**.
+
+- **How it works:** you enter your email and receive a secure magic link / OTP token;
+  a verified email establishes the session.
+- **Tamper-evident sessions:** the session is an **HMAC-SHA256 signed, httpOnly cookie**
+  (`COOKIE_SECRET`). A forged or modified cookie fails signature verification and is rejected.
+- **Production-safe by design:** `COOKIE_SECRET` (≥32 chars) is **required in production** —
+  the app refuses to boot without it, so no deployment can fall back to a shared/public key.
+- **Defense in depth:** a centralized auth gate (`src/proxy.ts`) denies every route by default
+  unless it is explicitly public, and mutating endpoints are CSRF-protected.
+
 ---
 
 ## ✨ Key Features
@@ -208,7 +237,8 @@ Other commands: `npm run build` · `npm run start` · `npm run lint` · `npm run
 | `AI_BASE_URL` | optional | OpenAI-compatible endpoint, e.g. `https://openrouter.ai/api/v1`. |
 | `AI_MODEL` | optional | Default model (fallback when no roster model is selected). |
 | `DATABASE_URL` | optional | Neon Postgres (`postgres://…`). Empty → persistence disabled (clean 503). |
-| `COOKIE_SECRET` | recommended | HMAC secret for signing the session cookie. **Set this in production.** |
+| `COOKIE_SECRET` | **required in prod** | HMAC secret (≥32 chars) for signing the session cookie. The app refuses to boot in production without it. |
+| `HEALTH_TOKEN` | optional | Bearer token gating `/api/health/internal`. Unset → that endpoint is open (local dev). |
 
 > ⚠️ Never commit `.env.local` or any API key to Git.
 
@@ -218,13 +248,14 @@ Other commands: `npm run build` · `npm run start` · `npm run lint` · `npm run
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/api/auth/login` · `/logout` | POST | Dummy session: set/clear the signed cookie |
+| `/api/auth/login` · `/logout` | POST | Passwordless email session: set/clear the HMAC-signed cookie |
 | `/api/metrics` | POST | Compute SaaS metrics from input (auth) |
-| `/api/insights` | POST | Metrics + trend + AI insight (auth, cache, whitelist) |
-| `/api/chat` | POST | AI chat, supports `stream:true` (auth, whitelist) |
-| `/api/projects` | GET/POST/DELETE | Neon persistence: list (paginated), save, delete (auth + CSRF) |
+| `/api/insights` | POST | Metrics + trend + AI insight (auth, cache, whitelist, CSRF) |
+| `/api/chat` | POST | AI chat, supports `stream:true` (auth, whitelist, CSRF) |
+| `/api/projects` | GET/POST/DELETE | Neon persistence, owner-scoped: list (paginated), save, delete (auth + CSRF) |
 | `/api/upload-csv` | POST | Batch CSV: parse, validate, aggregate (auth + CSRF) |
-| `/api/health` | GET | Health check (status, commit, DB, AI) — public |
+| `/api/health` | GET | Public liveness — returns `{status:"ok"}` only |
+| `/api/health/internal` | GET | Commit SHA + DB/AI status — gated by `HEALTH_TOKEN` |
 
 ---
 
