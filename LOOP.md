@@ -11,7 +11,7 @@
 | Repo | https://github.com/lidxgoesgiri/ChurnSense |
 | TestSprite project | `3f03871e-9e3d-4452-9811-ea32aaff6fb8` |
 | Banked tests | 13 |
-| Total runs recorded | 201 |
+| Total runs recorded | 242 |
 
 ## Loop
 `Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.
@@ -28,6 +28,32 @@ bundle — this is not self-healing without intervention.
 
 ### Run 1 — 2026-07-05T16:55:31.015Z · ✅ PASSED
 - runId: `4e1d4868-150a-41a4-88d4-a74b0172d264` (source: cli)
+
+### Run 2 — 2026-07-06T07:03:55.473Z · ❌ FAILED
+- runId: `92470a85-5213-4fb8-9f57-1b10df26df4c` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  second call should be cached: False
+  ```
+
+### Run 3 — 2026-07-06T13:45:24.971Z · ✅ PASSED
+- runId: `0f10e2a8-00ad-427c-9fed-301ee4b7851f` (source: cli)
+
+### Run 4 — 2026-07-07T07:25:34.311Z · ✅ PASSED
+- runId: `78399902-c924-4f96-9dc2-fb7c1d4d2cb7` (source: cli)
+
+### Run 5 — 2026-07-07T07:45:56.338Z · ❌ FAILED
+- runId: `88d56fe2-7365-43fb-9131-c146aa8c404d` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  {"error":"Invalid request origin"}
+  ```
+
+### Run 6 — 2026-07-07T07:56:48.268Z · ✅ PASSED
+- runId: `ee60e832-5fa2-4d63-8cc0-ba88ab72c1ef` (source: cli)
+
+### Run 7 — 2026-07-07T08:55:25.596Z · ✅ PASSED
+- runId: `8a6ec7bf-efee-48b9-81e4-a3f2214ae591` (source: cli)
 
 ## Test — Guarded: Insights shape + model whitelist (#3)
 - **testId:** `b6e4f1d6-0784-4f1e-b7bd-5f18a4279d6a` · priority p0 · latest: ✅ PASSED
@@ -60,62 +86,107 @@ bundle — this is not self-healing without intervention.
 ### Run 9 — 2026-07-05T16:55:19.380Z · ✅ PASSED
 - runId: `7928f6a3-86a8-4ddb-87ce-69020a42aede` (source: cli)
 
+### Run 10 — 2026-07-06T07:03:18.538Z · ✅ PASSED
+- runId: `d39e4eef-06ef-4c78-8afc-da0cd63ff305` (source: cli)
+
+### Run 11 — 2026-07-06T13:45:14.362Z · ✅ PASSED
+- runId: `326b5bc9-3ce8-463c-9873-9fb1da4cc43e` (source: cli)
+
+### Run 12 — 2026-07-07T07:25:02.055Z · ✅ PASSED
+- runId: `0b262745-5fee-4d98-8a5e-b8a573262e20` (source: cli)
+
+### Run 13 — 2026-07-07T07:45:56.742Z · ❌ FAILED
+- runId: `35f23c47-1368-47ae-8dbc-56a0a223715d` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected 200, got 403: {"error":"Invalid request origin"}
+  ```
+
+### Run 14 — 2026-07-07T07:56:15.087Z · ✅ PASSED
+- runId: `93906061-afff-4158-bc5a-eb1f480e2381` (source: cli)
+
+### Run 15 — 2026-07-07T08:55:14.557Z · ✅ PASSED
+- runId: `d9b67563-dd14-4037-9b83-1082fc690c7d` (source: cli)
+
 ## Test — Guarded: AI model whitelist gateway (Step6)
 - **testId:** `1a237a45-8410-4f40-8182-a87331e22d3e` · priority p0 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/1a237a45-8410-4f40-8182-a87331e22d3e
 
-### Run 1 — 2026-07-05T03:42:29.786Z · ⚠️ BLOCKED
-- runId: `836b4e07-e032-4ac7-9eaa-ac5a897dec2b` (source: cli)
-
-### Run 2 — 2026-07-05T03:43:03.959Z · ❌ FAILED
+### Run 1 — 2026-07-05T03:43:03.959Z · ❌ FAILED
 - runId: `a6485f09-a378-418c-a3b8-32570842522e` (source: cli)
 - failure bundle — rootCauseHypothesis:
   ```json
   expected 400, got 200: {"success":true,"projectName":"Whitelist Check","metrics":{"churnRate":0.15,"retentionRate":0.85,"arpu":5,"riskStatus":"Medium","mrr":5000,"estimatedLtv":33.33},"trend":{"points":0,"movingAverage":null,"deviation":null,"anomaly":"insufficient-data"},"model":"nvidia/nemotron-3-ultra-550b-a55b:free","insight":{"summary":"Whitelist Check retains 85% of its 1,000 users, but a 15% monthly churn rate signals ongoing leakage. Average revenue per user is only $5, limiting growth potential. The current risk level is assessed as Medium.","recommendation":"Launch a targeted re‑engagement campaign for the 150 churned users, offering a personalized incentive to reactivate them.","riskLevel":"Medium","source":"ai"},"cached":true,"timestamp":"2026-07-05T03:43:03.934Z"}
   ```
 
-### Run 3 — 2026-07-05T03:52:16.286Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:52:16.286Z · ✅ PASSED
 - runId: `3b304b00-fa69-41ab-bf5f-738f973491d1` (source: cli)
 
-### Run 4 — 2026-07-05T03:53:10.478Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:53:10.478Z · ✅ PASSED
 - runId: `41d31217-4555-4d2d-aa6b-7db5f96366a6` (source: cli)
 
-### Run 5 — 2026-07-05T03:54:15.643Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:54:15.643Z · ✅ PASSED
 - runId: `436e8a6d-3a98-4cef-82e6-98ddb95f6dee` (source: cli)
 
-### Run 6 — 2026-07-05T04:17:39.435Z · ✅ PASSED
+### Run 5 — 2026-07-05T04:17:39.435Z · ✅ PASSED
 - runId: `cea789a3-68e6-4cd3-b728-405c3b1031be` (source: cli)
 
-### Run 7 — 2026-07-05T04:19:02.734Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:19:02.734Z · ✅ PASSED
 - runId: `afdfc50e-db62-4958-95c5-f9b4a0af9a75` (source: cli)
 
-### Run 8 — 2026-07-05T05:04:22.764Z · ✅ PASSED
+### Run 7 — 2026-07-05T05:04:22.764Z · ✅ PASSED
 - runId: `fa006719-02c1-483f-a50a-ad5d225e1c92` (source: cli)
 
-### Run 9 — 2026-07-05T14:16:14.892Z · ✅ PASSED
+### Run 8 — 2026-07-05T14:16:14.892Z · ✅ PASSED
 - runId: `20075947-9590-4a35-89c7-48bfdea88c57` (source: cli)
 
-### Run 10 — 2026-07-05T14:47:31.635Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:47:31.635Z · ✅ PASSED
 - runId: `25a91c9b-5788-403d-a4b3-60c39056e1e2` (source: cli)
 
-### Run 11 — 2026-07-05T14:52:26.665Z · ❌ FAILED
+### Run 10 — 2026-07-05T14:52:26.665Z · ❌ FAILED
 - runId: `85b40537-875d-45ca-8f04-2eb60c9c8527` (source: cli)
 - failure bundle — rootCauseHypothesis:
   ```json
   expected 400, got 429: {"error":"Too many requests. Please wait a moment and try again."}
   ```
 
-### Run 12 — 2026-07-05T16:45:56.336Z · ✅ PASSED
+### Run 11 — 2026-07-05T16:45:56.336Z · ✅ PASSED
 - runId: `ed53d964-ee34-434e-b7ea-13568663bbfc` (source: cli)
 
-### Run 13 — 2026-07-05T16:48:48.456Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:48.456Z · ✅ PASSED
 - runId: `b9d38fd6-6f4a-4c5e-8146-05ce00f33a3a` (source: cli)
 
-### Run 14 — 2026-07-05T16:49:32.161Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:49:32.161Z · ✅ PASSED
 - runId: `02ce3169-0e7b-4027-bc4b-2bb9594f38fd` (source: cli)
 
-### Run 15 — 2026-07-05T16:55:20.319Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:20.319Z · ✅ PASSED
 - runId: `558eaa25-6ca3-4298-8c52-6ed1eeb15a5f` (source: cli)
+
+### Run 15 — 2026-07-06T07:03:40.745Z · ✅ PASSED
+- runId: `ab676688-95fb-469c-95e8-d0d4fbdbf4cf` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:34.475Z · ✅ PASSED
+- runId: `74229aae-71d9-4748-b541-9b8fb2e556e5` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:49.612Z · ❌ FAILED
+- runId: `8d0edb4e-2a0a-4ca2-89dd-8d955a1ec89b` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  HTTPSConnectionPool(host='loop-analytics-nine.vercel.app', port=443): Read timed out. (read timeout=30)
+  ```
+
+### Run 18 — 2026-07-07T07:45:56.810Z · ❌ FAILED
+- runId: `a356ee39-f9ca-46e3-80fd-9ca1bad4223e` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected 200, got 403: {"error":"Invalid request origin"}
+  ```
+
+### Run 19 — 2026-07-07T07:56:12.382Z · ✅ PASSED
+- runId: `3ed17fb4-1d42-4043-b723-5670a5636725` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:53.145Z · ✅ PASSED
+- runId: `80b8ec21-aa3d-4f65-8b05-307f177e83f7` (source: cli)
 
 ## Test — Guarded: Chat auth + message limits (#6,#12)
 - **testId:** `a24f74ed-149b-4c39-81cb-9ab3cc44833a` · priority p1 · latest: ✅ PASSED
@@ -163,6 +234,28 @@ bundle — this is not self-healing without intervention.
 ### Run 14 — 2026-07-05T16:55:17.972Z · ✅ PASSED
 - runId: `ac2c6602-26dd-4a00-b9c9-362d6f072ffa` (source: cli)
 
+### Run 15 — 2026-07-06T07:02:53.100Z · ✅ PASSED
+- runId: `6c8e2fd5-aafb-4d13-a1b8-1955624880f4` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.518Z · ✅ PASSED
+- runId: `27a616e9-cce2-44b6-97a4-5e4fb869a0fd` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:19.779Z · ✅ PASSED
+- runId: `dbf90fb9-67f8-4f8a-b372-3d5dc5d534f6` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:56.793Z · ❌ FAILED
+- runId: `69730bf0-d7fb-4e61-8811-ff8c01abc62f` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected 400, got 403: {"error":"Invalid request origin"}
+  ```
+
+### Run 19 — 2026-07-07T07:55:53.070Z · ✅ PASSED
+- runId: `a013a062-a2ec-4747-9033-71109499dc0a` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:46.496Z · ✅ PASSED
+- runId: `8b80a1ab-512d-4f95-a8d7-16175e887de5` (source: cli)
+
 ## Test — Guarded: CSV quoted/partial/row-limit (#19,#20)
 - **testId:** `4dd8880e-945b-4aea-84d5-39936eeaa473` · priority p1 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/4dd8880e-945b-4aea-84d5-39936eeaa473
@@ -208,6 +301,24 @@ bundle — this is not self-healing without intervention.
 
 ### Run 14 — 2026-07-05T16:55:17.545Z · ✅ PASSED
 - runId: `8bdebd43-e559-4679-b979-80829f460e03` (source: cli)
+
+### Run 15 — 2026-07-06T07:02:53.157Z · ✅ PASSED
+- runId: `900d3661-c577-460e-b841-9da8d42ba306` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.552Z · ✅ PASSED
+- runId: `abb1a43d-60bc-4961-b9fe-2cfa9ecee32e` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:19.788Z · ✅ PASSED
+- runId: `adf9dc22-b9cc-4742-966a-4f0d048f6a3a` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:56.977Z · ✅ PASSED
+- runId: `eb7bf20d-0d32-4d3b-a8bd-6fac3525f477` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:53.056Z · ✅ PASSED
+- runId: `5bff006c-090d-41c4-8096-fac5a394b65c` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:46.989Z · ✅ PASSED
+- runId: `d8231101-9f99-4587-b091-8e5e4cbebf5a` (source: cli)
 
 ## Test — Guarded: CRUD delete lifecycle (#16)
 - **testId:** `2d7b3f6d-f883-4be6-b0e5-440df863fce5` · priority p1 · latest: ✅ PASSED
@@ -255,6 +366,28 @@ bundle — this is not self-healing without intervention.
 ### Run 14 — 2026-07-05T16:55:17.714Z · ✅ PASSED
 - runId: `939c0ed2-f08a-4b5e-bfd8-ae9406f33c99` (source: cli)
 
+### Run 15 — 2026-07-06T07:02:53.470Z · ✅ PASSED
+- runId: `ae1e3da3-3d9d-4494-b2eb-532a67846aab` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.752Z · ✅ PASSED
+- runId: `1716b5f6-5904-4f1c-9a40-448771b7d59c` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:20.848Z · ✅ PASSED
+- runId: `d05c5427-c9f3-4b13-a563-9094274a08a2` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:57.349Z · ✅ PASSED
+- runId: `eb7e94b6-3043-4696-90ee-33af95043ae8` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:53.665Z · ❌ FAILED
+- runId: `157267ae-2ebc-45cd-83ff-b7b8319baed7` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  expected 403 without CSRF, got 200: {"success":true,"deletedId":195}
+  ```
+
+### Run 20 — 2026-07-07T08:54:46.030Z · ✅ PASSED
+- runId: `5f65ff4c-0658-4f5d-abe3-659cbc06be6a` (source: cli)
+
 ## Test — Guarded: Pagination + MRR/LTV schema (#15,#18)
 - **testId:** `36f0c5ef-3ecf-467a-b287-2b5bff1faefa` · priority p1 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/36f0c5ef-3ecf-467a-b287-2b5bff1faefa
@@ -301,394 +434,420 @@ bundle — this is not self-healing without intervention.
 ### Run 14 — 2026-07-05T16:55:17.842Z · ✅ PASSED
 - runId: `31e46c01-3708-4b19-9ed9-18ed6162c768` (source: cli)
 
+### Run 15 — 2026-07-06T07:02:53.342Z · ✅ PASSED
+- runId: `75919587-a1f2-4484-80a4-16ff167d749f` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.067Z · ✅ PASSED
+- runId: `3237cb66-eba4-44b7-b62e-1ab11fc189ac` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:21.049Z · ✅ PASSED
+- runId: `d8b712ae-0f19-41f2-9469-d26ad72ad4d3` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:57.470Z · ✅ PASSED
+- runId: `474e7a91-3cec-4b85-998d-18db2669f684` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:53.815Z · ✅ PASSED
+- runId: `69bd20be-830f-4169-8478-f557d2d6df48` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:47.255Z · ✅ PASSED
+- runId: `fb777dd2-5b13-4993-a2db-ce3e93109899` (source: cli)
+
 ## Test — Guarded: CSV batch upload + CSRF
 - **testId:** `da8bf044-7278-4513-87af-67811972a7c2` · priority p0 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/da8bf044-7278-4513-87af-67811972a7c2
 
-### Run 1 — 2026-07-02T13:33:46.763Z · ✅ PASSED
-- runId: `56e49227-afa4-4cd0-b1dd-9c40c524ba98` (source: cli)
-
-### Run 2 — 2026-07-02T14:01:35.166Z · ✅ PASSED
-- runId: `529fd054-a72b-458e-8d06-9f9058e10182` (source: cli)
-
-### Run 3 — 2026-07-04T12:05:01.587Z · ✅ PASSED
-- runId: `2921c6d6-8f09-4677-8d9e-bfff4ce168ae` (source: cli)
-
-### Run 4 — 2026-07-04T12:13:32.827Z · ✅ PASSED
-- runId: `c41001a5-af38-40ca-b1e6-fc39cbf248b0` (source: cli)
-
-### Run 5 — 2026-07-04T12:35:26.587Z · ✅ PASSED
-- runId: `19b56658-c119-49e8-9ce0-6b2a72b630b7` (source: cli)
-
-### Run 6 — 2026-07-04T17:42:26.924Z · ✅ PASSED
-- runId: `e33fce03-c9ae-44b1-b6a8-ea3c24c76041` (source: cli)
-
-### Run 7 — 2026-07-04T18:03:11.597Z · ✅ PASSED
+### Run 1 — 2026-07-04T18:03:11.597Z · ✅ PASSED
 - runId: `54b518b4-1244-473a-99d6-2b3581db952f` (source: cli)
 
-### Run 8 — 2026-07-05T03:22:50.037Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:22:50.037Z · ✅ PASSED
 - runId: `3f8504a4-c84d-4fb4-84df-08621160feca` (source: cli)
 
-### Run 9 — 2026-07-05T03:25:16.772Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:25:16.772Z · ✅ PASSED
 - runId: `cc343cb8-33e2-4805-a49c-e4c1629731cf` (source: cli)
 
-### Run 10 — 2026-07-05T03:51:58.334Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:51:58.334Z · ✅ PASSED
 - runId: `375eaf88-5698-4def-9fc5-1446c72f18d9` (source: cli)
 
-### Run 11 — 2026-07-05T03:54:05.374Z · ✅ PASSED
+### Run 5 — 2026-07-05T03:54:05.374Z · ✅ PASSED
 - runId: `8c12d6fb-bced-4661-b122-b322a1321693` (source: cli)
 
-### Run 12 — 2026-07-05T04:17:07.770Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:17:07.770Z · ✅ PASSED
 - runId: `dbcc8dcc-6dfa-4959-8310-054057af9179` (source: cli)
 
-### Run 13 — 2026-07-05T04:18:49.013Z · ✅ PASSED
+### Run 7 — 2026-07-05T04:18:49.013Z · ✅ PASSED
 - runId: `890c0b63-5bd8-4ab2-b108-286c176952d7` (source: cli)
 
-### Run 14 — 2026-07-05T05:04:16.349Z · ✅ PASSED
+### Run 8 — 2026-07-05T05:04:16.349Z · ✅ PASSED
 - runId: `a7ba54b1-ef91-49ed-8f39-71b402f96bd5` (source: cli)
 
-### Run 15 — 2026-07-05T14:16:09.878Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:16:09.878Z · ✅ PASSED
 - runId: `26f16a07-fab7-4d2b-a5c6-91f7fe5e9a90` (source: cli)
 
-### Run 16 — 2026-07-05T14:47:30.225Z · ✅ PASSED
+### Run 10 — 2026-07-05T14:47:30.225Z · ✅ PASSED
 - runId: `36ef0ad9-befa-4820-80b5-8d8fb1dba396` (source: cli)
 
-### Run 17 — 2026-07-05T14:52:52.336Z · ✅ PASSED
+### Run 11 — 2026-07-05T14:52:52.336Z · ✅ PASSED
 - runId: `fe019a4d-0aa1-4c8c-a962-fb7640fc1414` (source: cli)
 
-### Run 18 — 2026-07-05T16:48:45.243Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:45.243Z · ✅ PASSED
 - runId: `f9fa83bc-001b-4f09-b808-667a4716bd39` (source: cli)
 
-### Run 19 — 2026-07-05T16:49:56.962Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:49:56.962Z · ✅ PASSED
 - runId: `a3059dda-a7cb-4f4b-bcb5-54911adac739` (source: cli)
 
-### Run 20 — 2026-07-05T16:55:18.496Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:18.496Z · ✅ PASSED
 - runId: `5d63e97e-7e5a-4528-b7d8-665d146836a5` (source: cli)
+
+### Run 15 — 2026-07-06T07:02:53.395Z · ✅ PASSED
+- runId: `f7bddf20-3840-4433-9bc5-3ca83cbf927b` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.883Z · ✅ PASSED
+- runId: `dc2d8646-24ae-465a-92b7-750cecbc2ccb` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:20.037Z · ✅ PASSED
+- runId: `53bbe0f8-59fe-4905-9765-a69ac6dc0f80` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:57.184Z · ✅ PASSED
+- runId: `93d2444a-eed0-4cfa-8fa2-1e637c781105` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:52.641Z · ✅ PASSED
+- runId: `24790aa1-c6ca-4ed6-9c5b-08c2b27c2fd0` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:47.369Z · ✅ PASSED
+- runId: `6b922ce8-f558-44c1-b5f4-28e3290b3d1e` (source: cli)
 
 ## Test — Guarded: Stateful chain create->list->metrics->insight
 - **testId:** `87320b3f-cf42-4442-bac0-8ec3bb4420a9` · priority p0 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/87320b3f-cf42-4442-bac0-8ec3bb4420a9
 
-### Run 1 — 2026-07-02T14:01:50.106Z · ✅ PASSED
-- runId: `ee3e2e09-68ee-4dfa-9876-7f65773eaad0` (source: cli)
-
-### Run 2 — 2026-07-04T12:05:12.954Z · ✅ PASSED
-- runId: `8c53ee43-66bd-4211-9c3c-6723d5d2619f` (source: cli)
-
-### Run 3 — 2026-07-04T12:13:36.420Z · ✅ PASSED
-- runId: `566051e9-06eb-44a1-8c9e-fc6d4b8d5fbb` (source: cli)
-
-### Run 4 — 2026-07-04T12:35:53.582Z · ✅ PASSED
-- runId: `7af22483-0ef5-45cb-9dd7-0a6a7d9248f5` (source: cli)
-
-### Run 5 — 2026-07-04T17:42:44.962Z · ✅ PASSED
-- runId: `6f466b86-515f-4deb-975e-f104f8c4eecd` (source: cli)
-
-### Run 6 — 2026-07-04T18:03:41.324Z · ✅ PASSED
-- runId: `6e404604-795a-4643-a12d-06f4d11a8972` (source: cli)
-
-### Run 7 — 2026-07-05T03:23:19.391Z · ✅ PASSED
+### Run 1 — 2026-07-05T03:23:19.391Z · ✅ PASSED
 - runId: `da6b1b07-6bd1-4059-a3cc-24b43f28ad05` (source: cli)
 
-### Run 8 — 2026-07-05T03:25:45.620Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:25:45.620Z · ✅ PASSED
 - runId: `a7239a6e-ee83-4eae-b431-67dc3e0a72dc` (source: cli)
 
-### Run 9 — 2026-07-05T03:52:10.784Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:52:10.784Z · ✅ PASSED
 - runId: `82123c95-b895-4b0c-8911-202b07bb9fc1` (source: cli)
 
-### Run 10 — 2026-07-05T03:54:07.701Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:54:07.701Z · ✅ PASSED
 - runId: `bd9e48c4-22f0-45e9-bc55-1a0f8d045c6e` (source: cli)
 
-### Run 11 — 2026-07-05T04:17:25.917Z · ✅ PASSED
+### Run 5 — 2026-07-05T04:17:25.917Z · ✅ PASSED
 - runId: `95648aca-d71c-419b-9a32-a85b9d06ca13` (source: cli)
 
-### Run 12 — 2026-07-05T04:19:23.910Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:19:23.910Z · ✅ PASSED
 - runId: `5b900921-ff42-4222-8d55-5ad490c57199` (source: cli)
 
-### Run 13 — 2026-07-05T05:04:18.771Z · ✅ PASSED
+### Run 7 — 2026-07-05T05:04:18.771Z · ✅ PASSED
 - runId: `9e09fa1a-a7ea-4d39-8b8b-53d07f79f00c` (source: cli)
 
-### Run 14 — 2026-07-05T14:16:16.951Z · ✅ PASSED
+### Run 8 — 2026-07-05T14:16:16.951Z · ✅ PASSED
 - runId: `3192eb81-88b2-4653-8d3d-13c254c79f25` (source: cli)
 
-### Run 15 — 2026-07-05T14:47:29.190Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:47:29.190Z · ✅ PASSED
 - runId: `6f415332-ef1c-4a46-8c57-eecad12b3bb6` (source: cli)
 
-### Run 16 — 2026-07-05T14:52:56.680Z · ❌ FAILED
+### Run 10 — 2026-07-05T14:52:56.680Z · ❌ FAILED
 - runId: `5451da26-f1eb-4b96-b0f8-15774a2f64ab` (source: cli)
 - failure bundle — rootCauseHypothesis:
   ```json
   {"error":"Too many requests. Please wait a moment and try again."}
   ```
 
-### Run 17 — 2026-07-05T16:45:59.622Z · ✅ PASSED
+### Run 11 — 2026-07-05T16:45:59.622Z · ✅ PASSED
 - runId: `b0f1baaf-fc21-4bcd-80e1-fc2ad423ee4d` (source: cli)
 
-### Run 18 — 2026-07-05T16:48:45.828Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:45.828Z · ✅ PASSED
 - runId: `4e4d4f73-8df7-4710-bc7d-55ad870ed658` (source: cli)
 
-### Run 19 — 2026-07-05T16:50:03.324Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:50:03.324Z · ✅ PASSED
 - runId: `385e1f8e-36a1-4e7a-94ef-6a8de49744eb` (source: cli)
 
-### Run 20 — 2026-07-05T16:55:18.576Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:18.576Z · ✅ PASSED
 - runId: `49f29f2f-bc99-409f-82cd-62fcf3777b97` (source: cli)
+
+### Run 15 — 2026-07-06T07:03:19.375Z · ✅ PASSED
+- runId: `a4b51583-117b-4e08-a7bf-bab7022ac03f` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:53.071Z · ✅ PASSED
+- runId: `93f2068c-498c-409b-a7c3-27b0d0301baf` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:45.150Z · ✅ PASSED
+- runId: `6696bb18-f0fd-48be-ba69-6fdd3e533e4c` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:56.618Z · ❌ FAILED
+- runId: `9ea5c485-3dae-4a4f-b49a-e4846ea4c6bf` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  {"error":"Invalid request origin"}
+  ```
+
+### Run 19 — 2026-07-07T07:56:08.386Z · ✅ PASSED
+- runId: `332300df-e913-4a5f-ae26-e0cf344648bf` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:55.001Z · ✅ PASSED
+- runId: `47acf577-643d-40a2-9a70-c1817ef400e6` (source: cli)
 
 ## Test — Guarded: Projects persist + CSRF
 - **testId:** `33cf2c68-e994-43fe-bf0e-c5de93112c1c` · priority p1 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/33cf2c68-e994-43fe-bf0e-c5de93112c1c
 
-### Run 1 — 2026-07-02T13:33:46.062Z · ✅ PASSED
-- runId: `38dcce6f-4364-4b2b-bbea-b43b10dff2d2` (source: cli)
-
-### Run 2 — 2026-07-02T14:01:34.976Z · ✅ PASSED
-- runId: `70547440-d490-4c20-9aca-4e0a56676f5e` (source: cli)
-
-### Run 3 — 2026-07-04T12:05:01.448Z · ✅ PASSED
-- runId: `7f9afcae-4247-4e8f-afdc-8ff61b8b988d` (source: cli)
-
-### Run 4 — 2026-07-04T12:13:32.867Z · ✅ PASSED
-- runId: `d671c31b-86fd-4b84-8e12-bc5abd661424` (source: cli)
-
-### Run 5 — 2026-07-04T12:35:27.253Z · ✅ PASSED
-- runId: `445b8cbf-d4ae-4609-947f-e6684265599c` (source: cli)
-
-### Run 6 — 2026-07-04T17:42:26.865Z · ✅ PASSED
-- runId: `af62884f-ff20-4dc1-a2d7-1677ec050820` (source: cli)
-
-### Run 7 — 2026-07-04T18:03:11.400Z · ✅ PASSED
+### Run 1 — 2026-07-04T18:03:11.400Z · ✅ PASSED
 - runId: `a17dc246-d385-45d7-8c9a-ff23347cc0ee` (source: cli)
 
-### Run 8 — 2026-07-05T03:22:49.923Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:22:49.923Z · ✅ PASSED
 - runId: `789b2828-dde7-4ba1-93b2-6974d04aee23` (source: cli)
 
-### Run 9 — 2026-07-05T03:25:16.908Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:25:16.908Z · ✅ PASSED
 - runId: `fa1b4ae6-fb81-449b-840d-49ee01950e66` (source: cli)
 
-### Run 10 — 2026-07-05T03:51:58.714Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:51:58.714Z · ✅ PASSED
 - runId: `07160c0b-8cea-4985-a6f0-9b74cbb50cd1` (source: cli)
 
-### Run 11 — 2026-07-05T03:54:05.095Z · ✅ PASSED
+### Run 5 — 2026-07-05T03:54:05.095Z · ✅ PASSED
 - runId: `d53cb637-c505-4767-85a7-48cc26105f06` (source: cli)
 
-### Run 12 — 2026-07-05T04:17:07.627Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:17:07.627Z · ✅ PASSED
 - runId: `ad68449d-8113-4672-8650-a1876ec01e85` (source: cli)
 
-### Run 13 — 2026-07-05T04:18:48.749Z · ✅ PASSED
+### Run 7 — 2026-07-05T04:18:48.749Z · ✅ PASSED
 - runId: `c5c6bc0e-623b-481a-81a2-d3e207d47769` (source: cli)
 
-### Run 14 — 2026-07-05T05:04:17.234Z · ✅ PASSED
+### Run 8 — 2026-07-05T05:04:17.234Z · ✅ PASSED
 - runId: `e7ceded7-e385-42a0-a16c-31ce2eecbdf1` (source: cli)
 
-### Run 15 — 2026-07-05T14:16:09.326Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:16:09.326Z · ✅ PASSED
 - runId: `4b4dbc92-079a-48dc-a895-f43b7a0c7d78` (source: cli)
 
-### Run 16 — 2026-07-05T14:47:30.037Z · ✅ PASSED
+### Run 10 — 2026-07-05T14:47:30.037Z · ✅ PASSED
 - runId: `dfc6456e-0c95-47c3-9a68-f26c4f1c92cf` (source: cli)
 
-### Run 17 — 2026-07-05T14:53:02.428Z · ✅ PASSED
+### Run 11 — 2026-07-05T14:53:02.428Z · ✅ PASSED
 - runId: `8892b2d9-18d0-4db0-8734-3753974896cc` (source: cli)
 
-### Run 18 — 2026-07-05T16:48:45.213Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:45.213Z · ✅ PASSED
 - runId: `cd600398-b64e-4cb3-9021-217d85a676d8` (source: cli)
 
-### Run 19 — 2026-07-05T16:50:08.432Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:50:08.432Z · ✅ PASSED
 - runId: `45064f83-9696-4d8e-b0f4-d46056c90f87` (source: cli)
 
-### Run 20 — 2026-07-05T16:55:17.748Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:17.748Z · ✅ PASSED
 - runId: `b6524873-1623-4a81-b7f2-542f04604f35` (source: cli)
+
+### Run 15 — 2026-07-06T07:02:53.126Z · ✅ PASSED
+- runId: `7b12c830-0667-48a5-a5ad-2538840ae7fc` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.715Z · ✅ PASSED
+- runId: `aedc770b-c8fc-4101-817f-ec8b504e4bc6` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:20.777Z · ✅ PASSED
+- runId: `23e4a4d3-612e-4b00-87ad-b5cade8ee7cf` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:57.142Z · ✅ PASSED
+- runId: `bd23c0d7-e7f9-410b-84b8-c61ac6e55558` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:52.747Z · ✅ PASSED
+- runId: `e318874c-f38e-4501-a6fb-c2b6ce64fb61` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:47.279Z · ✅ PASSED
+- runId: `8ae4bb95-3b53-4b8c-9a02-03ac2e4a8a16` (source: cli)
 
 ## Test — Guarded: Edge cases + risk boundaries
 - **testId:** `159574eb-5b29-4880-bfad-0449ec44206f` · priority p1 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/159574eb-5b29-4880-bfad-0449ec44206f
 
-### Run 1 — 2026-07-02T13:33:46.739Z · ✅ PASSED
-- runId: `51d804bb-8215-43ed-b741-75bbcc402af9` (source: cli)
-
-### Run 2 — 2026-07-02T14:01:34.949Z · ✅ PASSED
-- runId: `8cdab78b-e592-4588-9570-da9bbbcae3d5` (source: cli)
-
-### Run 3 — 2026-07-04T12:05:01.072Z · ✅ PASSED
-- runId: `4c6d68ee-f22b-425f-b099-b794d146b720` (source: cli)
-
-### Run 4 — 2026-07-04T12:13:32.629Z · ✅ PASSED
-- runId: `1b3d865c-908f-463e-acdd-2178a31bac22` (source: cli)
-
-### Run 5 — 2026-07-04T12:35:27.186Z · ✅ PASSED
-- runId: `eb5bf9b2-fb05-4231-bc87-ebc544ae1b80` (source: cli)
-
-### Run 6 — 2026-07-04T17:42:26.840Z · ✅ PASSED
-- runId: `d669db9a-bc8c-4aef-a352-a71dbf46d3c6` (source: cli)
-
-### Run 7 — 2026-07-04T18:03:11.319Z · ✅ PASSED
+### Run 1 — 2026-07-04T18:03:11.319Z · ✅ PASSED
 - runId: `010e4075-e23f-4a6b-bddf-da6dd78fbae4` (source: cli)
 
-### Run 8 — 2026-07-05T03:22:49.812Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:22:49.812Z · ✅ PASSED
 - runId: `a956a54f-2170-40a1-b298-7fa5969b84cf` (source: cli)
 
-### Run 9 — 2026-07-05T03:25:16.432Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:25:16.432Z · ✅ PASSED
 - runId: `91b00333-cb0f-4fc0-8b50-22137e83cbe2` (source: cli)
 
-### Run 10 — 2026-07-05T03:51:59.468Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:51:59.468Z · ✅ PASSED
 - runId: `2da173cc-0ad5-448f-8125-7d3b07dfccce` (source: cli)
 
-### Run 11 — 2026-07-05T03:54:04.966Z · ✅ PASSED
+### Run 5 — 2026-07-05T03:54:04.966Z · ✅ PASSED
 - runId: `871998b6-88cf-4c03-a050-f90db07906ee` (source: cli)
 
-### Run 12 — 2026-07-05T04:17:07.514Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:17:07.514Z · ✅ PASSED
 - runId: `20a9f576-7e66-41c1-9d14-f0aaf8a7388c` (source: cli)
 
-### Run 13 — 2026-07-05T04:18:49.035Z · ✅ PASSED
+### Run 7 — 2026-07-05T04:18:49.035Z · ✅ PASSED
 - runId: `6f3d7062-3255-485c-b8fd-921fd629a89e` (source: cli)
 
-### Run 14 — 2026-07-05T05:04:16.891Z · ✅ PASSED
+### Run 8 — 2026-07-05T05:04:16.891Z · ✅ PASSED
 - runId: `0913e375-d218-4d27-a6cc-a691bf7fb7f1` (source: cli)
 
-### Run 15 — 2026-07-05T14:16:09.629Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:16:09.629Z · ✅ PASSED
 - runId: `0913851d-7ca9-4f9c-bcec-0196d31eb3a0` (source: cli)
 
-### Run 16 — 2026-07-05T14:47:29.249Z · ✅ PASSED
+### Run 10 — 2026-07-05T14:47:29.249Z · ✅ PASSED
 - runId: `e67c9b89-9cb2-4220-adb1-4cf12b4bc19d` (source: cli)
 
-### Run 17 — 2026-07-05T14:53:07.034Z · ✅ PASSED
+### Run 11 — 2026-07-05T14:53:07.034Z · ✅ PASSED
 - runId: `1b1c284b-0d5c-4946-934d-9c15d92b4ba5` (source: cli)
 
-### Run 18 — 2026-07-05T16:48:43.759Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:43.759Z · ✅ PASSED
 - runId: `48f4153d-9a1b-40af-b7b2-87e6b3e0aa4a` (source: cli)
 
-### Run 19 — 2026-07-05T16:50:13.086Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:50:13.086Z · ✅ PASSED
 - runId: `c661b1e9-cb67-43a8-8bb7-e7048775e143` (source: cli)
 
-### Run 20 — 2026-07-05T16:55:17.774Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:17.774Z · ✅ PASSED
 - runId: `ca361021-3ae0-4ddc-b733-4affce930d49` (source: cli)
+
+### Run 15 — 2026-07-06T07:02:53.096Z · ✅ PASSED
+- runId: `85f29858-dee0-40b4-b8d4-c9bd4e4d112a` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.680Z · ✅ PASSED
+- runId: `deca8a3c-589c-4c5f-adb8-7c603bfe8551` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:19.804Z · ✅ PASSED
+- runId: `9a53e3e6-5d53-4269-bc7a-2f77582122b4` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:57.094Z · ✅ PASSED
+- runId: `a4eac4c5-e38f-4ad3-8f6d-4f061849402e` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:53.264Z · ✅ PASSED
+- runId: `4c4ea027-35eb-4f1c-8d85-aa6e7c2177bc` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:46.639Z · ✅ PASSED
+- runId: `178a0f32-4501-45d4-900c-4a3ce15e111c` (source: cli)
 
 ## Test — Guarded: Metrics API + body size (#8,#11)
 - **testId:** `cd31cfd5-eb6a-4dd3-9f2c-e86cbcd3ab2e` · priority p0 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/cd31cfd5-eb6a-4dd3-9f2c-e86cbcd3ab2e
 
-### Run 1 — 2026-07-02T13:33:47.005Z · ✅ PASSED
-- runId: `af035cfd-19d4-48ff-95db-7f154fd159f6` (source: cli)
-
-### Run 2 — 2026-07-02T14:01:35.009Z · ✅ PASSED
-- runId: `60e30938-9d68-4f99-869b-005191bca186` (source: cli)
-
-### Run 3 — 2026-07-04T12:05:01.342Z · ✅ PASSED
-- runId: `af817485-0b49-49b6-9ecc-2b22f242df77` (source: cli)
-
-### Run 4 — 2026-07-04T12:13:33.052Z · ✅ PASSED
-- runId: `8f3a4eda-a286-4cab-b5c8-eb85b0d2b7b4` (source: cli)
-
-### Run 5 — 2026-07-04T12:35:27.212Z · ✅ PASSED
-- runId: `60b1dcc0-0f29-4bf0-8823-405c7fc64669` (source: cli)
-
-### Run 6 — 2026-07-04T17:42:26.930Z · ✅ PASSED
-- runId: `2c2d76cb-4bc8-4c4f-895c-64e291bbd8b8` (source: cli)
-
-### Run 7 — 2026-07-04T18:03:11.499Z · ✅ PASSED
+### Run 1 — 2026-07-04T18:03:11.499Z · ✅ PASSED
 - runId: `9cddae17-f656-4ebe-8031-4be31e13bde7` (source: cli)
 
-### Run 8 — 2026-07-05T03:22:49.898Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:22:49.898Z · ✅ PASSED
 - runId: `e0e94bfb-aab2-413d-b26e-3d5ee8e30d9a` (source: cli)
 
-### Run 9 — 2026-07-05T03:25:17.011Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:25:17.011Z · ✅ PASSED
 - runId: `096ab2a4-0f15-4cf9-9f7b-45363cf5655c` (source: cli)
 
-### Run 10 — 2026-07-05T03:52:00.375Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:52:00.375Z · ✅ PASSED
 - runId: `bc86a826-ed59-40c8-b619-ae025ea1ecba` (source: cli)
 
-### Run 11 — 2026-07-05T03:54:05.224Z · ✅ PASSED
+### Run 5 — 2026-07-05T03:54:05.224Z · ✅ PASSED
 - runId: `563fdeec-a8d3-49ba-b83a-954c25b46548` (source: cli)
 
-### Run 12 — 2026-07-05T04:17:07.661Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:17:07.661Z · ✅ PASSED
 - runId: `906028a9-ff01-4658-b594-74a075215945` (source: cli)
 
-### Run 13 — 2026-07-05T04:18:48.898Z · ✅ PASSED
+### Run 7 — 2026-07-05T04:18:48.898Z · ✅ PASSED
 - runId: `b7dbfb44-06b6-4a13-821b-4a3e9ccdf28b` (source: cli)
 
-### Run 14 — 2026-07-05T05:04:17.183Z · ✅ PASSED
+### Run 8 — 2026-07-05T05:04:17.183Z · ✅ PASSED
 - runId: `4d71dcb7-c915-453c-a2f7-732bfa49105d` (source: cli)
 
-### Run 15 — 2026-07-05T14:16:09.847Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:16:09.847Z · ✅ PASSED
 - runId: `d93e7edf-2e0f-43a7-a339-ad2501b758e5` (source: cli)
 
-### Run 16 — 2026-07-05T14:47:30.136Z · ✅ PASSED
+### Run 10 — 2026-07-05T14:47:30.136Z · ✅ PASSED
 - runId: `cd48acdc-d8be-44cc-b191-411a06159f1c` (source: cli)
 
-### Run 17 — 2026-07-05T14:53:13.509Z · ✅ PASSED
+### Run 11 — 2026-07-05T14:53:13.509Z · ✅ PASSED
 - runId: `d62f329e-12b6-40e6-8377-7494f930e18d` (source: cli)
 
-### Run 18 — 2026-07-05T16:48:45.363Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:45.363Z · ✅ PASSED
 - runId: `17c74cb6-be79-4797-9e6c-7ecc6f334ed5` (source: cli)
 
-### Run 19 — 2026-07-05T16:50:18.181Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:50:18.181Z · ✅ PASSED
 - runId: `a00f81ce-7a6e-4236-9685-85d4eb004a44` (source: cli)
 
-### Run 20 — 2026-07-05T16:55:18.353Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:18.353Z · ✅ PASSED
 - runId: `08bc1270-55ef-4abe-80eb-a50c29998552` (source: cli)
+
+### Run 15 — 2026-07-06T07:02:53.287Z · ✅ PASSED
+- runId: `c726044e-2a18-47fd-8f0e-6e69a29c0cae` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.768Z · ✅ PASSED
+- runId: `7e072f63-811e-47df-812a-6fd274398874` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:20.463Z · ✅ PASSED
+- runId: `b92190e0-cad9-4e0c-a494-4b4aba84a31c` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:56.860Z · ✅ PASSED
+- runId: `a0c57499-eff9-4114-9075-afe5ce7b07d3` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:53.291Z · ✅ PASSED
+- runId: `b3219aee-add1-439a-b5c4-e43fea588a6a` (source: cli)
+
+### Run 20 — 2026-07-07T08:54:47.341Z · ✅ PASSED
+- runId: `4c90386a-274b-4a42-a48d-3095cb99ece1` (source: cli)
 
 ## Test — Guarded: auth, cookie-signing & CSRF
 - **testId:** `1f856ba7-1490-4ceb-945e-ab453827e714` · priority p0 · latest: ✅ PASSED
 - **dashboard:** https://www.testsprite.com/dashboard/tests/3f03871e-9e3d-4452-9811-ea32aaff6fb8/test/1f856ba7-1490-4ceb-945e-ab453827e714
 
-### Run 1 — 2026-07-02T13:33:47.086Z · ✅ PASSED
-- runId: `3883d6f6-b698-4067-883e-0dd2915c5508` (source: cli)
-
-### Run 2 — 2026-07-02T14:01:35.253Z · ✅ PASSED
-- runId: `253b37ae-cbf8-4ec7-8e2d-9272efce4f76` (source: cli)
-
-### Run 3 — 2026-07-04T12:05:01.712Z · ✅ PASSED
-- runId: `fd3e7010-fb61-431b-8a4a-d73cedefeb9a` (source: cli)
-
-### Run 4 — 2026-07-04T12:13:32.864Z · ✅ PASSED
-- runId: `498b6aa8-fcec-4bd0-b79d-df365bebe2f9` (source: cli)
-
-### Run 5 — 2026-07-04T12:35:27.279Z · ✅ PASSED
-- runId: `94f76fbd-5759-4159-9cb3-0728b3a04be2` (source: cli)
-
-### Run 6 — 2026-07-04T17:42:26.870Z · ✅ PASSED
-- runId: `c426c811-b779-433b-9825-523987f8a52e` (source: cli)
-
-### Run 7 — 2026-07-04T18:03:11.581Z · ✅ PASSED
+### Run 1 — 2026-07-04T18:03:11.581Z · ✅ PASSED
 - runId: `6a3fe4de-6771-441a-aa3b-6c04c1fb9b35` (source: cli)
 
-### Run 8 — 2026-07-05T03:22:50.054Z · ✅ PASSED
+### Run 2 — 2026-07-05T03:22:50.054Z · ✅ PASSED
 - runId: `07b459a5-16c9-419a-a32c-0bf6edea570a` (source: cli)
 
-### Run 9 — 2026-07-05T03:25:16.738Z · ✅ PASSED
+### Run 3 — 2026-07-05T03:25:16.738Z · ✅ PASSED
 - runId: `f4ad6b62-4624-4e0c-979e-5acd99452cac` (source: cli)
 
-### Run 10 — 2026-07-05T03:52:00.472Z · ✅ PASSED
+### Run 4 — 2026-07-05T03:52:00.472Z · ✅ PASSED
 - runId: `b3edc3d9-7ad3-4ba2-8821-6a4d74a2b991` (source: cli)
 
-### Run 11 — 2026-07-05T03:54:04.968Z · ✅ PASSED
+### Run 5 — 2026-07-05T03:54:04.968Z · ✅ PASSED
 - runId: `0e32a44c-d7c0-4835-9951-3b8d3f11cc57` (source: cli)
 
-### Run 12 — 2026-07-05T04:17:07.802Z · ✅ PASSED
+### Run 6 — 2026-07-05T04:17:07.802Z · ✅ PASSED
 - runId: `627287d6-9a36-47ff-ab99-cb07d90dad42` (source: cli)
 
-### Run 13 — 2026-07-05T04:18:48.932Z · ✅ PASSED
+### Run 7 — 2026-07-05T04:18:48.932Z · ✅ PASSED
 - runId: `b067cc61-5665-4307-bd42-bde6babcaa0e` (source: cli)
 
-### Run 14 — 2026-07-05T05:04:17.363Z · ✅ PASSED
+### Run 8 — 2026-07-05T05:04:17.363Z · ✅ PASSED
 - runId: `27ec07fa-d65c-4a98-aa65-4689e0c93078` (source: cli)
 
-### Run 15 — 2026-07-05T14:16:09.909Z · ✅ PASSED
+### Run 9 — 2026-07-05T14:16:09.909Z · ✅ PASSED
 - runId: `371de230-a431-49e9-89a2-f2cb991b3e00` (source: cli)
 
-### Run 16 — 2026-07-05T14:47:30.196Z · ✅ PASSED
+### Run 10 — 2026-07-05T14:47:30.196Z · ✅ PASSED
 - runId: `84087f2e-200b-40c8-ba96-94e5128ed3ec` (source: cli)
 
-### Run 17 — 2026-07-05T14:53:19.326Z · ✅ PASSED
+### Run 11 — 2026-07-05T14:53:19.326Z · ✅ PASSED
 - runId: `6080903d-801c-4f41-9c57-d716352dd553` (source: cli)
 
-### Run 18 — 2026-07-05T16:48:45.465Z · ✅ PASSED
+### Run 12 — 2026-07-05T16:48:45.465Z · ✅ PASSED
 - runId: `0d390028-f260-4cea-adf7-ca5e8c681313` (source: cli)
 
-### Run 19 — 2026-07-05T16:50:23.104Z · ✅ PASSED
+### Run 13 — 2026-07-05T16:50:23.104Z · ✅ PASSED
 - runId: `1fd04b0b-6b08-4602-bc8e-7fef6b9b969f` (source: cli)
 
-### Run 20 — 2026-07-05T16:55:17.327Z · ✅ PASSED
+### Run 14 — 2026-07-05T16:55:17.327Z · ✅ PASSED
 - runId: `00ef5df1-9c95-44d3-8505-8857133f3c90` (source: cli)
+
+### Run 15 — 2026-07-06T07:02:53.397Z · ✅ PASSED
+- runId: `3f775f06-ab6f-4fc6-8978-a3c23471875b` (source: cli)
+
+### Run 16 — 2026-07-06T13:44:15.842Z · ✅ PASSED
+- runId: `f6b2c49f-468a-49ae-b841-17cceb826fc6` (source: cli)
+
+### Run 17 — 2026-07-07T07:24:20.861Z · ✅ PASSED
+- runId: `f9491b32-523b-49e0-85ec-873f601f7b9d` (source: cli)
+
+### Run 18 — 2026-07-07T07:45:57.231Z · ✅ PASSED
+- runId: `d44e74a1-2d93-4a39-a743-a830a7f9ce9d` (source: cli)
+
+### Run 19 — 2026-07-07T07:55:53.462Z · ❌ FAILED
+- runId: `6367fb22-4ae0-44d7-a74e-3a3736c5b16f` (source: cli)
+- failure bundle — rootCauseHypothesis:
+  ```json
+  projects without CSRF expected 403, got 201: {"success":true,"project":{"id":194,"createdAt":"2026-07-07T07:55:53.430Z","projectName":"Auth Check","totalUsers":1000,"activeUsers":850,"churnedUsers":150,"monthlyRevenue":5000,"metrics":{"churnRate":0.15,"retentionRate":0.85,"arpu":5,"riskStatus":"Medium","mrr":5000,"estimatedLtv":33.33}}}
+  ```
+
+### Run 20 — 2026-07-07T08:54:46.803Z · ✅ PASSED
+- runId: `19c506a3-0fd7-4971-81b5-9fac07bb9a74` (source: cli)
 
 ---
 
-_Regenerated at 2026-07-05T16:56:57.547Z · HEAD 82068ea_
+_Regenerated at 2026-07-07T09:11:26.488Z · HEAD 7ce7025_
