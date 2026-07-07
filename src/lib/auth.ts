@@ -66,12 +66,34 @@ export function unauthorizedResponse() {
 }
 
 /**
- * Lightweight CSRF mitigation: browsers cannot set a custom header on a
- * cross-origin request without a CORS preflight the server never allows,
- * so requiring this header blocks simple form-based CSRF.
+ * CSRF mitigation (#3.2). A mutating request is accepted when EITHER:
+ *   - it carries our custom header (browsers can't set it cross-origin without a
+ *     CORS preflight the server never allows — blocks simple form-based CSRF), OR
+ *   - its Origin/Referer is same-origin as the request Host, OR
+ *   - it has no Origin/Referer at all (non-browser server-to-server clients and
+ *     tools never send Origin; a forged cross-site browser request always does).
+ *
+ * It is REJECTED only when a browser presents a *foreign* Origin/Referer — the
+ * actual CSRF signature. This keeps the protection strong for browsers while not
+ * breaking legitimate API clients that omit the custom header.
  */
 export function csrfCheck(request: Request): boolean {
-  return request.headers.get('x-requested-with') === 'ChurnSense';
+  // Fast path: our own clients send this on every mutating call.
+  if (request.headers.get('x-requested-with') === 'ChurnSense') return true;
+
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+  const source = origin ?? referer;
+  // No browser-origin context → not a browser CSRF vector.
+  if (!source) return true;
+
+  const host = request.headers.get('host');
+  try {
+    return new URL(source).host === host;
+  } catch {
+    // Malformed Origin/Referer — treat as untrusted.
+    return false;
+  }
 }
 
 /** 403 response for requests failing the CSRF header check. */
