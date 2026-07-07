@@ -105,7 +105,10 @@ export function DashboardClient({ email }: { email: string }) {
     try {
       const res = await fetch('/api/insights', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'ChurnSense',
+        },
         body: JSON.stringify({ ...input, model: aiModel }),
       });
       const data = await res.json();
@@ -125,7 +128,10 @@ export function DashboardClient({ email }: { email: string }) {
   }
 
   async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'ChurnSense' },
+    });
     router.push('/');
   }
 
@@ -219,7 +225,15 @@ export function DashboardClient({ email }: { email: string }) {
             {inputMode === 'manual' ? (
               <ProjectForm onAnalyze={handleAnalyze} loading={loadingMetrics} />
             ) : (
-              <CsvUploader />
+              <CsvUploader
+                onSelectProject={(values) => {
+                  // Promote the chosen batch row into the main dashboard and
+                  // switch back to the single-project view (#6.1).
+                  dispatch({ type: 'SET_INPUT_MODE', mode: 'manual' });
+                  handleAnalyze(values);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             )}
           </div>
 
@@ -254,7 +268,7 @@ export function DashboardClient({ email }: { email: string }) {
 
         {input && metrics && <RetentionChart project={input} history={history} />}
 
-        <AIChat project={input} metrics={metrics} model={aiModel} />
+        <AIChat project={input} metrics={metrics} model={aiModel} userEmail={email} />
 
         <div id="retention-table">
           {dbAvailable && (

@@ -12,7 +12,9 @@ export interface AnalyticsResult {
   arpu: number; // Average Revenue Per User
   riskStatus: 'Low' | 'Medium' | 'High';
   mrr: number; // Monthly Recurring Revenue
-  estimatedLtv: number; // Estimated Lifetime Value = ARPU / churnRate
+  // Estimated Lifetime Value = ARPU / churnRate. null when churn is zero, where
+  // LTV is mathematically undefined (theoretically infinite) rather than 0 (#5.2).
+  estimatedLtv: number | null;
 }
 
 export interface AIInsightResult {
@@ -26,6 +28,9 @@ export interface AIInsightResult {
 export interface BatchRowResult {
   projectName: string;
   metrics: AnalyticsResult;
+  // The validated input for this row, so a batch project can be promoted into
+  // the main dashboard (metrics, chart, insight, chat) without re-entry (#6.1).
+  input: ProjectInput;
 }
 
 export interface BatchError {

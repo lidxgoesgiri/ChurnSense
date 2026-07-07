@@ -92,6 +92,55 @@ function StatCard({
   );
 }
 
+/** Variant of StatCard for a metric that is mathematically undefined (#5.2). */
+function UndefinedStatCard({
+  label,
+  icon,
+  gradient,
+  display,
+  delay,
+  hint,
+}: {
+  label: string;
+  icon: string;
+  gradient: string;
+  display: string;
+  delay: number;
+  hint: string;
+}) {
+  return (
+    <div
+      className="glass-card anim-fade-up relative overflow-hidden p-4"
+      style={{ animationDelay: `${delay * 0.06}s` }}
+    >
+      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: gradient }} />
+      <div className="mb-2 flex items-center gap-1.5">
+        <span className="text-base">{icon}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+          {label}
+        </span>
+        <span
+          className="ml-auto cursor-help text-[10px] text-gray-400 transition-colors hover:text-foreground"
+          title={hint}
+          tabIndex={0}
+          role="note"
+          aria-label={`${label}: ${hint}`}
+        >
+          ⓘ
+        </span>
+      </div>
+      <div
+        className="font-mono text-xl font-bold"
+        title="No churn — LTV is undefined (theoretically infinite)"
+        aria-label={`${label}: undefined (no churn)`}
+      >
+        {display}
+        <span className="ml-1.5 align-middle text-[10px] font-normal text-gray-400">no churn</span>
+      </div>
+    </div>
+  );
+}
+
 export function MetricsSummary({
   metrics,
   churnSeries = [],
@@ -117,7 +166,18 @@ export function MetricsSummary({
         <StatCard label="Retention" icon="💪" gradient={GRADIENTS.retention} rawValue={metrics.retentionRate * 100} suffix="%" delay={2} hint="Share of users retained (active ÷ total users). Higher is better." />
         <StatCard label="ARPU" icon="💰" gradient={GRADIENTS.arpu} rawValue={metrics.arpu} prefix="$" delay={3} hint="Average Revenue Per User = monthly revenue ÷ total users." />
         <StatCard label="MRR" icon="📈" gradient={GRADIENTS.mrr} rawValue={metrics.mrr} prefix="$" delay={4} hint="Monthly Recurring Revenue — total revenue booked this month." />
-        <StatCard label="Est. LTV" icon="🏆" gradient={GRADIENTS.ltv} rawValue={metrics.estimatedLtv} prefix="$" delay={5} hint="Estimated Lifetime Value = ARPU ÷ churn rate (expected revenue per user)." />
+        {metrics.estimatedLtv === null ? (
+          <UndefinedStatCard
+            label="Est. LTV"
+            icon="🏆"
+            gradient={GRADIENTS.ltv}
+            display="∞"
+            delay={5}
+            hint="LTV = ARPU ÷ churn rate. With zero churn the expected lifetime is infinite, so LTV is undefined."
+          />
+        ) : (
+          <StatCard label="Est. LTV" icon="🏆" gradient={GRADIENTS.ltv} rawValue={metrics.estimatedLtv} prefix="$" delay={5} hint="Estimated Lifetime Value = ARPU ÷ churn rate (expected revenue per user)." />
+        )}
       </div>
 
       <div className="anim-fade-up" style={{ animationDelay: '0.36s' }}>

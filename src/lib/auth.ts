@@ -1,14 +1,16 @@
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 
 export const COOKIE_NAME = 'cs_session';
 
-// Shared HMAC secret for signing the session cookie. In production set
-// COOKIE_SECRET in the environment; the dev fallback keeps login/verify
-// consistent locally but is NOT secret.
-const COOKIE_SECRET =
-  process.env.COOKIE_SECRET ?? 'dev-fallback-secret-change-me';
+// HMAC secret for signing the session cookie. Validated in env.ts: required
+// (≥32 chars) in production, so there is NO public fallback in a real
+// deployment (#1.2). The dev-only value below is used solely when NODE_ENV is
+// not production and COOKIE_SECRET is unset, keeping local login/verify
+// consistent without weakening production.
+const COOKIE_SECRET = env.COOKIE_SECRET ?? 'dev-only-insecure-secret-not-for-production';
 
 const MAX_JSON_BODY = 50 * 1024; // 50KB — analytics payloads are tiny.
 
@@ -82,22 +84,49 @@ export function forbiddenResponse() {
 
 type ParsedBody = { data: unknown } | { error: NextResponse };
 
-/** Parse a JSON body with a size ceiling. Returns the data or an error response. */
+/**
+ * Parse a JSON body with a HARD size ceiling. The content-length header is only
+ * a fast-path reject — the real enforcement reads the raw text and measures its
+ * actual byte length, so a missing or forged header cannot bypass the limit
+ * (#4.3). The content-type is also required to be JSON.
+ */
 export async function parseJsonBody(
   request: Request,
   maxBytes: number = MAX_JSON_BODY
 ): Promise<ParsedBody> {
-  const contentLength = request.headers.get('content-length');
-  if (contentLength && Number(contentLength) > maxBytes) {
+  const tooLarge = () => ({
+    error: NextResponse.json(
+      { error: `Request body too large. Maximum ${maxBytes} bytes.` },
+      { status: 413 }
+    ),
+  });
+
+  // Reject an obviously-wrong content-type on a JSON endpoint.
+  const contentType = request.headers.get('content-type') ?? '';
+  if (contentType && !contentType.includes('application/json')) {
     return {
       error: NextResponse.json(
-        { error: `Request body too large. Maximum ${maxBytes} bytes.` },
-        { status: 413 }
+        { error: 'Content-Type must be application/json' },
+        { status: 415 }
       ),
     };
   }
+
+  // Fast path: trust a present, over-limit header to reject early.
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && Number(contentLength) > maxBytes) return tooLarge();
+
+  // Authoritative check: measure the actual bytes regardless of the header.
+  let raw: string;
   try {
-    return { data: await request.json() };
+    raw = await request.text();
+  } catch {
+    return { error: NextResponse.json({ error: 'Invalid request body' }, { status: 400 }) };
+  }
+  if (new TextEncoder().encode(raw).length > maxBytes) return tooLarge();
+
+  try {
+    return { data: JSON.parse(raw) };
   } catch {
     return {
       error: NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }),

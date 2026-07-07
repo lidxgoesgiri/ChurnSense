@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaaSMetrics, ValidationError } from '@/lib/analytics';
 import { projectInputSchema } from '@/lib/validation';
 import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
+import { serverError } from '@/lib/errors';
 
 export async function POST(request: Request) {
   if (!(await getSession())) return unauthorizedResponse();
@@ -30,10 +31,11 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal Server Error';
-    return NextResponse.json(
-      { error: message },
-      { status: error instanceof ValidationError ? 400 : 500 }
-    );
+    // ValidationError carries a safe, user-facing message (400); anything else
+    // is masked behind a generic response with a logged correlation id (#4.5).
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    return serverError('metrics.POST', error);
   }
 }

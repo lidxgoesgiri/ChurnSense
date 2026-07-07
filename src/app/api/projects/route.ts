@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { getDb, isDbConfigured } from '@/lib/db';
 import { projects } from '@/lib/db/schema';
 import { projectInputSchema } from '@/lib/validation';
 import { calculateSaaSMetrics } from '@/lib/analytics';
+import { serverError } from '@/lib/errors';
 import type { ProjectInput } from '@/types';
 import {
   getSession,
@@ -23,7 +24,8 @@ function dbUnavailable() {
 // GET /api/projects — list saved projects (most recent first) with computed
 // metrics. Supports ?page= and ?limit= pagination (#15).
 export async function GET(request: Request) {
-  if (!(await getSession())) return unauthorizedResponse();
+  const owner = await getSession();
+  if (!owner) return unauthorizedResponse();
   if (!isDbConfigured()) return dbUnavailable();
 
   const url = new URL(request.url);
@@ -32,13 +34,16 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
+    // Scope every read to the caller (#2.1) — never expose other users' rows.
     const [{ total }] = await getDb()
       .select({ total: sql<number>`count(*)::int` })
-      .from(projects);
+      .from(projects)
+      .where(eq(projects.ownerEmail, owner));
 
     const rows = await getDb()
       .select()
       .from(projects)
+      .where(eq(projects.ownerEmail, owner))
       .orderBy(desc(projects.createdAt))
       .limit(limit)
       .offset(offset);
@@ -64,14 +69,14 @@ export async function GET(request: Request) {
       projects: data,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Database error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return serverError('projects.GET', error);
   }
 }
 
 // POST /api/projects — persist a project after validation.
 export async function POST(request: Request) {
-  if (!(await getSession())) return unauthorizedResponse();
+  const owner = await getSession();
+  if (!owner) return unauthorizedResponse();
   if (!csrfCheck(request)) return forbiddenResponse();
   if (!isDbConfigured()) return dbUnavailable();
 
@@ -87,16 +92,23 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Non-blocking duplicate check: still create, but flag it (#22).
+    // Non-blocking duplicate check, scoped to THIS owner (#22, #2.1): a name
+    // that collides with another user's project is not a duplicate.
     const existing = await getDb()
       .select({ id: projects.id })
       .from(projects)
-      .where(eq(projects.projectName, parsed.data.projectName))
+      .where(
+        and(
+          eq(projects.ownerEmail, owner),
+          eq(projects.projectName, parsed.data.projectName)
+        )
+      )
       .limit(1);
 
     const [row] = await getDb()
       .insert(projects)
       .values({
+        ownerEmail: owner,
         projectName: parsed.data.projectName,
         totalUsers: parsed.data.totalUsers,
         activeUsers: parsed.data.activeUsers,
@@ -122,14 +134,14 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Database error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return serverError('projects.POST', error);
   }
 }
 
 // DELETE /api/projects?id= — remove a saved project (#16).
 export async function DELETE(request: Request) {
-  if (!(await getSession())) return unauthorizedResponse();
+  const owner = await getSession();
+  if (!owner) return unauthorizedResponse();
   if (!csrfCheck(request)) return forbiddenResponse();
   if (!isDbConfigured()) return dbUnavailable();
 
@@ -139,13 +151,17 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const deleted = await getDb().delete(projects).where(eq(projects.id, id)).returning();
+    // Owner-scoped delete (#2.1): a matching id owned by someone else deletes
+    // nothing and returns 404, so users cannot remove each other's projects.
+    const deleted = await getDb()
+      .delete(projects)
+      .where(and(eq(projects.id, id), eq(projects.ownerEmail, owner)))
+      .returning();
     if (deleted.length === 0) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
     return NextResponse.json({ success: true, deletedId: id });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Database error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return serverError('projects.DELETE', error);
   }
 }

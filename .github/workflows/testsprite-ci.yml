@@ -1,15 +1,52 @@
-name: TestSprite Loop
+name: CI
 
-# Runs the banked TestSprite suite against the live Vercel deployment on every
-# push to main. Vercel auto-deploys the same commit in parallel; this job waits
-# until the deployed commit matches the pushed SHA, then verifies it.
+# Two-stage pipeline (#7.2):
+#   1. build — install, lint, typecheck, unit-test and build the repo. Any
+#      failure here stops the pipeline BEFORE the deployment is verified.
+#   2. verify — wait for Vercel to deploy this exact commit, then run the
+#      banked TestSprite suite against it.
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          # Build must succeed with a production-shaped env; a dummy secret
+          # satisfies the production COOKIE_SECRET requirement (#1.2).
+          COOKIE_SECRET: ci_dummy_cookie_secret_at_least_32_chars_long_000
+
   verify:
+    needs: build
+    # Only gate on the live deployment for pushes to main (PRs have no deploy).
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,12 +72,15 @@ jobs:
           echo "targetUrl=$(jq -r .targetUrl .testsprite/config.json)" >> "$GITHUB_OUTPUT"
 
       - name: Wait for Vercel to deploy this commit
+        env:
+          # Commit SHA now lives on the token-gated internal endpoint (#4.4).
+          HEALTH_TOKEN: ${{ secrets.HEALTH_TOKEN }}
         run: |
-          url="${{ steps.cfg.outputs.targetUrl }}/api/health"
+          url="${{ steps.cfg.outputs.targetUrl }}/api/health/internal"
           want="${GITHUB_SHA:0:7}"
           echo "Waiting for deployed commit $want at $url"
           for i in $(seq 1 40); do
-            got=$(curl -s "$url" | jq -r .commit 2>/dev/null | cut -c1-7 || true)
+            got=$(curl -s -H "Authorization: Bearer $HEALTH_TOKEN" "$url" | jq -r .commit 2>/dev/null | cut -c1-7 || true)
             echo "  attempt $i: live commit=$got"
             if [ "$got" = "$want" ]; then echo "✅ deploy matches"; exit 0; fi
             sleep 15

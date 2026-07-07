@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import type { ProjectInput } from '@/types';
 
-const FIELDS: { key: keyof Omit<ProjectInput, 'projectName'>; label: string }[] = [
-  { key: 'totalUsers', label: 'Total users' },
-  { key: 'activeUsers', label: 'Active users' },
-  { key: 'churnedUsers', label: 'Churned users' },
-  { key: 'monthlyRevenue', label: 'Monthly revenue ($)' },
+// User counts are whole numbers (step=1) to match the backend's integer
+// validation; revenue accepts decimals (step=any) (#5.3).
+const FIELDS: { key: keyof Omit<ProjectInput, 'projectName'>; label: string; step: string }[] = [
+  { key: 'totalUsers', label: 'Total users', step: '1' },
+  { key: 'activeUsers', label: 'Active users', step: '1' },
+  { key: 'churnedUsers', label: 'Churned users', step: '1' },
+  { key: 'monthlyRevenue', label: 'Monthly revenue ($)', step: 'any' },
 ];
 
 interface Props {
@@ -72,7 +74,7 @@ export function ProjectForm({ onAnalyze, loading }: Props) {
               id={f.key}
               type="number"
               min="0"
-              step="any"
+              step={f.step}
               value={values[f.key]}
               onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               required

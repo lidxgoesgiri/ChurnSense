@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { env, hasAiProvider } from '@/lib/env';
-import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
-import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import {
+  getSession,
+  unauthorizedResponse,
+  csrfCheck,
+  forbiddenResponse,
+  parseJsonBody,
+} from '@/lib/auth';
+import { rateLimit, rateLimitResponse, rateLimitHeaders, clientIp } from '@/lib/rate-limit';
 import { isAllowedModel, DEFAULT_MODEL } from '@/lib/models';
 import { completeWithFallback, type ChatMsg } from '@/lib/ai-provider';
 
@@ -43,8 +49,12 @@ function sanitizeContext(ctx: unknown): string {
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
+  // Paid AI endpoint — same CSRF header gate as the other mutating routes (#3.2).
+  if (!csrfCheck(request)) return forbiddenResponse();
 
-  if (!rateLimit(`chat:${session}`, 20).allowed) return rateLimitResponse();
+  const rl = rateLimit(`chat:${session}:${clientIp(request)}`, 20);
+  if (!rl.allowed) return rateLimitResponse(rl);
+  const rlHeaders = rateLimitHeaders(rl);
 
   const parsedBody = await parseJsonBody(request);
   if ('error' in parsedBody) return parsedBody.error;
@@ -157,12 +167,14 @@ export async function POST(request: Request) {
           'Content-Type': 'text/plain; charset=utf-8',
           'Cache-Control': 'no-cache, no-transform',
           'X-Accel-Buffering': 'no',
+          ...rlHeaders,
         },
       });
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Chat failed';
+      // Log the real cause server-side; return a generic reply, no raw detail (#4.5).
+      console.error('[chat.POST] stream error:', error instanceof Error ? error.message : error);
       return NextResponse.json(
-        { error: msg, reply: `Maaf, terjadi kesalahan: ${msg}. Silakan coba lagi.` },
+        { reply: 'Maaf, terjadi kesalahan pada layanan AI. Silakan coba lagi.' },
         { status: 502 }
       );
     }
@@ -172,7 +184,7 @@ export async function POST(request: Request) {
   try {
     const reply = await completeWithFallback(messages, resolvedModel, { maxTokens: 600, timeoutMs: 20_000 });
     if (!reply) throw new Error('All models returned an empty response');
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply }, { headers: rlHeaders });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Chat failed';
     return NextResponse.json(

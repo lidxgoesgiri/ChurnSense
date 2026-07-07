@@ -11,6 +11,9 @@ const METRICS = [
   { label: 'Est. LTV', key: 'estimatedLtv' as const, fmt: (v: number) => `$${v.toFixed(2)}`, lowerIsBetter: false },
 ];
 
+const fmtVal = (v: number | null, fmt: (n: number) => string): string =>
+  v === null ? '∞' : fmt(v);
+
 export function ComparisonView({ projects }: { projects: SavedProject[] }) {
   const [aId, setAId] = useState<number | null>(null);
   const [bId, setBId] = useState<number | null>(null);
@@ -63,7 +66,10 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
             {METRICS.map((m) => {
               const va = a.metrics[m.key];
               const vb = b.metrics[m.key];
-              const diff = va - vb;
+              // A delta is only meaningful when both sides are numeric; an
+              // undefined (∞) LTV on either side shows a dash instead (#5.2).
+              const comparable = typeof va === 'number' && typeof vb === 'number';
+              const diff = comparable ? va - vb : 0;
               // Colour the delta by whether A is better than B for this metric.
               const better = m.lowerIsBetter ? diff < 0 : diff > 0;
               const worse = m.lowerIsBetter ? diff > 0 : diff < 0;
@@ -71,11 +77,10 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
               return (
                 <tr key={m.key} className="border-b border-black/5 dark:border-white/5">
                   <td className="py-2 pr-4 text-gray-500">{m.label}</td>
-                  <td className="py-2 pr-4 text-right font-mono">{m.fmt(va)}</td>
-                  <td className="py-2 pr-4 text-right font-mono">{m.fmt(vb)}</td>
-                  <td className={`py-2 text-right font-mono ${color}`}>
-                    {diff > 0 ? '+' : ''}
-                    {m.fmt(Math.abs(diff))}
+                  <td className="py-2 pr-4 text-right font-mono">{fmtVal(va, m.fmt)}</td>
+                  <td className="py-2 pr-4 text-right font-mono">{fmtVal(vb, m.fmt)}</td>
+                  <td className={`py-2 text-right font-mono ${comparable ? color : 'text-gray-400'}`}>
+                    {comparable ? `${diff > 0 ? '+' : ''}${m.fmt(Math.abs(diff))}` : '—'}
                   </td>
                 </tr>
               );

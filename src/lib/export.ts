@@ -27,7 +27,8 @@ export function toCsv(rows: SavedProject[]): string {
       (r.metrics.retentionRate * 100).toFixed(2),
       r.metrics.arpu.toFixed(2),
       r.metrics.mrr.toFixed(2),
-      r.metrics.estimatedLtv.toFixed(2),
+      // null LTV (zero churn) exports as empty rather than a misleading 0 (#5.2).
+      r.metrics.estimatedLtv === null ? '' : r.metrics.estimatedLtv.toFixed(2),
       cell(r.metrics.riskStatus),
     ].join(',')
   );

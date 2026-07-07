@@ -22,9 +22,11 @@ export function calculateSaaSMetrics(data: ProjectInput): AnalyticsResult {
   else if (churnRate > 0.05) riskStatus = 'Medium';
 
   // MRR is the current monthly recurring revenue; estimated LTV projects
-  // average revenue per user across their expected lifetime (1 / churn).
+  // average revenue per user across their expected lifetime (1 / churn). With
+  // zero churn the expected lifetime is infinite, so LTV is undefined — we
+  // return null rather than a misleading 0 (#5.2).
   const mrr = Number(data.monthlyRevenue.toFixed(2));
-  const estimatedLtv = churnRate > 0 ? Number((arpu / churnRate).toFixed(2)) : 0;
+  const estimatedLtv = churnRate > 0 ? Number((arpu / churnRate).toFixed(2)) : null;
 
   return { churnRate, retentionRate, arpu, riskStatus, mrr, estimatedLtv };
 }

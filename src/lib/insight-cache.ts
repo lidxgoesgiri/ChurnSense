@@ -11,16 +11,21 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 const TTL = 5 * 60 * 1000; // 5 minutes
 
-// Key covers the model plus EVERY input field that affects the computed
-// metrics/insight — changing activeUsers or monthlyRevenue must produce a
-// fresh insight, not a stale cached one.
-function makeKey(input: ProjectInput, model: string): string {
+// Key covers the OWNER (#3.5), the model, plus EVERY input field that affects
+// the computed metrics/insight — so two users with an identically-named project
+// never share an entry, and changing activeUsers or monthlyRevenue produces a
+// fresh insight rather than a stale cached one.
+function makeKey(owner: string, input: ProjectInput, model: string): string {
   const { projectName, totalUsers, activeUsers, churnedUsers, monthlyRevenue } = input;
-  return `${model}:${projectName}:${totalUsers}:${activeUsers}:${churnedUsers}:${monthlyRevenue}`;
+  return `${owner}:${model}:${projectName}:${totalUsers}:${activeUsers}:${churnedUsers}:${monthlyRevenue}`;
 }
 
-export function getCachedInsight(input: ProjectInput, model: string): AIInsightResult | null {
-  const key = makeKey(input, model);
+export function getCachedInsight(
+  owner: string,
+  input: ProjectInput,
+  model: string
+): AIInsightResult | null {
+  const key = makeKey(owner, input, model);
   const entry = cache.get(key);
   if (!entry) return null;
   if (Date.now() > entry.expiresAt) {
@@ -30,6 +35,11 @@ export function getCachedInsight(input: ProjectInput, model: string): AIInsightR
   return entry.insight;
 }
 
-export function setCachedInsight(input: ProjectInput, model: string, insight: AIInsightResult): void {
-  cache.set(makeKey(input, model), { insight, expiresAt: Date.now() + TTL });
+export function setCachedInsight(
+  owner: string,
+  input: ProjectInput,
+  model: string,
+  insight: AIInsightResult
+): void {
+  cache.set(makeKey(owner, input, model), { insight, expiresAt: Date.now() + TTL });
 }

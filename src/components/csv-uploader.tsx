@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import type { AggregateResult, BatchError, BatchRowResult } from '@/types';
+import type { AggregateResult, BatchError, BatchRowResult, ProjectInput } from '@/types';
+import { detectSeparator, parseCsvRecords } from '@/lib/csv-parser';
 
 interface BatchResponse {
   success: boolean;
@@ -18,7 +19,12 @@ Beta Client A,1000,850,150,5000
 Beta Client B,500,400,100,2000
 Gamma Corp,2000,1800,200,15000`;
 
-export function CsvUploader() {
+export function CsvUploader({
+  onSelectProject,
+}: {
+  // Promote one analyzed batch row into the main dashboard (#6.1).
+  onSelectProject?: (input: ProjectInput) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string[][]>([]);
@@ -33,12 +39,15 @@ export function CsvUploader() {
     setFile(f);
     const reader = new FileReader();
     reader.onload = () => {
-      const text = String(reader.result ?? '');
-      const rows = text
-        .split(/\r?\n/)
-        .filter((l) => l.trim().length > 0)
-        .slice(0, 4) // header + 3 preview rows
-        .map((l) => l.split(/[,;]/).map((c) => c.trim()));
+      let text = String(reader.result ?? '');
+      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1); // strip BOM
+      // Use the SAME quote/multiline-aware parser as the backend so the preview
+      // matches what the server will actually process (#6.2, #7.6).
+      const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
+      const sep = detectSeparator(firstLine);
+      const rows = parseCsvRecords(text, sep)
+        .filter((r) => r.length > 0 && r.some((c) => c !== ''))
+        .slice(0, 4); // header + 3 preview rows
       setPreview(rows);
     };
     reader.readAsText(f);
@@ -189,6 +198,12 @@ export function CsvUploader() {
             </div>
           )}
 
+          {onSelectProject && (
+            <p className="text-xs text-gray-400">
+              Pick a project below to load it into the dashboard — metrics, chart,
+              AI insight, and chat.
+            </p>
+          )}
           <div className="overflow-x-auto rounded-lg border border-black/10 dark:border-white/15">
             <table className="w-full text-left text-xs">
               <thead className="text-gray-400">
@@ -198,6 +213,7 @@ export function CsvUploader() {
                   <th className="px-3 py-2">Retention</th>
                   <th className="px-3 py-2">ARPU</th>
                   <th className="px-3 py-2">Risk</th>
+                  {onSelectProject && <th className="px-3 py-2" />}
                 </tr>
               </thead>
               <tbody>
@@ -208,6 +224,17 @@ export function CsvUploader() {
                     <td className="px-3 py-1.5">{(r.metrics.retentionRate * 100).toFixed(1)}%</td>
                     <td className="px-3 py-1.5">${r.metrics.arpu}</td>
                     <td className="px-3 py-1.5">{r.metrics.riskStatus}</td>
+                    {onSelectProject && (
+                      <td className="px-3 py-1.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => onSelectProject(r.input)}
+                          className="rounded-md border border-indigo-500/40 px-2 py-0.5 text-[11px] font-semibold text-indigo-600 transition-colors hover:bg-indigo-500/10 dark:text-indigo-400"
+                        >
+                          Use
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

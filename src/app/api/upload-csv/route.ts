@@ -13,6 +13,17 @@ import {
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5MB
 const MAX_ROWS = 500;
+// Accepted MIME types for a CSV (browsers/OSes vary); empty is tolerated since
+// some clients omit it, but a clearly-wrong type (e.g. application/pdf) is
+// rejected as an extra signal beyond the extension check (#7.7).
+const ALLOWED_MIME = new Set([
+  'text/csv',
+  'application/csv',
+  'application/vnd.ms-excel',
+  'text/plain',
+  '',
+]);
+const MAX_PROJECT_NAME_LEN = 255;
 
 // POST /api/upload-csv — accept a multipart CSV, validate & analyze each row,
 // and return per-row metrics plus a batch aggregate.
@@ -42,6 +53,13 @@ export async function POST(request: Request) {
   }
   if (!file.name.toLowerCase().endsWith('.csv')) {
     return NextResponse.json({ error: 'Only CSV files are supported' }, { status: 400 });
+  }
+  // MIME check as a second signal beyond the extension (#7.7).
+  if (!ALLOWED_MIME.has(file.type)) {
+    return NextResponse.json(
+      { error: 'File does not appear to be a CSV' },
+      { status: 400 }
+    );
   }
 
   const text = await file.text();
@@ -78,6 +96,11 @@ export async function POST(request: Request) {
   const errors: BatchError[] = [];
 
   rawRows.forEach((raw, i) => {
+    // Guard against an absurdly long project name before schema parsing (#7.7).
+    if (typeof raw.projectName === 'string' && raw.projectName.length > MAX_PROJECT_NAME_LEN) {
+      errors.push({ row: i + 1, error: `projectName exceeds ${MAX_PROJECT_NAME_LEN} characters` });
+      return;
+    }
     const parsed = projectInputSchema.safeParse(raw);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
@@ -89,7 +112,7 @@ export async function POST(request: Request) {
     }
     const metrics = calculateSaaSMetrics(parsed.data);
     rows.push({ input: parsed.data, metrics });
-    results.push({ projectName: parsed.data.projectName, metrics });
+    results.push({ projectName: parsed.data.projectName, metrics, input: parsed.data });
   });
 
   // If nothing validated, the upload is unusable — reject it as a 400.

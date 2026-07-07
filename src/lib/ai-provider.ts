@@ -6,20 +6,39 @@ export interface ChatMsg {
   content: string;
 }
 
+// Circuit breaker: a model that errors is skipped for COOLDOWN_MS so a flaky
+// provider doesn't get retried on every request, capping latency and cost
+// (#3.3). Per-instance and time-based; forgives itself automatically.
+const COOLDOWN_MS = 60_000;
+const openCircuits = new Map<string, number>();
+
+function isCircuitOpen(model: string): boolean {
+  const until = openCircuits.get(model);
+  if (until === undefined) return false;
+  if (Date.now() > until) {
+    openCircuits.delete(model);
+    return false;
+  }
+  return true;
+}
+
+function tripCircuit(model: string): void {
+  openCircuits.set(model, Date.now() + COOLDOWN_MS);
+}
+
 /**
- * Ordered model list: the (validated) preferred model first, then every other
- * allow-listed model as a fallback. Used to route around a model that returns
- * an empty response — a known quirk of some free models.
+ * Ordered model list, capped at TWO distinct models (#3.3): the validated
+ * preferred model, then a single healthy chat-capable fallback. Models with an
+ * open circuit are skipped. Bounding the chain keeps worst-case latency and
+ * token spend predictable when a provider is degraded.
  */
 export function modelFallbackOrder(preferred?: unknown): string[] {
   const first = validateModelId(preferred);
-  // Only genuine chat models are used as fallbacks (excludes classifiers).
-  const rest = AVAILABLE_MODELS.filter((m) => m.chat !== false)
+  // First healthy, chat-capable model that isn't the preferred one.
+  const fallback = AVAILABLE_MODELS.filter((m) => m.chat !== false)
     .map((m) => m.id)
-    .filter((id) => id !== first);
-  // Retry the preferred model once (empty replies are often transient) before
-  // moving on to the chat-capable fallbacks.
-  return [first, first, ...rest];
+    .find((id) => id !== first && !isCircuitOpen(id));
+  return fallback ? [first, fallback] : [first];
 }
 
 /** Call one model (non-streaming). Returns trimmed content ('' if empty). Throws on HTTP/network error. */
@@ -57,7 +76,8 @@ export async function completeWithFallback(
       const content = await callModel(model, messages, opts);
       if (content) return content;
     } catch {
-      /* try the next model */
+      // Mark this model unhealthy so it's skipped for the cooldown window (#3.3).
+      tripCircuit(model);
     }
   }
   return '';

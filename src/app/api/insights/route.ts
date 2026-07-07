@@ -1,24 +1,36 @@
 import { NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
+import { and, eq, asc } from 'drizzle-orm';
 import { calculateSaaSMetrics, ValidationError } from '@/lib/analytics';
 import { generateInsight } from '@/lib/ai-insight';
 import { detectChurnTrend, type TrendResult } from '@/lib/trend';
 import { projectInputSchema } from '@/lib/validation';
 import { getDb, isDbConfigured } from '@/lib/db';
 import { projects } from '@/lib/db/schema';
-import { getSession, unauthorizedResponse, parseJsonBody } from '@/lib/auth';
-import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import {
+  getSession,
+  unauthorizedResponse,
+  csrfCheck,
+  forbiddenResponse,
+  parseJsonBody,
+} from '@/lib/auth';
+import { rateLimit, rateLimitResponse, rateLimitHeaders, clientIp } from '@/lib/rate-limit';
 import { isAllowedModel, DEFAULT_MODEL } from '@/lib/models';
 import { getCachedInsight, setCachedInsight } from '@/lib/insight-cache';
+import { serverError } from '@/lib/errors';
 
-// Pull the project's prior churn history so the insight can reason about trend.
-async function loadTrend(projectName: string, currentChurn: number): Promise<TrendResult | undefined> {
+// Pull THIS owner's prior churn history for the named project so the insight can
+// reason about trend without mixing in other users' data (#2.2).
+async function loadTrend(
+  owner: string,
+  projectName: string,
+  currentChurn: number
+): Promise<TrendResult | undefined> {
   if (!isDbConfigured()) return undefined;
   try {
     const rows = await getDb()
       .select()
       .from(projects)
-      .where(eq(projects.projectName, projectName))
+      .where(and(eq(projects.ownerEmail, owner), eq(projects.projectName, projectName)))
       .orderBy(asc(projects.createdAt));
     const priorChurnRates = rows.map((r) =>
       r.totalUsers > 0 ? Number((r.churnedUsers / r.totalUsers).toFixed(4)) : 0
@@ -32,11 +44,15 @@ async function loadTrend(projectName: string, currentChurn: number): Promise<Tre
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
+  // AI calls consume paid tokens — guard against cross-origin abuse (#3.2).
+  if (!csrfCheck(request)) return forbiddenResponse();
 
   // 40/min per session — protects against abuse while comfortably allowing
   // real usage (analyzing several projects, regenerating insights) and
   // back-to-back automated test suites that share one session.
-  if (!rateLimit(`insight:${session}`, 40).allowed) return rateLimitResponse();
+  const rl = rateLimit(`insight:${session}:${clientIp(request)}`, 40);
+  if (!rl.allowed) return rateLimitResponse(rl);
+  const rlHeaders = rateLimitHeaders(rl);
 
   try {
     const parsedBody = await parseJsonBody(request);
@@ -62,17 +78,18 @@ export async function POST(request: Request) {
     }
 
     const metrics = calculateSaaSMetrics(parsed.data);
-    const trend = await loadTrend(parsed.data.projectName, metrics.churnRate);
+    const trend = await loadTrend(session, parsed.data.projectName, metrics.churnRate);
 
     // Serve a cached insight for identical input within the TTL to avoid a
-    // repeat AI call (#23). The key covers every input field, so changing any
-    // number (e.g. activeUsers or monthlyRevenue) yields a fresh insight.
-    const cached = getCachedInsight(parsed.data, validatedModel);
+    // repeat AI call (#23). The key is scoped to the owner (#3.5), so two users
+    // with an identically-named project never share a cached insight, and it
+    // covers every input field so changing any number yields a fresh insight.
+    const cached = getCachedInsight(session, parsed.data, validatedModel);
     const insight =
       cached ??
       (await generateInsight({ project: parsed.data, metrics, trend, model: validatedModel }));
     if (!cached) {
-      setCachedInsight(parsed.data, validatedModel, insight);
+      setCachedInsight(session, parsed.data, validatedModel, insight);
     }
 
     return NextResponse.json(
@@ -86,13 +103,12 @@ export async function POST(request: Request) {
         cached: Boolean(cached),
         timestamp: new Date().toISOString(),
       },
-      { status: 200 }
+      { status: 200, headers: rlHeaders }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal Server Error';
-    return NextResponse.json(
-      { error: message },
-      { status: error instanceof ValidationError ? 400 : 500 }
-    );
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    return serverError('insights.POST', error);
   }
 }

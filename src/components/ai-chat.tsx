@@ -12,18 +12,24 @@ interface Props {
   project: ProjectInput | null;
   metrics: AnalyticsResult | null;
   model?: string;
+  userEmail: string;
 }
 
-const STORAGE_KEY = 'churnsense-chat-history';
 const GREETING: ChatMessage = {
   role: 'assistant',
   content: 'Ask me anything about your churn data — trends, benchmarks, or what to improve.',
 };
 
-function loadHistory(): ChatMessage[] {
+// Per-user, per-project storage key (#6.3): switching projects (or users on a
+// shared device) shows the relevant conversation, never another context's chat.
+function storageKey(userEmail: string, projectName: string | undefined): string {
+  return `churnsense-chat:${userEmail}:${projectName ?? '__none__'}`;
+}
+
+function loadHistory(key: string): ChatMessage[] {
   if (typeof window === 'undefined') return [GREETING];
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(key);
     const parsed = stored ? (JSON.parse(stored) as ChatMessage[]) : null;
     return parsed && parsed.length > 0 ? parsed : [GREETING];
   } catch {
@@ -31,34 +37,37 @@ function loadHistory(): ChatMessage[] {
   }
 }
 
-export function AIChat({ project, metrics, model }: Props) {
+export function AIChat({ project, metrics, model, userEmail }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Load persisted history after mount (avoids SSR/hydration mismatch).
+  const storeKey = storageKey(userEmail, project?.projectName);
+
+  // Load the history for the current user+project. Re-runs when the active
+  // project changes so each project shows its own conversation (#6.3).
   useEffect(() => {
     // Intentional: read localStorage only on the client, post-hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMessages(loadHistory());
-  }, []);
+    setMessages(loadHistory(storeKey));
+  }, [storeKey]);
 
-  // Persist the last 50 messages whenever the conversation changes.
+  // Persist the last 50 messages under the scoped key whenever the chat changes.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50)));
+      localStorage.setItem(storeKey, JSON.stringify(messages.slice(-50)));
     } catch {
       /* storage full or unavailable — non-fatal */
     }
-  }, [messages]);
+  }, [messages, storeKey]);
 
   function clearHistory() {
     setMessages([GREETING]);
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(storeKey);
     } catch {
       /* ignore */
     }
@@ -89,10 +98,28 @@ export function AIChat({ project, metrics, model }: Props) {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'ChurnSense',
+        },
         body: JSON.stringify({
           message: text,
-          context: project && metrics ? { project, metrics } : null,
+          // Flattened context so the backend's top-level reader receives the
+          // real project data instead of a nested object it ignores (#3.1).
+          context:
+            project && metrics
+              ? {
+                  projectName: project.projectName,
+                  totalUsers: project.totalUsers,
+                  activeUsers: project.activeUsers,
+                  churnedUsers: project.churnedUsers,
+                  monthlyRevenue: project.monthlyRevenue,
+                  churnRate: metrics.churnRate,
+                  retentionRate: metrics.retentionRate,
+                  arpu: metrics.arpu,
+                  riskStatus: metrics.riskStatus,
+                }
+              : null,
           model,
           stream: true,
         }),
