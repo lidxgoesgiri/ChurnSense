@@ -6,6 +6,7 @@ import {
   numeric,
   timestamp,
   index,
+  text,
 } from 'drizzle-orm/pg-core';
 
 export const projects = pgTable(
@@ -31,3 +32,19 @@ export const projects = pgTable(
 
 export type ProjectRow = typeof projects.$inferSelect;
 export type NewProjectRow = typeof projects.$inferInsert;
+
+// Cross-instance insight cache (#3.5). Backed by the same Neon DB so a cached
+// insight survives serverless cold starts and is shared across instances,
+// instead of living in per-instance memory. The key is owner-scoped and covers
+// every input field + model; expiresAt drives TTL eviction.
+export const insightCache = pgTable(
+  'insight_cache',
+  {
+    cacheKey: varchar('cache_key', { length: 512 }).primaryKey(),
+    insight: text('insight').notNull(), // JSON-serialized AIInsightResult
+    expiresAt: timestamp('expires_at').notNull(),
+  },
+  (table) => [index('idx_insight_expires').on(table.expiresAt)]
+);
+
+export type InsightCacheRow = typeof insightCache.$inferSelect;

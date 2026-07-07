@@ -85,12 +85,12 @@ export async function POST(request: Request) {
     // repeat AI call (#23). The key is scoped to the owner (#3.5), so two users
     // with an identically-named project never share a cached insight, and it
     // covers every input field so changing any number yields a fresh insight.
-    const cached = getCachedInsight(session, parsed.data, validatedModel);
+    const cached = await getCachedInsight(session, parsed.data, validatedModel);
     const insight =
       cached ??
       (await generateInsight({ project: parsed.data, metrics, trend, model: validatedModel }));
     if (!cached) {
-      setCachedInsight(session, parsed.data, validatedModel, insight);
+      await setCachedInsight(session, parsed.data, validatedModel, insight);
     }
 
     return NextResponse.json(
