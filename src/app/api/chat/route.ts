@@ -3,7 +3,7 @@ import { env, hasAiProvider } from '@/lib/env';
 import {
   getSession,
   unauthorizedResponse,
-  csrfCheck,
+  csrfCheckOrigin,
   forbiddenResponse,
   parseJsonBody,
 } from '@/lib/auth';
@@ -49,8 +49,9 @@ function sanitizeContext(ctx: unknown): string {
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
-  // Paid AI endpoint — same CSRF header gate as the other mutating routes (#3.2).
-  if (!csrfCheck(request)) return forbiddenResponse();
+  // Paid AI endpoint — origin-based CSRF: blocks cross-origin browser abuse but
+  // allows legitimate non-browser API clients (#3.2).
+  if (!csrfCheckOrigin(request)) return forbiddenResponse();
 
   const rl = rateLimit(`chat:${session}:${clientIp(request)}`, 20);
   if (!rl.allowed) return rateLimitResponse(rl);

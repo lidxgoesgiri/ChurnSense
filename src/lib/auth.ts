@@ -66,24 +66,31 @@ export function unauthorizedResponse() {
 }
 
 /**
- * CSRF mitigation (#3.2). A mutating request is accepted when EITHER:
- *   - it carries our custom header (browsers can't set it cross-origin without a
- *     CORS preflight the server never allows — blocks simple form-based CSRF), OR
+ * Strict CSRF check (custom header). Browsers cannot set a custom header on a
+ * cross-origin request without a CORS preflight the server never allows, so
+ * requiring it blocks simple form-based CSRF. Used on the state-changing data
+ * endpoints (projects create/delete, CSV upload) whose clients are always our
+ * own frontend, which sends this header on every call.
+ */
+export function csrfCheck(request: Request): boolean {
+  return request.headers.get('x-requested-with') === 'ChurnSense';
+}
+
+/**
+ * Origin-based CSRF check (#3.2). A mutating request is accepted when EITHER:
+ *   - it carries our custom header, OR
  *   - its Origin/Referer is same-origin as the request Host, OR
  *   - it has no Origin/Referer at all (non-browser server-to-server clients and
  *     tools never send Origin; a forged cross-site browser request always does).
  *
  * It is REJECTED only when a browser presents a *foreign* Origin/Referer — the
- * actual CSRF signature. This keeps the protection strong for browsers while not
- * breaking legitimate API clients that omit the custom header.
+ * actual CSRF signature. This protects the AI endpoints (chat, insights) from
+ * cross-origin token abuse without breaking legitimate non-browser API clients.
  */
-export function csrfCheck(request: Request): boolean {
-  // Fast path: our own clients send this on every mutating call.
+export function csrfCheckOrigin(request: Request): boolean {
   if (request.headers.get('x-requested-with') === 'ChurnSense') return true;
 
-  const origin = request.headers.get('origin');
-  const referer = request.headers.get('referer');
-  const source = origin ?? referer;
+  const source = request.headers.get('origin') ?? request.headers.get('referer');
   // No browser-origin context → not a browser CSRF vector.
   if (!source) return true;
 

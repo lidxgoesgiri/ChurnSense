@@ -9,7 +9,7 @@ import { projects } from '@/lib/db/schema';
 import {
   getSession,
   unauthorizedResponse,
-  csrfCheck,
+  csrfCheckOrigin,
   forbiddenResponse,
   parseJsonBody,
 } from '@/lib/auth';
@@ -44,8 +44,9 @@ async function loadTrend(
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
-  // AI calls consume paid tokens — guard against cross-origin abuse (#3.2).
-  if (!csrfCheck(request)) return forbiddenResponse();
+  // AI calls consume paid tokens — origin-based CSRF guards against cross-origin
+  // browser abuse while allowing non-browser API clients (#3.2).
+  if (!csrfCheckOrigin(request)) return forbiddenResponse();
 
   // 40/min per session — protects against abuse while comfortably allowing
   // real usage (analyzing several projects, regenerating insights) and
