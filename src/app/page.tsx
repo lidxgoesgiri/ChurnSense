@@ -12,6 +12,45 @@ const FEATURES = [
   { icon: '📊', title: 'Trends & anomalies', desc: 'Spot spikes against your baseline.' },
 ];
 
+const DEEP_FEATURES = [
+  {
+    icon: '📁',
+    title: 'Secure Data Ingestion',
+    desc: 'Upload raw user data via CSV with one click. Owner-scoped encryption ensures your metrics never leak to other accounts. No manual spreadsheet formulas — we parse, validate, and sanitize instantly.',
+  },
+  {
+    icon: '🧠',
+    title: 'AI-Powered Behavioral Analysis',
+    desc: 'Our analytics engine detects churn patterns automatically: trailing-average anomaly detection flags spikes/drops, and multi-model AI (with deterministic fallback) generates written insights explaining WHY users are leaving and WHAT to do next.',
+  },
+  {
+    icon: '⚡',
+    title: 'Real-Time Actionable Dashboard',
+    desc: 'Interactive Recharts visualizations show retention curves, comparison bars, and risk badges. Chat with an AI that knows your project context. Export CSV reports. Save history. All in a cinematic dark-mode interface optimized for speed.',
+  },
+];
+
+const COMPARISON = [
+  {
+    label: 'Traditional Spreadsheets',
+    points: [
+      { icon: '🐌', text: 'Manual formula setup — error-prone and slow' },
+      { icon: '📅', text: 'Reactive only — spot trends after damage is done' },
+      { icon: '❌', text: 'No AI insight — you interpret the numbers yourself' },
+      { icon: '🔓', text: 'Shared files leak across teams without access control' },
+    ],
+  },
+  {
+    label: 'ChurnSense',
+    points: [
+      { icon: '⚡', text: 'Automated in seconds — zero manual calculation' },
+      { icon: '🔮', text: 'Proactive AI — flags anomalies before they spiral' },
+      { icon: '🤖', text: 'Written recommendations — tactical next steps, not raw data' },
+      { icon: '🔒', text: 'Owner-scoped data isolation — HMAC-signed sessions, CSRF guards' },
+    ],
+  },
+];
+
 const STEPS = [
   { n: '01', title: 'Enter your data', desc: 'Type user counts manually or drag-and-drop a CSV for batch analysis.' },
   { n: '02', title: 'See the metrics', desc: 'Churn, retention, ARPU, MRR and estimated LTV — computed instantly, with a risk badge.' },
@@ -154,6 +193,66 @@ export default function Home() {
             <div className="mt-1 text-xs text-gray-400">{f.desc}</div>
           </div>
         ))}
+      </section>
+
+      {/* Deep-Dive Features */}
+      <section className="mx-auto max-w-5xl px-6 py-20">
+        <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          Built for speed, powered by intelligence
+        </h2>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-gray-400">
+          ChurnSense combines secure data handling, AI-driven pattern detection, and a
+          real-time dashboard so you spend zero time on spreadsheets and all your energy on
+          keeping customers.
+        </p>
+        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+          {DEEP_FEATURES.map((feat, i) => (
+            <div
+              key={feat.title}
+              className="glass-card p-6"
+              style={{ animationDelay: `${0.15 + i * 0.1}s` }}
+            >
+              <div className="text-3xl">{feat.icon}</div>
+              <h3 className="mt-4 text-lg font-semibold">{feat.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-400">{feat.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Competitive Comparison */}
+      <section className="mx-auto max-w-5xl px-6 pb-20">
+        <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          Why ChurnSense?
+        </h2>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-gray-400">
+          Traditional spreadsheet workflows are reactive, error-prone, and time-consuming.
+          ChurnSense automates the entire pipeline — from ingestion to AI-powered recommendations.
+        </p>
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          {COMPARISON.map((col, idx) => (
+            <div key={col.label} className="glass-card p-8">
+              <div className="mb-6 flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-xl ${
+                    idx === 0 ? 'bg-red-500/20 text-red-400' : 'bg-accent/20 text-accent'
+                  }`}
+                >
+                  {idx === 0 ? '📊' : '✨'}
+                </div>
+                <h3 className="text-lg font-bold">{col.label}</h3>
+              </div>
+              <ul className="space-y-4">
+                {col.points.map((pt, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-xl">{pt.icon}</span>
+                    <span className="text-sm text-gray-400">{pt.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* How it works */}
