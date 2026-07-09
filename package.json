@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "test": "node scripts/run-tests.mjs",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
