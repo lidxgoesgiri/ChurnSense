@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   // 40/min per session — protects against abuse while comfortably allowing
   // real usage (analyzing several projects, regenerating insights) and
   // back-to-back automated test suites that share one session.
-  const rl = rateLimit(`insight:${session}:${clientIp(request)}`, 40);
+  const rl = await rateLimit(`insight:${session}:${clientIp(request)}`, 40);
   if (!rl.allowed) return rateLimitResponse(rl);
   const rlHeaders = rateLimitHeaders(rl);
 

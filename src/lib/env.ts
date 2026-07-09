@@ -32,6 +32,10 @@ const envSchema = z.object({
     : z.string().min(32).optional(),
   // Optional bearer token gating the internal health endpoint (#4.4).
   HEALTH_TOKEN: z.string().min(1).optional(),
+  // Upstash Redis (REST) for the distributed rate limiter (#1.2). Both must be
+  // set to activate it; otherwise the limiter falls back to an in-memory window.
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse({
@@ -41,6 +45,8 @@ const parsed = envSchema.safeParse({
   AI_MODEL: process.env.AI_MODEL || undefined,
   COOKIE_SECRET: process.env.COOKIE_SECRET || undefined,
   HEALTH_TOKEN: process.env.HEALTH_TOKEN || undefined,
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || undefined,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || undefined,
 });
 
 if (!parsed.success) {

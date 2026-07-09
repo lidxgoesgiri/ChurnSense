@@ -94,7 +94,7 @@ export async function POST(request: Request) {
   // allows legitimate non-browser API clients (#3.2).
   if (!csrfCheckOrigin(request)) return forbiddenResponse();
 
-  const rl = rateLimit(`chat:${session}:${clientIp(request)}`, 20);
+  const rl = await rateLimit(`chat:${session}:${clientIp(request)}`, 20);
   if (!rl.allowed) return rateLimitResponse(rl);
   const rlHeaders = rateLimitHeaders(rl);
 
