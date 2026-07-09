@@ -27,8 +27,8 @@ const ALLOWED_CONTEXT_KEYS = [
   'riskStatus',
 ];
 
-function sanitizeContext(ctx: unknown): string {
-  if (!ctx || typeof ctx !== 'object') return 'No project data yet.';
+function safeContext(ctx: unknown): Record<string, string | number | boolean> {
+  if (!ctx || typeof ctx !== 'object') return {};
   const src = ctx as Record<string, unknown>;
   const safe: Record<string, string | number | boolean> = {};
   for (const key of ALLOWED_CONTEXT_KEYS) {
@@ -41,9 +41,50 @@ function sanitizeContext(ctx: unknown): string {
       safe[key] = val;
     }
   }
-  return Object.keys(safe).length > 0
-    ? JSON.stringify(safe, null, 2)
-    : 'No project data yet.';
+  return safe;
+}
+
+function sanitizeContext(ctx: unknown): string {
+  const safe = safeContext(ctx);
+  return Object.keys(safe).length > 0 ? JSON.stringify(safe, null, 2) : 'No project data yet.';
+}
+
+// Deterministic, no-network chat fallback (#3.3 resilience). When every AI model
+// returns empty/errors, the user still gets a useful, data-grounded answer
+// instead of an error — mirroring how insights degrade to a rule-based engine.
+function ruleBasedChatReply(message: string, ctx: unknown): string {
+  const c = safeContext(ctx);
+  if (Object.keys(c).length === 0) {
+    return 'Analyze a project first (enter user counts and calculate metrics), then I can answer questions about its churn, retention, ARPU, and risk.';
+  }
+  const name = String(c.projectName ?? 'this project');
+  const churn = typeof c.churnRate === 'number' ? (c.churnRate * 100).toFixed(1) : null;
+  const ret = typeof c.retentionRate === 'number' ? (c.retentionRate * 100).toFixed(1) : null;
+  const arpu = typeof c.arpu === 'number' ? c.arpu : null;
+  const risk = typeof c.riskStatus === 'string' ? c.riskStatus : null;
+  const q = message.toLowerCase();
+
+  const parts: string[] = [];
+  if (q.includes('churn') && churn) parts.push(`${name}'s churn rate is ${churn}%.`);
+  if (q.includes('retention') && ret) parts.push(`Retention is ${ret}%.`);
+  if ((q.includes('arpu') || q.includes('revenue')) && arpu !== null) parts.push(`ARPU is $${arpu}.`);
+  if ((q.includes('risk') || q.includes('health')) && risk) parts.push(`Risk status is ${risk}.`);
+
+  if (parts.length === 0) {
+    const bits = [
+      churn && `churn ${churn}%`,
+      ret && `retention ${ret}%`,
+      arpu !== null && `ARPU $${arpu}`,
+      risk && `${risk} risk`,
+    ].filter(Boolean);
+    parts.push(`Here's a snapshot of ${name}: ${bits.join(', ')}.`);
+  }
+  if (risk === 'High') parts.push('Churn is elevated — prioritize churn-reason interviews and the highest-impact retention fix.');
+  else if (risk === 'Medium') parts.push('Retention is workable but sensitive — watch first-30-day activation and re-engage at-risk accounts.');
+  else if (risk === 'Low') parts.push('Fundamentals look healthy — consider an expansion-revenue upsell on your retained base.');
+
+  parts.push('(AI service is briefly unavailable, so this is a rule-based summary.)');
+  return parts.join(' ');
 }
 
 export async function POST(request: Request) {
@@ -154,7 +195,9 @@ export async function POST(request: Request) {
             // response from the next model(s) so the user always gets an answer.
             if (!enqueuedAny) {
               const fb = await completeWithFallback(messages, resolvedModel, { maxTokens: 600, timeoutMs: 20_000 });
-              if (fb) controller.enqueue(encoder.encode(fb));
+              // Last-resort: if every model is empty too, stream the deterministic
+              // rule-based reply so the user never sees a blank answer (#3.3).
+              controller.enqueue(encoder.encode(fb || ruleBasedChatReply(message, context)));
             }
             controller.close();
           } catch (err) {
@@ -172,25 +215,30 @@ export async function POST(request: Request) {
         },
       });
     } catch (error: unknown) {
-      // Log the real cause server-side; return a generic reply, no raw detail (#4.5).
+      // Log the real cause server-side; degrade to the deterministic rule-based
+      // reply so the user still gets a data-grounded answer, not raw detail (#3.3, #4.5).
       console.error('[chat.POST] stream error:', error instanceof Error ? error.message : error);
       return NextResponse.json(
-        { reply: 'Maaf, terjadi kesalahan pada layanan AI. Silakan coba lagi.' },
-        { status: 502 }
+        { reply: ruleBasedChatReply(message, context), fallback: true },
+        { headers: rlHeaders }
       );
     }
   }
 
-  // Non-streaming path — cycles through models on empty responses (#2).
+  // Non-streaming path — cycles through models on empty responses (#2), then
+  // degrades to the deterministic rule-based reply if every model fails (#3.3).
   try {
     const reply = await completeWithFallback(messages, resolvedModel, { maxTokens: 600, timeoutMs: 20_000 });
-    if (!reply) throw new Error('All models returned an empty response');
-    return NextResponse.json({ reply }, { headers: rlHeaders });
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Chat failed';
+    if (reply) return NextResponse.json({ reply }, { headers: rlHeaders });
     return NextResponse.json(
-      { error: msg, reply: `Maaf, terjadi kesalahan: ${msg}. Silakan coba lagi.` },
-      { status: 502 }
+      { reply: ruleBasedChatReply(message, context), fallback: true },
+      { headers: rlHeaders }
+    );
+  } catch (error: unknown) {
+    console.error('[chat.POST] error:', error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { reply: ruleBasedChatReply(message, context), fallback: true },
+      { headers: rlHeaders }
     );
   }
 }
