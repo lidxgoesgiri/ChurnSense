@@ -40,6 +40,33 @@ function verifyValue(signed: string): string | null {
   return value;
 }
 
+// Magic-link email verification (#1.1). A short-lived, HMAC-signed token proves
+// the user controls the inbox before a session is issued. Stateless: the token
+// carries the email + an expiry and is signed with the same COOKIE_SECRET, so no
+// storage is needed. TTL is deliberately short to bound the replay window.
+const EMAIL_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+/** Create a signed, expiring sign-in token for `email`. */
+export function createEmailToken(email: string): string {
+  const exp = Date.now() + EMAIL_TOKEN_TTL_MS;
+  return signValue(`${encodeURIComponent(email)}|${exp}`);
+}
+
+/** Verify a sign-in token; returns the email, or null if forged or expired. */
+export function verifyEmailToken(token: string): string | null {
+  const value = verifyValue(token);
+  if (!value) return null;
+  const sep = value.lastIndexOf('|');
+  if (sep === -1) return null;
+  const exp = Number(value.slice(sep + 1));
+  if (!Number.isFinite(exp) || Date.now() > exp) return null;
+  try {
+    return decodeURIComponent(value.slice(0, sep));
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Validate the session cookie and return the user email, or null if the
  * request is unauthenticated or the cookie signature is invalid/forged.
@@ -55,6 +82,20 @@ export async function getSession(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/** Session lifetime shared by every code path that issues one. */
+export const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours
+
+/** Attach a fresh signed session cookie for `email` to a response. */
+export function issueSession(res: NextResponse, email: string): void {
+  res.cookies.set(COOKIE_NAME, signValue(encodeURIComponent(email)), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: SESSION_MAX_AGE,
+  });
 }
 
 /** 401 response for unauthenticated requests. */

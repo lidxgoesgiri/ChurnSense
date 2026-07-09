@@ -34,8 +34,17 @@ const envSchema = z.object({
   HEALTH_TOKEN: z.string().min(1).optional(),
   // Upstash Redis (REST) for the distributed rate limiter (#1.2). Both must be
   // set to activate it; otherwise the limiter falls back to an in-memory window.
+  // The Vercel/Upstash KV integration injects the KV_REST_API_* aliases.
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+  KV_REST_API_URL: z.string().url().optional(),
+  KV_REST_API_TOKEN: z.string().min(1).optional(),
+  // Email sign-in verification (#1.1). When AUTH_REQUIRE_VERIFICATION is 'true'
+  // AND a provider key is present, login issues a magic link instead of an
+  // instant session; otherwise the passwordless instant flow is used.
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).optional(),
+  AUTH_REQUIRE_VERIFICATION: z.enum(['true', 'false']).optional(),
 });
 
 const parsed = envSchema.safeParse({
@@ -47,6 +56,11 @@ const parsed = envSchema.safeParse({
   HEALTH_TOKEN: process.env.HEALTH_TOKEN || undefined,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || undefined,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || undefined,
+  KV_REST_API_URL: process.env.KV_REST_API_URL || undefined,
+  KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN || undefined,
+  RESEND_API_KEY: process.env.RESEND_API_KEY || undefined,
+  EMAIL_FROM: process.env.EMAIL_FROM || undefined,
+  AUTH_REQUIRE_VERIFICATION: process.env.AUTH_REQUIRE_VERIFICATION || undefined,
 });
 
 if (!parsed.success) {

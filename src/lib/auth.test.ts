@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { csrfCheck, csrfCheckOrigin } from './auth';
+import { csrfCheck, csrfCheckOrigin, createEmailToken, verifyEmailToken } from './auth';
 
 function req(headers: Record<string, string>): Request {
   return new Request('https://app.example/api/x', { method: 'POST', headers });
@@ -56,4 +56,28 @@ test('csrfCheckOrigin rejects a foreign Referer when no Origin present', () => {
 
 test('csrfCheckOrigin rejects a malformed Origin', () => {
   assert.equal(csrfCheckOrigin(req({ host: 'app.example', origin: 'not-a-url' })), false);
+});
+
+// --- magic-link email token (#1.1) ---
+
+test('email token round-trips the email', () => {
+  const token = createEmailToken('user@example.com');
+  assert.equal(verifyEmailToken(token), 'user@example.com');
+});
+
+test('email token with a special-character address round-trips', () => {
+  const token = createEmailToken('a.b+tag@sub.example.co');
+  assert.equal(verifyEmailToken(token), 'a.b+tag@sub.example.co');
+});
+
+test('a tampered email token is rejected', () => {
+  const token = createEmailToken('user@example.com');
+  // Flip the last character of the signature.
+  const tampered = token.slice(0, -1) + (token.endsWith('a') ? 'b' : 'a');
+  assert.equal(verifyEmailToken(tampered), null);
+});
+
+test('a garbage token is rejected', () => {
+  assert.equal(verifyEmailToken('not-a-valid-token'), null);
+  assert.equal(verifyEmailToken(''), null);
 });

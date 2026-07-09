@@ -43,8 +43,9 @@ function memoryRateLimit(key: string, maxRequests: number): RateLimitResult {
  * caller transparently falls back to memory.
  */
 async function upstashRateLimit(key: string, maxRequests: number): Promise<RateLimitResult | null> {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Accept either the native Upstash names or the Vercel/Upstash KV aliases.
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   if (!url || !token) return null;
 
   try {

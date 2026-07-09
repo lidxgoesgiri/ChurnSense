@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { COOKIE_NAME, signValue } from '@/lib/auth';
+import { createEmailToken, issueSession } from '@/lib/auth';
+import { hasEmailProvider, sendMagicLink } from '@/lib/email';
 
 const loginSchema = z.object({
   email: z.string().email('A valid email is required'),
 });
 
-// Passwordless email sign-in: a valid email establishes an HMAC-signed,
-// httpOnly session cookie (see COOKIE_SECRET). The session gates the dashboard;
-// the cookie is cryptographically tamper-evident.
+// Magic-link verification is ON only when explicitly enabled AND a provider is
+// wired up (#1.1). Left OFF by default so demo/automated flows keep the instant
+// passwordless sign-in; flip AUTH_REQUIRE_VERIFICATION=true for a public launch.
+function verificationRequired(): boolean {
+  return process.env.AUTH_REQUIRE_VERIFICATION === 'true' && hasEmailProvider();
+}
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -24,14 +29,28 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  const { email } = parsed.data;
 
-  const res = NextResponse.json({ success: true, email: parsed.data.email });
-  res.cookies.set(COOKIE_NAME, signValue(encodeURIComponent(parsed.data.email)), {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 60 * 60 * 8, // 8 hours
-  });
+  // Verified flow: prove inbox ownership before issuing a session (#1.1). We
+  // email a short-lived signed link and return `pending` — no cookie yet.
+  if (verificationRequired()) {
+    const token = createEmailToken(email);
+    const link = `${new URL(request.url).origin}/api/auth/verify?token=${encodeURIComponent(token)}`;
+    const sent = await sendMagicLink(email, link);
+    if (!sent) {
+      return NextResponse.json(
+        { error: 'Could not send the sign-in email. Please try again shortly.' },
+        { status: 502 }
+      );
+    }
+    return NextResponse.json({
+      pending: true,
+      message: 'Check your inbox for a secure sign-in link.',
+    });
+  }
+
+  // Instant passwordless flow (default): a valid email establishes the session.
+  const res = NextResponse.json({ success: true, email });
+  issueSession(res, email);
   return res;
 }

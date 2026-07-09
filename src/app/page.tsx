@@ -49,6 +49,7 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
 
   async function handleEnter(e: React.FormEvent) {
     e.preventDefault();
@@ -60,9 +61,15 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? 'Sign-in failed');
+      }
+      // Verified flow: a magic link was emailed — no session yet.
+      if (data.pending) {
+        setSent(true);
+        setLoading(false);
+        return;
       }
       router.push('/dashboard');
     } catch (err) {
@@ -226,37 +233,56 @@ export default function Home() {
               <p className="mt-1 text-xs text-gray-400">Sign in to open your analytics dashboard.</p>
             </div>
 
-            <form onSubmit={handleEnter} className="mt-6 space-y-3">
-              <label htmlFor="email" className="block text-sm font-medium">Email address</label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                className="input-glow px-3 py-2.5 text-sm"
-              />
-              {error && <p className="anim-fade-down text-sm text-red-400">{error}</p>}
-              <button type="submit" disabled={loading} className="btn-primary w-full py-3">
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white" style={{ animation: 'spin-slow 0.8s linear infinite' }} />
-                    Signing in…
-                  </span>
-                ) : (
-                  'Continue with email →'
-                )}
-              </button>
-              <div className="flex items-center justify-center gap-1.5 pt-1 text-center text-xs text-gray-400">
-                <span aria-hidden>🔒</span>
-                <span>
-                  We&apos;ll send a secure magic link or OTP token to your inbox.{' '}
-                  <span className="font-medium text-foreground">Simple. Passwordless.</span>
-                </span>
+            {sent ? (
+              <div className="anim-fade-up mt-6 space-y-3 text-center" role="status">
+                <div className="text-3xl">📬</div>
+                <p className="text-sm font-medium">Check your inbox</p>
+                <p className="text-xs text-gray-400">
+                  We sent a secure sign-in link to{' '}
+                  <span className="font-medium text-foreground">{email}</span>. It expires in 15
+                  minutes.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setSent(false); setError(null); }}
+                  className="text-xs text-gray-400 underline transition-colors hover:text-foreground"
+                >
+                  Use a different email
+                </button>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleEnter} className="mt-6 space-y-3">
+                <label htmlFor="email" className="block text-sm font-medium">Email address</label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  autoFocus
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="input-glow px-3 py-2.5 text-sm"
+                />
+                {error && <p className="anim-fade-down text-sm text-red-400">{error}</p>}
+                <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white" style={{ animation: 'spin-slow 0.8s linear infinite' }} />
+                      Signing in…
+                    </span>
+                  ) : (
+                    'Continue with email →'
+                  )}
+                </button>
+                <div className="flex items-center justify-center gap-1.5 pt-1 text-center text-xs text-gray-400">
+                  <span aria-hidden>🔒</span>
+                  <span>
+                    We&apos;ll send a secure magic link or OTP token to your inbox.{' '}
+                    <span className="font-medium text-foreground">Simple. Passwordless.</span>
+                  </span>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

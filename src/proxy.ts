@@ -17,7 +17,7 @@ const COOKIE_NAME = 'cs_session';
 // Paths reachable WITHOUT a session cookie. Everything else requires one.
 // /api/health/internal is listed here because it enforces its OWN bearer-token
 // check (HEALTH_TOKEN) rather than a session — CI hits it with a token (#4.4).
-const PUBLIC_PATHS = ['/', '/api/auth/login', '/api/health', '/api/health/internal'];
+const PUBLIC_PATHS = ['/', '/api/auth/login', '/api/auth/verify', '/api/health', '/api/health/internal'];
 
 // API prefixes that must return 401 JSON (not a redirect) when unauthenticated.
 const API_PREFIX = '/api';
