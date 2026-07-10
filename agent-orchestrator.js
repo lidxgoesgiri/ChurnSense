@@ -1,20 +1,15 @@
 #!/usr/bin/env node
 /**
- * agent-orchestrator.js — TestSprite loop driver + LOOP.md generator.
+ * agent-orchestrator.js - TestSprite loop driver + LOOP.md generator.
  *
- * LOOP.md is NOT hand-written. This script regenerates it entirely from the
- * TestSprite platform's own data — the project's test list, each test's run
- * history (`testsprite test result --history`), and the failure bundles the CLI
- * produces on red runs. Every testId, runId, verdict, and timestamp in LOOP.md
- * is therefore a verifiable platform fact.
+ * LOOP.md is regenerated from TestSprite platform data: test list, each test's
+ * run history (`testsprite test result --history`), and failure bundles for red
+ * runs. Failure detection is automated via the CLI; code fixes are made by the
+ * coding agent reading the failure bundle.
  *
  * Usage:
- *   node agent-orchestrator.js run     # rerun every backend test, then regen LOOP.md
- *   node agent-orchestrator.js regen   # just rebuild LOOP.md from platform data
- *
- * Honesty note (Rule 4 / Rule 16): failure detection is 100% automated via the
- * CLI; the code fix itself is done by the coding agent reading the failure
- * bundle. This is not "self-healing" without intervention.
+ *   node agent-orchestrator.js run
+ *   node agent-orchestrator.js regen
  */
 'use strict';
 
@@ -29,16 +24,28 @@ const RUNS_DIR = path.join(ROOT, '.testsprite', 'runs');
 
 const cfg = () => JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
 
+function normalizeCmd(cmd) {
+  if (process.platform === 'win32' && cmd.startsWith('testsprite ')) {
+    return `testsprite.cmd ${cmd.slice('testsprite '.length)}`;
+  }
+  return cmd;
+}
+
 function sh(cmd, allowFail = false) {
   try {
-    return { code: 0, out: execSync(cmd, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }) };
+    return {
+      code: 0,
+      out: execSync(normalizeCmd(cmd), {
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }),
+    };
   } catch (e) {
     if (!allowFail) throw e;
     return { code: e.status ?? 1, out: (e.stdout || '') + (e.stderr || '') };
   }
 }
 
-// Pull the JSON object out of mixed CLI stdout (advisory lines precede it).
 function extractJson(text) {
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
@@ -68,7 +75,6 @@ function history(testId) {
   return json && Array.isArray(json.runs) ? json.runs : [];
 }
 
-// Rerun one test to a terminal verdict; pull the bundle if it goes red.
 function rerun(testId) {
   const r = sh(`testsprite test rerun ${testId} --wait --timeout 600 --output json`, true);
   const json = extractJson(r.out);
@@ -94,18 +100,27 @@ function failureHypothesis(runId) {
   }
 }
 
+const pass = '\u2705 PASSED';
+const fail = '\u274c FAILED';
+const warn = '\u26a0\ufe0f';
+const arrow = '\u2192';
+const dash = '\u2014';
+const dot = '\u00b7';
+const loopIcon = '\ud83d\udd04';
+const noteIcon = '\ud83d\udcdd';
+
 const emoji = (s) =>
-  s === 'passed' ? '✅ PASSED' : s === 'failed' ? '❌ FAILED' : `⚠️ ${String(s).toUpperCase()}`;
+  s === 'passed' ? pass : s === 'failed' ? fail : `${warn} ${String(s).toUpperCase()}`;
 
 function generateLoopMd(c, tests) {
   const L = [];
   const totalRuns = tests.reduce((n, t) => n + t.runs.length, 0);
 
-  L.push('# 🔄 LOOP.md — TestSprite Verification Record');
+  L.push(`# ${loopIcon} LOOP.md ${dash} TestSprite Verification Record`);
   L.push('');
   L.push('> **Auto-generated** by `agent-orchestrator.js` from TestSprite platform data.');
   L.push('> Every testId, runId, verdict, and timestamp below is pulled directly from the');
-  L.push('> platform (`test list` + `test result --history`) — none of it is hand-written.');
+  L.push(`> platform (\`test list\` + \`test result --history\`) ${dash} none of it is hand-written.`);
   L.push('');
   L.push('| | |');
   L.push('|---|---|');
@@ -117,33 +132,33 @@ function generateLoopMd(c, tests) {
   L.push(`| Total runs recorded | ${totalRuns} |`);
   L.push('');
   L.push('## Loop');
-  L.push('`Edit code` → `git push` → `Vercel auto-redeploy` → `testsprite test rerun --wait` → `read verdict` → `fix` → repeat.');
+  L.push(`\`Edit code\` ${arrow} \`git push\` ${arrow} \`Vercel auto-redeploy\` ${arrow} \`testsprite test rerun --wait\` ${arrow} \`read verdict\` ${arrow} \`fix\` ${arrow} repeat.`);
   L.push('');
   L.push('The CLI runs against the live URL (never localhost). Failure detection is fully');
   L.push('automated via the CLI; the code fix is made by the coding agent reading the failure');
-  L.push('bundle — this is not self-healing without intervention.');
+  L.push(`bundle ${dash} this is not self-healing without intervention.`);
   L.push('');
   L.push('---');
   L.push('');
 
   tests.forEach((t) => {
-    L.push(`## Test — ${t.name}`);
-    L.push(`- **testId:** \`${t.id}\` · priority ${t.priority || 'n/a'} · latest: ${emoji(t.status)}`);
+    L.push(`## Test ${dash} ${t.name}`);
+    L.push(`- **testId:** \`${t.id}\` ${dot} priority ${t.priority || 'n/a'} ${dot} latest: ${emoji(t.status)}`);
     L.push(`- **dashboard:** https://www.testsprite.com/dashboard/tests/${c.projectId}/test/${t.id}`);
     L.push('');
-    const chrono = [...t.runs].reverse(); // oldest first
+    const chrono = [...t.runs].reverse();
     if (chrono.length === 0) {
       L.push('_No runs recorded yet._');
       L.push('');
       return;
     }
     chrono.forEach((run, i) => {
-      L.push(`### Run ${i + 1} — ${run.finishedAt || run.createdAt} · ${emoji(run.status)}`);
+      L.push(`### Run ${i + 1} ${dash} ${run.finishedAt || run.createdAt} ${dot} ${emoji(run.status)}`);
       L.push(`- runId: \`${run.runId}\` (source: ${run.source || 'cli'})`);
       if (run.status === 'failed') {
         const h = failureHypothesis(run.runId);
         if (h) {
-          L.push('- failure bundle — rootCauseHypothesis:');
+          L.push(`- failure bundle ${dash} rootCauseHypothesis:`);
           L.push('  ```json');
           L.push('  ' + h);
           L.push('  ```');
@@ -155,7 +170,7 @@ function generateLoopMd(c, tests) {
 
   L.push('---');
   L.push('');
-  L.push(`_Regenerated at ${new Date().toISOString()} · HEAD ${gitHead()}_`);
+  L.push(`_Regenerated at ${new Date().toISOString()} ${dot} HEAD ${gitHead()}_`);
   L.push('');
   return L.join('\n');
 }
@@ -169,23 +184,30 @@ function main() {
   }
 
   let tests = listBackendTests(c.projectId);
+  if (tests.length === 0) {
+    console.error('No backend tests returned by TestSprite CLI; aborting to avoid overwriting LOOP.md with empty data.');
+    process.exit(1);
+  }
 
   if (mode === 'run') {
     for (const t of tests) {
-      process.stdout.write(`🔄 rerun ${t.name} … `);
+      process.stdout.write(`${loopIcon} rerun ${t.name} ... `);
       const status = rerun(t.id);
       console.log(status);
     }
   } else if (mode !== 'regen') {
-    console.error(`unknown mode "${mode}" — use "run" or "regen".`);
+    console.error(`unknown mode "${mode}" ${dash} use "run" or "regen".`);
     process.exit(2);
   }
 
-  // Re-list (statuses may have changed) and attach run history.
   tests = listBackendTests(c.projectId).map((t) => ({ ...t, runs: history(t.id) }));
+  if (tests.length === 0) {
+    console.error('No backend tests returned after rerun; aborting to avoid overwriting LOOP.md with empty data.');
+    process.exit(1);
+  }
   fs.writeFileSync(LOOP_PATH, generateLoopMd(c, tests));
   const totalRuns = tests.reduce((n, t) => n + t.runs.length, 0);
-  console.log(`📝 LOOP.md regenerated: ${tests.length} test(s), ${totalRuns} run(s).`);
+  console.log(`${noteIcon} LOOP.md regenerated: ${tests.length} test(s), ${totalRuns} run(s).`);
 }
 
 main();
