@@ -1,6 +1,8 @@
 <div align="center">
 
-# 📊 ChurnSense
+<img src="./public/churn.jpg" alt="ChurnSense logo" width="128" height="128" />
+
+# ChurnSense
 
 ### Smart SaaS Retention & Churn Analytics
 
@@ -114,7 +116,8 @@ users know from Vercel and Slack. There are **no passwords to store, leak, or re
 - **Signed sessions** — the `cs_session` cookie is signed with **HMAC-SHA256** (`COOKIE_SECRET`), `Secure` in production, `httpOnly`, `SameSite=lax`. Forged cookies are rejected.
 - **Auth gate** on all data/AI routes (401 without a valid session).
 - **CSRF protection** via an `X-Requested-With` header on mutating routes (403 without it).
-- **Rate limiting** (insights/chat), **request body-size limit** (413), **chat message-length limit** (400), and **security headers** (`X-Content-Type-Options`, `X-Frame-Options`).
+- **Rate limiting** (insights/chat), **request body-size limit** (413), and **chat message-length limit** (400).
+- **Comprehensive security headers on every route** (`/:path*`) — **Content-Security-Policy**, **Strict-Transport-Security** (HSTS, preload), **Referrer-Policy**, **Permissions-Policy**, `X-Content-Type-Options`, and `X-Frame-Options: DENY`.
 
 ### ♿ Accessibility & Resilience
 - Skip-to-content link, `aria-live` on animated metrics, a consistent focus ring, and `prefers-reduced-motion` support.
