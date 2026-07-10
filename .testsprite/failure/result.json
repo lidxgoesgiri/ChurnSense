@@ -1,0 +1,18 @@
+{
+  "testId": "b5b10e1a-5f08-4787-b873-d1b22beda16c",
+  "status": "failed",
+  "startedAt": null,
+  "finishedAt": "2026-07-01T15:25:46.667Z",
+  "videoUrl": null,
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_aae6865e0b0767a2",
+  "runIdIfAvailable": "401ab375-4a6a-42c9-99d8-9c1e8f8565a6",
+  "codeVersion": "v1",
+  "targetUrl": null,
+  "targetUrlSource": "project-default",
+  "failedStepIndex": 1,
+  "failureKind": "assertion",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Failed (assertion): expected field-level validation message, got: {\"error\":\"Missing or invalid fields\",\"details\":{\"formErrors\":[],\"fieldErrors\":{\"totalUsers\":[\"Total users must be greater than zero\"]}}}"
+}

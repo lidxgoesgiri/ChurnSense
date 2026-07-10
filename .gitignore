@@ -44,4 +44,4 @@ next-env.d.ts
 
 # testsprite run artifacts (bundles) — keep config.json tracked
 .testsprite/runs/
-.testsprite/failure/
+# .testsprite/failure/ is committed as evidence the verify→fix loop caught real failures

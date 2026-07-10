@@ -1,0 +1,5 @@
+{
+  "rootCauseHypothesis": "expected field-level validation message, got: {\"error\":\"Missing or invalid fields\",\"details\":{\"formErrors\":[],\"fieldErrors\":{\"totalUsers\":[\"Total users must be greater than zero\"]}}}",
+  "recommendedFixTarget": null,
+  "evidence": []
+}
