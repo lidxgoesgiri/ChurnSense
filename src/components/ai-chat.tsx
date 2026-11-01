@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AnalyticsResult, ProjectInput } from '@/types';
 import { SendIcon, TrendingDownIcon } from './ui/icons';
+import { SpotlightCard } from './web3/spotlight-card';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -19,7 +20,7 @@ interface Props {
 const GREETING: ChatMessage = {
   role: 'assistant',
   content:
-    'Ask me anything about your retention metrics — benchmark interpretation, churn reduction ideas, or MRR optimization.',
+    'Ask me anything about your retention metrics — benchmark interpretation, churn reduction vectors, ARPU dynamics, or MRR optimization strategies.',
 };
 
 function storageKey(userEmail: string, projectName: string | undefined): string {
@@ -64,7 +65,6 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
 
   // Load history when scoped storeKey changes
   useEffect(() => {
-    // Intentional: read localStorage only on the client, post-hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages(loadHistory(storeKey));
   }, [storeKey]);
@@ -213,21 +213,27 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
   }
 
   return (
-    <div className="workbench-panel space-y-3 p-5 sm:p-6" aria-label="AI retention assistant chat">
+    <SpotlightCard
+      glowColor="rgba(6, 182, 212, 0.22)"
+      className="p-6 sm:p-7 space-y-4"
+      role="region"
+      aria-label="AI retention assistant chat"
+    >
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-3.5">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-            {'// AUTONOMOUS AGENT · CONTEXTUAL CLI'}
+          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-cyan-400">
+            {'// AUTONOMOUS AGENT · CONTEXTUAL TERMINAL'}
           </span>
-          <div className="flex items-center gap-2 pt-0.5">
-            <h3 className="text-sm font-semibold text-[var(--cs-text)]">AI Assistant</h3>
-            <span className="rounded bg-[var(--cs-accent-surface)] px-2 py-0.5 font-mono text-[10px] font-semibold text-[var(--cs-accent)] border border-[var(--cs-accent)]/20">
-              AGENT: ONLINE
+          <div className="flex items-center gap-2.5 pt-0.5">
+            <h3 className="text-base font-extrabold text-[var(--cs-text)]">Agent Console</h3>
+            <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-400 border border-emerald-500/25 flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              ONLINE
             </span>
           </div>
           <p className="font-mono text-[11px] text-[var(--cs-muted)]">
-            {project ? `SCOPE // ${project.projectName}` : 'Calculate a project to enable contextual chat'}
+            {project ? `SCOPE // ${project.projectName}` : 'Calculate a project to establish contextual session'}
           </p>
         </div>
 
@@ -237,9 +243,9 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
             onClick={clearHistory}
             disabled={loading || streaming}
             aria-label="Clear chat messages"
-            className="font-mono text-xs text-[var(--cs-muted)] hover:text-[var(--cs-danger)] disabled:opacity-40 transition-colors"
+            className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] px-2.5 py-1 font-mono text-xs text-[var(--cs-muted)] hover:text-rose-400 hover:border-rose-500/30 disabled:opacity-40 transition-all"
           >
-            [CLEAR CONVERSATION]
+            [PURGE LOG]
           </button>
         )}
       </div>
@@ -252,23 +258,23 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           role="log"
           aria-live="polite"
           aria-label="Chat messages"
-          className="flex h-56 flex-col gap-3 overflow-y-auto rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] p-3 text-xs"
+          className="flex h-60 flex-col gap-3.5 overflow-y-auto rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)]/80 p-4 font-mono text-xs"
         >
           {messages.map((m, i) => (
             <div
               key={i}
-              className={`flex flex-col gap-1 max-w-[85%] ${
+              className={`flex flex-col gap-1 max-w-[88%] ${
                 m.role === 'user' ? 'ml-auto items-end' : 'items-start'
               }`}
             >
               <span className="font-mono text-[10px] uppercase text-[var(--cs-muted)]">
-                {m.role === 'user' ? 'USER // LOCAL' : 'AGENT // CHURNSENSE'}
+                {m.role === 'user' ? 'OPERATOR // SESSION' : 'AGENT // CHURNSENSE_LLM'}
               </span>
               <div
-                className={`rounded-xl px-3.5 py-2 leading-relaxed whitespace-pre-wrap ${
+                className={`rounded-2xl px-4 py-2.5 leading-relaxed whitespace-pre-wrap ${
                   m.role === 'user'
-                    ? 'bg-[var(--cs-primary)] text-[var(--cs-on-primary)] rounded-br-sm shadow-xs'
-                    : 'bg-[var(--cs-surface)] text-[var(--cs-text)] border border-[var(--cs-border)] rounded-bl-sm shadow-xs'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-none shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                    : 'bg-[var(--cs-surface)] text-[var(--cs-text)] border border-[var(--cs-border)] rounded-bl-none shadow-md backdrop-blur-md'
                 }`}
               >
                 {m.content}
@@ -277,12 +283,11 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           ))}
 
           {loading && !streaming && (
-            <div className="flex items-center gap-2 text-xs text-[var(--cs-muted)] py-1 font-mono">
+            <div className="flex items-center gap-2 text-xs text-emerald-400 py-1 font-mono">
               <span
-                className="inline-block h-3 w-3 rounded-full border-2 border-[var(--cs-primary)] border-t-transparent"
-                style={{ animation: 'spin-slow 0.8s linear infinite' }}
+                className="inline-block h-3.5 w-3.5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin"
               />
-              ANALYZING PROTOCOL TELEMETRY…
+              AUDITING RETENTION VECTORS…
             </div>
           )}
         </div>
@@ -292,44 +297,44 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           <button
             type="button"
             onClick={() => scrollToBottom()}
-            className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-[11px] font-mono text-[var(--cs-primary)] shadow-md hover:bg-[var(--cs-bg)]"
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-[var(--cs-surface)] px-3 py-1 text-xs font-mono text-emerald-400 shadow-xl hover:bg-[var(--cs-bg)] backdrop-blur-md"
           >
-            <TrendingDownIcon className="h-3 w-3" />
+            <TrendingDownIcon size={14} />
             <span>Latest</span>
           </button>
         )}
       </div>
 
       {/* Composer Form */}
-      <form onSubmit={send} className="flex gap-2">
+      <form onSubmit={send} className="flex gap-2.5">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={
             project
-              ? `Prompt agent regarding ${project.projectName} retention, pricing, or benchmarks…`
+              ? `Prompt agent regarding ${project.projectName} retention levers, benchmarks, or ARPU…`
               : 'Calculate project metrics above to enable chat…'
           }
           disabled={!project || loading || streaming}
           aria-label="Your message to AI assistant"
-          className="input-control flex-1 text-xs"
+          className="input-glow flex-1 font-mono text-xs rounded-xl"
         />
         <button
           type="submit"
           disabled={!project || loading || streaming || !input.trim()}
           aria-label="Send chat message"
-          className="btn-primary min-h-[40px] px-4 text-xs font-semibold inline-flex items-center gap-1.5"
+          className="btn-primary min-h-[42px] px-5 font-mono text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-xl"
         >
           {loading || streaming ? (
             <span>Sending…</span>
           ) : (
             <>
-              <SendIcon className="h-3.5 w-3.5" />
+              <SendIcon size={14} />
               <span>Prompt</span>
             </>
           )}
         </button>
       </form>
-    </div>
+    </SpotlightCard>
   );
 }

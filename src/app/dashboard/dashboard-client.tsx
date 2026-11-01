@@ -20,6 +20,7 @@ import { getStoredModel } from '@/lib/models';
 import { exportProjectsCsv } from '@/lib/export';
 import { dashboardReducer, makeInitialState } from './dashboard-reducer';
 import { CheckCircle2Icon, BarChart3Icon } from '@/components/ui/icons';
+import { CyberBackground, SpotlightCard } from '@/components/web3';
 
 export function DashboardClient({ email }: { email: string }) {
   const router = useRouter();
@@ -301,6 +302,7 @@ export function DashboardClient({ email }: { email: string }) {
   return (
     <ErrorBoundary>
       {palette}
+      <CyberBackground intensity="subtle" showGrid showSpotlight showParticles={false} />
       <Navbar
         email={email}
         onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })}
@@ -315,28 +317,41 @@ export function DashboardClient({ email }: { email: string }) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="mx-auto w-full max-w-6xl space-y-8 p-4 outline-none sm:p-6 md:p-8"
+        className="relative z-10 mx-auto w-full max-w-7xl space-y-8 p-4 outline-none sm:p-6 md:p-8"
       >
-        {/* Workspace Header Context */}
+        {/* Workspace Telemetry Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--cs-border)] pb-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--cs-text)] sm:text-2xl">
-              Retention Overview
+            <div className="flex items-center gap-2 font-mono text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+              <span className="live-pulse" />
+              <span>TERMINAL TELEMETRY // LEDGER WORKBENCH</span>
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--cs-text)] sm:text-3xl">
+              Retention Intelligence Dashboard
             </h1>
-            <p className="text-xs text-[var(--cs-muted)] mt-0.5">
-              Account: <strong className="text-[var(--cs-text)]">{email}</strong> · Immutable snapshot workspace
+            <p className="text-xs font-mono text-[var(--cs-muted)] mt-1">
+              OPERATOR: <strong className="text-emerald-400">{email}</strong> · IMMUTABLE SNAPSHOT WORKBENCH
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="hidden rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)]/80 px-3.5 py-1.5 font-mono text-xs text-[var(--cs-muted)] sm:flex items-center gap-3 backdrop-blur-md">
+              <span>LEDGER: <strong className="text-[var(--cs-text)]">{totalHistory}</strong> BLOCKS</span>
+              <span className="text-[var(--cs-border)]">|</span>
+              <span className="text-emerald-400 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                ACTIVE
+              </span>
+            </div>
+
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-control-border)] bg-[var(--cs-surface)] px-2.5 py-1.5 text-xs font-medium text-[var(--cs-muted)] hover:border-[var(--cs-focus)] hover:text-[var(--cs-text)]"
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-1.5 font-mono text-xs text-[var(--cs-muted)] hover:border-emerald-500/40 hover:text-[var(--cs-text)] transition-all shadow-sm"
             >
               <span>Commands</span>
-              <kbd className="rounded border border-[var(--cs-border)] bg-[var(--cs-bg)] px-1 font-mono text-[10px]">
-                Ctrl/⌘K
+              <kbd className="rounded border border-[var(--cs-border)] bg-[var(--cs-bg)] px-1.5 py-0.5 font-mono text-[10px]">
+                ⌘K
               </kbd>
             </button>
           </div>
@@ -380,31 +395,31 @@ export function DashboardClient({ email }: { email: string }) {
             <div
               role="group"
               aria-label="Input mode selection"
-              className="flex rounded-lg border border-[var(--cs-control-border)] bg-[var(--cs-bg)] p-1 text-xs font-medium"
+              className="flex rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)]/80 p-1 font-mono text-xs font-semibold backdrop-blur-md"
             >
               <button
                 type="button"
                 aria-pressed={inputMode === 'manual'}
                 onClick={() => dispatch({ type: 'SET_INPUT_MODE', mode: 'manual' })}
-                className={`flex-1 rounded-md py-1.5 text-center transition-colors ${
+                className={`flex-1 rounded-lg py-2 text-center transition-all ${
                   inputMode === 'manual'
-                    ? 'bg-[var(--cs-surface)] font-semibold text-[var(--cs-text)] shadow-xs'
-                    : 'text-[var(--cs-muted)] hover:text-[var(--cs-text)]'
+                    ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                    : 'text-[var(--cs-muted)] hover:text-[var(--cs-text)] border border-transparent'
                 }`}
               >
-                Manual Input
+                TELEMETRY INPUT
               </button>
               <button
                 type="button"
                 aria-pressed={inputMode === 'batch'}
                 onClick={() => dispatch({ type: 'SET_INPUT_MODE', mode: 'batch' })}
-                className={`flex-1 rounded-md py-1.5 text-center transition-colors ${
+                className={`flex-1 rounded-lg py-2 text-center transition-all ${
                   inputMode === 'batch'
-                    ? 'bg-[var(--cs-surface)] font-semibold text-[var(--cs-text)] shadow-xs'
-                    : 'text-[var(--cs-muted)] hover:text-[var(--cs-text)]'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                    : 'text-[var(--cs-muted)] hover:text-[var(--cs-text)] border border-transparent'
                 }`}
               >
-                Batch CSV
+                BATCH STREAM (CSV)
               </button>
             </div>
 
@@ -449,17 +464,22 @@ export function DashboardClient({ email }: { email: string }) {
                 {trend && <AnomalyBadge trend={trend} />}
               </div>
             ) : (
-              <div className="workbench-panel flex flex-col items-center justify-center p-12 text-center space-y-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
-                  <BarChart3Icon size={22} />
+              <SpotlightCard
+                glowColor="rgba(16, 185, 129, 0.15)"
+                className="flex flex-col items-center justify-center p-14 text-center space-y-4"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                  <BarChart3Icon size={26} />
                 </div>
-                <p className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--cs-text)]">
-                  Awaiting Pipeline Calculation
-                </p>
-                <p className="text-xs text-[var(--cs-muted)] max-w-sm font-mono">
-                  Input aggregate parameters on the left to compute real-time retention, churn, and revenue metrics.
-                </p>
-              </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-mono font-bold uppercase tracking-wider text-[var(--cs-text)]">
+                    Awaiting Pipeline Calculation
+                  </p>
+                  <p className="text-xs text-[var(--cs-muted)] max-w-sm font-mono leading-relaxed">
+                    Provide aggregate subscriber counts on the left to compute deterministic retention fractions, ARPU indices, and projected LTV.
+                  </p>
+                </div>
+              </SpotlightCard>
             )}
 
             {/* AI Insight Card */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -16,6 +16,8 @@ import {
 } from 'recharts';
 import type { ProjectInput } from '@/types';
 import type { SavedProject } from './projects-history';
+import { SpotlightCard } from './web3/spotlight-card';
+import { useReducedMotion } from '@/lib/use-reduced-motion';
 
 interface Props {
   project: ProjectInput;
@@ -23,18 +25,8 @@ interface Props {
 }
 
 export function RetentionChart({ project, history = [] }: Props) {
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduceMotion = useReducedMotion();
   const [showTable, setShowTable] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReduceMotion(media.matches);
-    const listener = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
-    media.addEventListener('change', listener);
-    return () => media.removeEventListener('change', listener);
-  }, []);
 
   // Filter history for snapshots matching this project name, sorted ascending by time, up to 10 latest
   const matchingHistory = history
@@ -46,48 +38,51 @@ export function RetentionChart({ project, history = [] }: Props) {
   const hasTrend = matchingHistory.length >= 2;
 
   const tooltipStyle = {
-    borderRadius: '10px',
-    border: '1px solid var(--cs-border, rgba(255,255,255,0.08))',
-    backgroundColor: 'var(--cs-surface, #0B0F17)',
-    color: 'var(--cs-text, #F0F4F8)',
+    borderRadius: '12px',
+    border: '1px solid rgba(16, 185, 129, 0.3)',
+    backgroundColor: 'rgba(14, 18, 26, 0.95)',
+    color: '#F1F5F9',
     fontSize: '11px',
     fontFamily: 'monospace',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+    boxShadow: '0 12px 32px rgba(0,0,0,0.6), 0 0 15px rgba(16,185,129,0.2)',
+    backdropFilter: 'blur(12px)',
+    padding: '10px 14px',
   };
 
   return (
-    <div
-      className="workbench-panel space-y-4 p-5 sm:p-6"
+    <SpotlightCard
+      glowColor="rgba(16, 185, 129, 0.18)"
+      className="p-6 space-y-5"
       role="region"
       aria-label={`Retention chart for ${project.projectName}`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-4">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-            {'// TELEMETRY CURVE'}
+          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+            {'// TELEMETRY CURVE & COGNITIVE VECTORS'}
           </span>
-          <h3 className="text-sm font-semibold text-[var(--cs-text)]">
+          <h3 className="text-base font-extrabold text-[var(--cs-text)]">
             {hasTrend
               ? `Historical Trend · ${project.projectName}`
               : `Active vs. Churned Users · ${project.projectName}`}
           </h3>
           <p className="text-xs text-[var(--cs-muted)]">
             {hasTrend
-              ? `Based on ${matchingHistory.length} loaded saved snapshots (latest 10 displayed)`
-              : 'Single snapshot view. Calculate and save future snapshots to see trend lines.'}
+              ? `Synthesized from ${matchingHistory.length} loaded snapshot intervals`
+              : 'Single snapshot view. Calculate and save subsequent snapshots to unlock multi-point curve interpolation.'}
           </p>
         </div>
         <button
           type="button"
           onClick={() => setShowTable(!showTable)}
-          className="font-mono text-xs text-[var(--cs-muted)] hover:text-emerald-400 underline decoration-dotted transition-colors"
+          className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] px-3 py-1 font-mono text-xs font-semibold text-[var(--cs-muted)] hover:border-emerald-500/40 hover:text-emerald-400 transition-all"
         >
-          {showTable ? '[HIDE TABLE]' : '[VIEW DATA TABLE]'}
+          {showTable ? '[HIDE AUDIT TABLE]' : '[VIEW AUDIT TABLE]'}
         </button>
       </div>
 
       {hasTrend ? (
-        <div className="h-64 w-full">
+        <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={matchingHistory.map((p) => ({
@@ -101,60 +96,68 @@ export function RetentionChart({ project, history = [] }: Props) {
                 retention: Number((p.metrics.retentionRate * 100).toFixed(1)),
               }))}
             >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+              <defs>
+                <linearGradient id="glowRetention" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.12} stroke="#64748B" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--cs-muted)' }} tickLine={false} axisLine={false} />
               <YAxis
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 11, fill: 'var(--cs-muted)' }}
                 tickLine={false}
                 axisLine={false}
-                width={36}
+                width={38}
                 unit="%"
                 domain={[0, 100]}
               />
               <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
+              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
               <Line
                 type="monotone"
                 dataKey="churn"
                 name="Churn Rate %"
-                stroke="var(--cs-danger, #b73535)"
-                strokeWidth={2}
+                stroke="#F43F5E"
+                strokeWidth={2.5}
                 strokeDasharray="4 4"
-                dot={{ r: 3 }}
+                dot={{ r: 4, fill: '#F43F5E', strokeWidth: 0 }}
+                activeDot={{ r: 6, stroke: '#FFFFFF', strokeWidth: 2 }}
                 isAnimationActive={!reduceMotion}
               />
               <Line
                 type="monotone"
                 dataKey="retention"
                 name="Retention Rate %"
-                stroke="var(--cs-primary, #225c43)"
-                strokeWidth={2}
-                dot={{ r: 3 }}
+                stroke="#10B981"
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: '#10B981', strokeWidth: 0 }}
+                activeDot={{ r: 6, stroke: '#FFFFFF', strokeWidth: 2 }}
                 isAnimationActive={!reduceMotion}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="h-64 w-full">
+        <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={[
-                { name: 'Active Users', value: project.activeUsers, color: 'var(--cs-primary, #225c43)' },
-                { name: 'Churned Users', value: project.churnedUsers, color: 'var(--cs-danger, #b73535)' },
+                { name: 'Active Users', value: project.activeUsers, color: '#10B981' },
+                { name: 'Churned Users', value: project.churnedUsers, color: '#F43F5E' },
               ]}
             >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
-              <YAxis tickLine={false} axisLine={false} width={44} />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.12} stroke="#64748B" />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'var(--cs-muted)' }} />
+              <YAxis tickLine={false} axisLine={false} width={48} tick={{ fill: 'var(--cs-muted)', fontSize: 11 }} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar
                 dataKey="value"
-                radius={[6, 6, 0, 0]}
+                radius={[8, 8, 0, 0]}
                 isAnimationActive={!reduceMotion}
               >
-                <Cell fill="var(--cs-primary, #225c43)" />
-                <Cell fill="var(--cs-danger, #b73535)" />
+                <Cell fill="#10B981" />
+                <Cell fill="#F43F5E" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -163,46 +166,46 @@ export function RetentionChart({ project, history = [] }: Props) {
 
       {/* Accessible Table Fallback */}
       {showTable && (
-        <div className="overflow-x-auto rounded-lg border border-[var(--cs-border)] pt-2">
+        <div className="overflow-x-auto rounded-xl border border-[var(--cs-border)] pt-2 bg-[var(--cs-bg)]/60">
           <table className="w-full text-left text-xs" aria-label="Chart data tabular view">
-            <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
+            <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-elevated)] text-[var(--cs-muted)] font-mono text-[11px]">
               <tr>
-                <th scope="col" className="px-3 py-2 font-medium">Record</th>
-                <th scope="col" className="px-3 py-2 font-medium">Date</th>
-                <th scope="col" className="px-3 py-2 font-medium text-right">Active</th>
-                <th scope="col" className="px-3 py-2 font-medium text-right">Churned</th>
-                <th scope="col" className="px-3 py-2 font-medium text-right">Churn %</th>
-                <th scope="col" className="px-3 py-2 font-medium text-right">Retention %</th>
+                <th scope="col" className="px-3.5 py-2.5 font-semibold">RECORD</th>
+                <th scope="col" className="px-3.5 py-2.5 font-semibold">TIMESTAMP</th>
+                <th scope="col" className="px-3.5 py-2.5 font-semibold text-right">ACTIVE</th>
+                <th scope="col" className="px-3.5 py-2.5 font-semibold text-right">CHURNED</th>
+                <th scope="col" className="px-3.5 py-2.5 font-semibold text-right">CHURN %</th>
+                <th scope="col" className="px-3.5 py-2.5 font-semibold text-right">RETENTION %</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--cs-border)]">
+            <tbody className="divide-y divide-[var(--cs-border)] font-mono text-xs">
               {hasTrend ? (
                 matchingHistory.map((p) => (
-                  <tr key={p.id}>
-                    <td className="px-3 py-2 font-medium">{p.projectName}</td>
-                    <td className="px-3 py-2 text-[var(--cs-muted)]">
+                  <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-3.5 py-2.5 font-medium text-[var(--cs-text)]">{p.projectName}</td>
+                    <td className="px-3.5 py-2.5 text-[var(--cs-muted)]">
                       {new Date(p.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-3 py-2 text-right font-tabular">—</td>
-                    <td className="px-3 py-2 text-right font-tabular">—</td>
-                    <td className="px-3 py-2 text-right font-tabular text-[var(--cs-danger)]">
+                    <td className="px-3.5 py-2.5 text-right font-tabular">—</td>
+                    <td className="px-3.5 py-2.5 text-right font-tabular">—</td>
+                    <td className="px-3.5 py-2.5 text-right font-tabular text-rose-500 font-bold">
                       {(p.metrics.churnRate * 100).toFixed(1)}%
                     </td>
-                    <td className="px-3 py-2 text-right font-tabular text-[var(--cs-primary)]">
+                    <td className="px-3.5 py-2.5 text-right font-tabular text-emerald-400 font-bold">
                       {(p.metrics.retentionRate * 100).toFixed(1)}%
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td className="px-3 py-2 font-medium">{project.projectName}</td>
-                  <td className="px-3 py-2 text-[var(--cs-muted)]">Current Calculation</td>
-                  <td className="px-3 py-2 text-right font-tabular">{project.activeUsers}</td>
-                  <td className="px-3 py-2 text-right font-tabular">{project.churnedUsers}</td>
-                  <td className="px-3 py-2 text-right font-tabular text-[var(--cs-danger)]">
+                <tr className="hover:bg-white/5 transition-colors">
+                  <td className="px-3.5 py-2.5 font-medium text-[var(--cs-text)]">{project.projectName}</td>
+                  <td className="px-3.5 py-2.5 text-[var(--cs-muted)]">Current Execution</td>
+                  <td className="px-3.5 py-2.5 text-right font-tabular text-[var(--cs-text)]">{project.activeUsers.toLocaleString()}</td>
+                  <td className="px-3.5 py-2.5 text-right font-tabular text-[var(--cs-text)]">{project.churnedUsers.toLocaleString()}</td>
+                  <td className="px-3.5 py-2.5 text-right font-tabular text-rose-500 font-bold">
                     {((project.churnedUsers / project.totalUsers) * 100).toFixed(1)}%
                   </td>
-                  <td className="px-3 py-2 text-right font-tabular text-[var(--cs-primary)]">
+                  <td className="px-3.5 py-2.5 text-right font-tabular text-emerald-400 font-bold">
                     {((project.activeUsers / project.totalUsers) * 100).toFixed(1)}%
                   </td>
                 </tr>
@@ -211,6 +214,6 @@ export function RetentionChart({ project, history = [] }: Props) {
           </table>
         </div>
       )}
-    </div>
+    </SpotlightCard>
   );
 }

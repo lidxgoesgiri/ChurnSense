@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import type { ProjectInput } from '@/types';
+import { SpotlightCard } from './web3/spotlight-card';
+import { ArrowUpRightIcon } from './ui/icons';
 
 interface Props {
   onAnalyze: (input: ProjectInput) => Promise<void> | void;
@@ -53,164 +55,176 @@ export function ProjectForm({ onAnalyze, loading, saveStatus = 'idle', saveError
   }
 
   return (
-    <form onSubmit={submit} className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="Manual metric calculation form">
-      <div className="flex items-center justify-between border-b border-[var(--cs-border)] pb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-              {'// PROTOCOL PARAMETERS'}
-            </span>
+    <SpotlightCard
+      glowColor="rgba(16, 185, 129, 0.2)"
+      className="p-6 sm:p-7"
+    >
+      <form onSubmit={submit} className="space-y-5" aria-label="Manual metric calculation form">
+        <div className="flex items-center justify-between border-b border-[var(--cs-border)] pb-3.5">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+                {'// TELEMETRY INGESTION'}
+              </span>
+            </div>
+            <h2 className="text-base font-extrabold text-[var(--cs-text)]">Project Parameters</h2>
+            <p className="text-xs text-[var(--cs-muted)]">
+              Calculate deterministic retention, churn fraction, and LTV projections.
+            </p>
           </div>
-          <h2 className="text-sm font-semibold text-[var(--cs-text)]">Project Input</h2>
-          <p className="text-xs text-[var(--cs-muted)]">
-            Calculate retention, churn rate, and LTV telemetry from user activity and MRR.
-          </p>
-        </div>
-      </div>
-
-      {clientError && (
-        <div className="rounded-lg border border-[var(--cs-danger)]/25 bg-red-500/10 p-3 text-xs text-[var(--cs-danger)]" role="alert">
-          {clientError}
-        </div>
-      )}
-
-      {/* Project Name */}
-      <div className="space-y-1.5">
-        <label htmlFor="projectName" className="block text-xs font-semibold text-[var(--cs-text)]">
-          Project Name
-        </label>
-        <input
-          id="projectName"
-          value={projectName}
-          onChange={(e) => {
-            setProjectName(e.target.value);
-            setClientError(null);
-          }}
-          required
-          placeholder="e.g. Acme SaaS"
-          className="input-control"
-        />
-      </div>
-
-      {/* User Counts Grid */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-semibold text-[var(--cs-text)]">User Counts</div>
-        <p className="text-[11px] text-[var(--cs-muted)]">Whole numbers only. Active + Churned ≤ Total.</p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="space-y-1">
-            <label htmlFor="totalUsers" className="block text-[11px] text-[var(--cs-muted)]">
-              Total Users
-            </label>
-            <input
-              id="totalUsers"
-              type="number"
-              min="1"
-              step="1"
-              value={totalUsers}
-              onChange={(e) => {
-                setTotalUsers(e.target.value);
-                setClientError(null);
-              }}
-              required
-              placeholder="e.g. 1000"
-              className="input-control font-tabular"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="activeUsers" className="block text-[11px] text-[var(--cs-muted)]">
-              Active Users
-            </label>
-            <input
-              id="activeUsers"
-              type="number"
-              min="0"
-              step="1"
-              value={activeUsers}
-              onChange={(e) => {
-                setActiveUsers(e.target.value);
-                setClientError(null);
-              }}
-              required
-              placeholder="e.g. 850"
-              className="input-control font-tabular"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="churnedUsers" className="block text-[11px] text-[var(--cs-muted)]">
-              Churned Users
-            </label>
-            <input
-              id="churnedUsers"
-              type="number"
-              min="0"
-              step="1"
-              value={churnedUsers}
-              onChange={(e) => {
-                setChurnedUsers(e.target.value);
-                setClientError(null);
-              }}
-              required
-              placeholder="e.g. 150"
-              className="input-control font-tabular"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Revenue */}
-      <div className="space-y-1.5">
-        <label htmlFor="monthlyRevenue" className="block text-xs font-semibold text-[var(--cs-text)]">
-          Monthly Revenue ($ USD)
-        </label>
-        <input
-          id="monthlyRevenue"
-          type="number"
-          min="0"
-          step="any"
-          value={monthlyRevenue}
-          onChange={(e) => {
-            setMonthlyRevenue(e.target.value);
-            setClientError(null);
-          }}
-          required
-          placeholder="e.g. 5000"
-          className="input-control font-tabular"
-        />
-      </div>
-
-      {/* Persistence feedback status */}
-      {saveStatus === 'failed' && (
-        <div className="rounded-md border border-amber-500/25 bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">
-          Calculation succeeded, but auto-save to history failed: {saveError ?? 'Database error'}.
-        </div>
-      )}
-      {saveStatus === 'unavailable' && (
-        <div className="rounded-md border border-[var(--cs-border)] bg-[var(--cs-bg)] p-2.5 text-xs text-[var(--cs-muted)]">
-          Database is currently unavailable. Your calculation is active on screen but cannot be saved.
-        </div>
-      )}
-
-      {/* Submit button */}
-      <button
-        type="submit"
-        disabled={loading}
-        aria-label={loading ? 'Calculating metrics' : 'Calculate metrics'}
-        className="btn-primary min-h-[44px] w-full text-sm font-semibold"
-      >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <span
-              className="inline-block h-4 w-4 rounded-full border-2 border-current border-t-transparent"
-              style={{ animation: 'spin-slow 0.8s linear infinite' }}
-            />
-            Calculating…
+          <span className="font-mono text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">
+            STAGE 01
           </span>
-        ) : (
-          'Calculate metrics'
+        </div>
+
+        {clientError && (
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 font-mono text-xs text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)]" role="alert">
+            {clientError}
+          </div>
         )}
-      </button>
-    </form>
+
+        {/* Project Name */}
+        <div className="space-y-1.5">
+          <label htmlFor="projectName" className="block font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-text)]">
+            Project Identifier
+          </label>
+          <input
+            id="projectName"
+            value={projectName}
+            onChange={(e) => {
+              setProjectName(e.target.value);
+              setClientError(null);
+            }}
+            required
+            placeholder="e.g. Acme SaaS Protocol"
+            className="input-glow font-mono text-xs rounded-xl"
+          />
+        </div>
+
+        {/* User Counts Grid */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-text)]">User Counts</span>
+            <span className="font-mono text-[10px] text-[var(--cs-muted)]">Active + Churned ≤ Total</span>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="space-y-1">
+              <label htmlFor="totalUsers" className="block font-mono text-[10px] uppercase text-[var(--cs-muted)]">
+                Total Users
+              </label>
+              <input
+                id="totalUsers"
+                type="number"
+                min="1"
+                step="1"
+                value={totalUsers}
+                onChange={(e) => {
+                  setTotalUsers(e.target.value);
+                  setClientError(null);
+                }}
+                required
+                placeholder="1000"
+                className="input-glow font-mono text-xs rounded-xl font-tabular"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="activeUsers" className="block font-mono text-[10px] uppercase text-[var(--cs-muted)]">
+                Active Users
+              </label>
+              <input
+                id="activeUsers"
+                type="number"
+                min="0"
+                step="1"
+                value={activeUsers}
+                onChange={(e) => {
+                  setActiveUsers(e.target.value);
+                  setClientError(null);
+                }}
+                required
+                placeholder="850"
+                className="input-glow font-mono text-xs rounded-xl font-tabular"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="churnedUsers" className="block font-mono text-[10px] uppercase text-[var(--cs-muted)]">
+                Churned Users
+              </label>
+              <input
+                id="churnedUsers"
+                type="number"
+                min="0"
+                step="1"
+                value={churnedUsers}
+                onChange={(e) => {
+                  setChurnedUsers(e.target.value);
+                  setClientError(null);
+                }}
+                required
+                placeholder="150"
+                className="input-glow font-mono text-xs rounded-xl font-tabular"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Revenue */}
+        <div className="space-y-1.5">
+          <label htmlFor="monthlyRevenue" className="block font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-text)]">
+            Monthly Recurring Revenue ($ USD)
+          </label>
+          <input
+            id="monthlyRevenue"
+            type="number"
+            min="0"
+            step="any"
+            value={monthlyRevenue}
+            onChange={(e) => {
+              setMonthlyRevenue(e.target.value);
+              setClientError(null);
+            }}
+            required
+            placeholder="5000.00"
+            className="input-glow font-mono text-xs rounded-xl font-tabular"
+          />
+        </div>
+
+        {/* Persistence feedback status */}
+        {saveStatus === 'failed' && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-400">
+            Calculation computed; auto-save to ledger failed: {saveError ?? 'Database error'}.
+          </div>
+        )}
+        {saveStatus === 'unavailable' && (
+          <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-3 font-mono text-xs text-[var(--cs-muted)]">
+            Persistent ledger is currently offline. Calculation active in ephemeral memory.
+          </div>
+        )}
+
+        {/* Submit button */}
+        <button
+          type="submit"
+          disabled={loading}
+          aria-label={loading ? 'Computing metrics' : 'Execute Analysis'}
+          className="btn-primary min-h-[46px] w-full font-mono text-xs font-semibold tracking-wider uppercase inline-flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] rounded-xl"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span
+                className="inline-block h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+              />
+              COMPUTING FORMULAS…
+            </span>
+          ) : (
+            <>
+              <span>EXECUTE CALCULATION</span>
+              <ArrowUpRightIcon size={15} />
+            </>
+          )}
+        </button>
+      </form>
+    </SpotlightCard>
   );
 }

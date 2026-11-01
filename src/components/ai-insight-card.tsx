@@ -1,7 +1,8 @@
 'use client';
 
 import type { AIInsightResult } from '@/types';
-import { SparklesIcon } from './ui/icons';
+import { SparklesIcon, ArrowUpRightIcon } from './ui/icons';
+import { SpotlightCard } from './web3/spotlight-card';
 
 type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
 
@@ -23,36 +24,41 @@ export function AIInsightCard({
   modelName,
 }: Props) {
   return (
-    <div className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="AI retention insight card">
+    <SpotlightCard
+      glowColor="rgba(16, 185, 129, 0.22)"
+      className="p-6 sm:p-7 space-y-5"
+      role="region"
+      aria-label="AI retention insight card"
+    >
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
-        <div className="space-y-0.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-4">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-              <SparklesIcon className="h-3.5 w-3.5" />
+            <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+              <SparklesIcon className="h-3 w-3" />
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-              {'// AI AGENT: CHURNSENSE ANALYST'}
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+              {'// COGNITIVE INTELLIGENCE // CHURNSENSE AGENT'}
             </span>
           </div>
-          <div className="flex items-center gap-2 pt-0.5">
-            <h3 className="text-sm font-semibold text-[var(--cs-text)]">
-              Retention Insight
+          <div className="flex items-center gap-2.5 pt-0.5">
+            <h3 className="text-base font-extrabold text-[var(--cs-text)]">
+              Retention Strategy Blueprint
             </h3>
             {insight && (
               <span
-                className={`rounded px-2 py-0.5 text-[10px] font-mono font-semibold border ${
+                className={`rounded-md px-2 py-0.5 text-[10px] font-mono font-semibold border ${
                   insight.source === 'mock'
                     ? 'border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]'
-                    : 'border-[var(--cs-primary)]/20 bg-[var(--cs-accent-surface)] text-[var(--cs-primary)]'
+                    : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                 }`}
               >
-                {insight.source === 'mock' ? 'RULE-BASED FALLBACK' : `MODEL // ${modelName ?? 'STANDARD'}`}
+                {insight.source === 'mock' ? 'RULE-BASED FALLBACK' : `INFERENCE // ${modelName ?? 'STANDARD'}`}
               </span>
             )}
           </div>
           <p className="font-mono text-[11px] text-[var(--cs-muted)]">
-            {projectName ? `CONTEXT: ${projectName}` : 'Requires active calculation'}
+            {projectName ? `TARGET: ${projectName}` : 'Requires active calculation'}
           </p>
         </div>
 
@@ -60,38 +66,42 @@ export function AIInsightCard({
           type="button"
           onClick={onGenerate}
           disabled={disabled || loading}
-          className="btn-primary min-h-[38px] px-4 py-1.5 text-xs font-semibold"
+          className="btn-primary min-h-[42px] px-5 py-2 font-mono text-xs font-semibold tracking-wider uppercase inline-flex items-center gap-2 rounded-xl"
         >
           {loading ? (
             <span className="flex items-center gap-2">
               <span
-                className="inline-block h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent"
-                style={{ animation: 'spin-slow 0.8s linear infinite' }}
+                className="inline-block h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin"
               />
-              Generating…
+              SYNTHESIZING…
             </span>
           ) : insight ? (
-            'Regenerate insight'
+            <>
+              <span>REGENERATE AGENT</span>
+              <ArrowUpRightIcon size={14} />
+            </>
           ) : (
-            'Generate insight'
+            <>
+              <span>INITIALIZE AGENT</span>
+              <ArrowUpRightIcon size={14} />
+            </>
           )}
         </button>
       </div>
 
       {/* Loading State */}
       {loading && (
-        <div className="space-y-3 py-4" aria-busy="true">
-          <div className="flex items-center gap-2 text-xs text-[var(--cs-muted)]">
+        <div className="space-y-4 py-5 font-mono" aria-busy="true">
+          <div className="flex items-center gap-2.5 text-xs text-emerald-400">
             <span
-              className="inline-block h-3 w-3 rounded-full border-2 border-[var(--cs-primary)] border-t-transparent"
-              style={{ animation: 'spin-slow 0.8s linear infinite' }}
+              className="inline-block h-3.5 w-3.5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin"
             />
-            Analyzing retention metrics and evaluating recommendations…
+            <span>Executing retention audit heuristics &amp; synthesizing strategic recommendations…</span>
           </div>
-          <div className="space-y-2">
-            <div className="h-4 w-full rounded bg-[var(--cs-bg)] animate-pulse" />
-            <div className="h-4 w-4/5 rounded bg-[var(--cs-bg)] animate-pulse" />
-            <div className="h-4 w-3/5 rounded bg-[var(--cs-bg)] animate-pulse" />
+          <div className="space-y-2.5">
+            <div className="h-4 w-full rounded-lg bg-emerald-500/10 animate-pulse" />
+            <div className="h-4 w-4/5 rounded-lg bg-emerald-500/10 animate-pulse" />
+            <div className="h-4 w-3/5 rounded-lg bg-emerald-500/10 animate-pulse" />
           </div>
         </div>
       )}
@@ -100,19 +110,20 @@ export function AIInsightCard({
       {!loading && insight && (
         <div className="space-y-4 text-xs leading-relaxed">
           {/* Summary */}
-          <div className="space-y-1">
-            <div className="font-semibold uppercase tracking-wider text-[var(--cs-muted)] text-[10px]">
-              Executive Summary
+          <div className="space-y-1.5">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--cs-muted)]">
+              EXECUTIVE SYNTHESIS
             </div>
-            <p className="text-sm text-[var(--cs-text)] leading-relaxed">
+            <p className="text-sm text-[var(--cs-text)] leading-relaxed font-normal">
               {insight.summary}
             </p>
           </div>
 
           {/* Actionable Recommendation */}
-          <div className="rounded-lg border border-[var(--cs-primary)]/20 bg-[var(--cs-accent-surface)] p-4 text-[var(--cs-text)] space-y-1">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-primary)]">
-              Tactical Recommendation
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 space-y-2 backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              TACTICAL INTERVENTION BLUEPRINT
             </div>
             <p className="text-xs leading-relaxed text-[var(--cs-text)]">
               {insight.recommendation}
@@ -123,15 +134,15 @@ export function AIInsightCard({
 
       {/* Empty State */}
       {!loading && !insight && (
-        <div className="py-6 text-center space-y-1 text-xs text-[var(--cs-muted)]">
-          <p className="font-medium text-[var(--cs-text)]">No insight generated yet</p>
-          <p>
+        <div className="py-8 text-center space-y-2 font-mono text-xs text-[var(--cs-muted)]">
+          <p className="font-bold text-[var(--cs-text)]">Awaiting telemetry payload</p>
+          <p className="text-[11px] max-w-md mx-auto">
             {disabled
-              ? 'Calculate your project metrics first to enable AI retention evaluation.'
-              : 'Click "Generate insight" to receive actionable recommendations for this project.'}
+              ? 'Calculate project parameters above to trigger autonomous AI retention auditing.'
+              : 'Click "Initialize Agent" to execute multi-tier LLM inference against this dataset.'}
           </p>
         </div>
       )}
-    </div>
+    </SpotlightCard>
   );
 }

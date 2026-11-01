@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { SavedProject } from './projects-history';
 import { calculateComparisonDelta, type DeltaDirection } from '@/lib/format';
 import { ArrowDownRightIcon, ArrowUpRightIcon } from './ui/icons';
+import { SpotlightCard } from './web3/spotlight-card';
 
 const METRICS_CONFIG = [
   {
@@ -44,9 +45,9 @@ const METRICS_CONFIG = [
 ];
 
 const DIRECTION_COLORS: Record<DeltaDirection, string> = {
-  improved: 'text-[var(--cs-success)]',
-  worse: 'text-[var(--cs-danger)]',
-  neutral: 'text-[var(--cs-muted)]',
+  improved: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25',
+  worse: 'text-rose-400 bg-rose-500/10 border-rose-500/25',
+  neutral: 'text-[var(--cs-muted)] bg-[var(--cs-bg)] border-[var(--cs-border)]',
 };
 
 export function ComparisonView({ projects }: { projects: SavedProject[] }) {
@@ -59,123 +60,125 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
   const b = projects.find((p) => p.id === bId) ?? projects[1];
 
   return (
-    <div className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="Project comparison section">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
+    <SpotlightCard
+      glowColor="rgba(99, 102, 241, 0.2)"
+      className="p-6 sm:p-7 space-y-5"
+      role="region"
+      aria-label="Project comparison section"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-3.5">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-            {'// SNAPSHOT DUAL AUDIT (B − A)'}
+          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-indigo-400">
+            {'// SNAPSHOT DUAL AUDIT [ DELTA: B − A ]'}
           </span>
-          <h3 className="text-sm font-semibold text-[var(--cs-text)]">
+          <h3 className="text-base font-extrabold text-[var(--cs-text)]">
             Compare Saved Snapshots
           </h3>
-          <p className="text-xs text-[var(--cs-muted)]">
-            Evaluation convention: <strong>B − A</strong> (Project A is baseline, Project B is comparison target).
+          <p className="font-mono text-xs text-[var(--cs-muted)]">
+            Evaluation delta: <strong>B − A</strong> (Snapshot A = Baseline, Snapshot B = Comparison Target).
           </p>
         </div>
       </div>
 
       {/* Snapshot Selectors */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label htmlFor="compare-a" className="block text-xs font-semibold text-[var(--cs-text)] mb-1">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label htmlFor="compare-a" className="block font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-text)]">
             Baseline (Snapshot A)
           </label>
           <select
             id="compare-a"
             value={a.id}
             onChange={(e) => setAId(Number(e.target.value))}
-            className="input-control text-xs"
+            className="input-glow font-mono text-xs rounded-xl"
           >
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.projectName} · {new Date(p.createdAt).toLocaleDateString()} (#{p.id})
+                {p.projectName} · {new Date(p.createdAt).toLocaleDateString()} (#SNP-{String(p.id).padStart(4, '0')})
               </option>
             ))}
           </select>
         </div>
 
-        <div>
-          <label htmlFor="compare-b" className="block text-xs font-semibold text-[var(--cs-text)] mb-1">
+        <div className="space-y-1.5">
+          <label htmlFor="compare-b" className="block font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-text)]">
             Comparison Target (Snapshot B)
           </label>
           <select
             id="compare-b"
             value={b.id}
             onChange={(e) => setBId(Number(e.target.value))}
-            className="input-control text-xs"
+            className="input-glow font-mono text-xs rounded-xl"
           >
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.projectName} · {new Date(p.createdAt).toLocaleDateString()} (#{p.id})
+                {p.projectName} · {new Date(p.createdAt).toLocaleDateString()} (#SNP-{String(p.id).padStart(4, '0')})
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {a.id === b.id && (
-        <div className="rounded-md border border-[var(--cs-border)] bg-[var(--cs-bg)] p-2.5 text-xs text-[var(--cs-muted)]">
-          You are comparing a snapshot with itself. Select two different snapshots to see meaningful deltas.
-        </div>
-      )}
-
-      {/* Comparison Table */}
-      <div className="overflow-x-auto rounded-lg border border-[var(--cs-border)]">
-        <table className="w-full text-left text-xs" aria-label="Comparison metrics table">
-          <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
+      {/* Delta Matrix Table */}
+      <div className="overflow-x-auto rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)]/80">
+        <table className="w-full text-left text-xs font-mono" aria-label="Comparison metrics table">
+          <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-elevated)] text-[var(--cs-muted)] text-[11px] uppercase">
             <tr>
-              <th scope="col" className="px-4 py-3 font-medium">Metric</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">
-                Baseline (A)
+              <th scope="col" className="px-4 py-3 font-semibold">METRIC</th>
+              <th scope="col" className="px-4 py-3 text-right font-semibold">
+                BASELINE (A)
               </th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">
-                Target (B)
+              <th scope="col" className="px-4 py-3 text-right font-semibold">
+                TARGET (B)
               </th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">
-                Delta (B − A)
+              <th scope="col" className="px-4 py-3 text-right font-semibold">
+                SIGNED DELTA (B − A)
               </th>
-              <th scope="col" className="px-4 py-3 text-left font-medium">
-                Assessment
+              <th scope="col" className="px-4 py-3 text-center font-semibold">
+                HEALTH VECTOR
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--cs-border)]">
-            {METRICS_CONFIG.map((m) => {
-              const va = a.metrics[m.key];
-              const vb = b.metrics[m.key];
-              const delta = calculateComparisonDelta(va, vb, m.type, m.lowerIsBetter);
+            {METRICS_CONFIG.map((cfg) => {
+              const valA = a.metrics[cfg.key];
+              const valB = b.metrics[cfg.key];
+              const delta = calculateComparisonDelta(valA, valB, cfg.type, cfg.lowerIsBetter);
 
               return (
-                <tr key={m.key} className="hover:bg-[var(--cs-bg)]/40">
-                  <td className="px-4 py-3 font-medium text-[var(--cs-text)]">
-                    {m.label}
+                <tr key={cfg.key} className="hover:bg-white/5 transition-colors">
+                  <td className="px-4 py-3 font-bold text-[var(--cs-text)]">
+                    {cfg.label}
                   </td>
-                  <td className="px-4 py-3 text-right font-tabular text-[var(--cs-text)]">
-                    {va === null ? 'Not defined' : m.format(va)}
+                  <td className="px-4 py-3 text-right font-tabular text-[var(--cs-muted)]">
+                    {valA === null ? '—' : cfg.format(valA)}
                   </td>
-                  <td className="px-4 py-3 text-right font-tabular text-[var(--cs-text)]">
-                    {vb === null ? 'Not defined' : m.format(vb)}
+                  <td className="px-4 py-3 text-right font-tabular font-bold text-[var(--cs-text)]">
+                    {valB === null ? '—' : cfg.format(valB)}
                   </td>
-                  <td
-                    className={`px-4 py-3 text-right font-tabular font-bold ${
-                      DIRECTION_COLORS[delta.direction]
-                    }`}
-                  >
-                    {delta.display}
-                  </td>
-                  <td className="px-4 py-3 text-left">
+                  <td className="px-4 py-3 text-right font-tabular font-bold">
                     <span
-                      className={`inline-flex items-center gap-1 font-mono text-[11px] font-semibold ${
+                      className={`inline-block rounded-md px-2 py-0.5 text-xs border ${
                         DIRECTION_COLORS[delta.direction]
                       }`}
                     >
-                      {delta.direction === 'improved' ? (
-                        <ArrowUpRightIcon className="h-3.5 w-3.5" />
-                      ) : delta.direction === 'worse' ? (
-                        <ArrowDownRightIcon className="h-3.5 w-3.5" />
-                      ) : null}
-                      <span>{delta.directionText}</span>
+                      {delta.display}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {delta.direction === 'improved' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                        <ArrowUpRightIcon size={13} />
+                        <span>IMPROVED</span>
+                      </span>
+                    ) : delta.direction === 'worse' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-400">
+                        <ArrowDownRightIcon size={13} />
+                        <span>REGRESSED</span>
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-[var(--cs-muted)]">—</span>
+                    )}
                   </td>
                 </tr>
               );
@@ -183,6 +186,6 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
           </tbody>
         </table>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
