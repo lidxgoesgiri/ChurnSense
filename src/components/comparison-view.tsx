@@ -2,17 +2,51 @@
 
 import { useState } from 'react';
 import type { SavedProject } from './projects-history';
+import { calculateComparisonDelta, type DeltaDirection } from '@/lib/format';
 
-const METRICS = [
-  { label: 'Churn Rate', key: 'churnRate' as const, fmt: (v: number) => `${(v * 100).toFixed(1)}%`, lowerIsBetter: true },
-  { label: 'Retention', key: 'retentionRate' as const, fmt: (v: number) => `${(v * 100).toFixed(1)}%`, lowerIsBetter: false },
-  { label: 'ARPU', key: 'arpu' as const, fmt: (v: number) => `$${v.toFixed(2)}`, lowerIsBetter: false },
-  { label: 'MRR', key: 'mrr' as const, fmt: (v: number) => `$${v.toFixed(2)}`, lowerIsBetter: false },
-  { label: 'Est. LTV', key: 'estimatedLtv' as const, fmt: (v: number) => `$${v.toFixed(2)}`, lowerIsBetter: false },
+const METRICS_CONFIG = [
+  {
+    key: 'churnRate' as const,
+    label: 'Churn Rate',
+    type: 'rate' as const,
+    lowerIsBetter: true,
+    format: (v: number) => `${(v * 100).toFixed(1)}%`,
+  },
+  {
+    key: 'retentionRate' as const,
+    label: 'Retention Rate',
+    type: 'rate' as const,
+    lowerIsBetter: false,
+    format: (v: number) => `${(v * 100).toFixed(1)}%`,
+  },
+  {
+    key: 'arpu' as const,
+    label: 'ARPU',
+    type: 'currency' as const,
+    lowerIsBetter: false,
+    format: (v: number) => `$${v.toFixed(2)}`,
+  },
+  {
+    key: 'mrr' as const,
+    label: 'MRR',
+    type: 'currency' as const,
+    lowerIsBetter: false,
+    format: (v: number) => `$${v.toFixed(2)}`,
+  },
+  {
+    key: 'estimatedLtv' as const,
+    label: 'Est. LTV',
+    type: 'currency' as const,
+    lowerIsBetter: false,
+    format: (v: number) => `$${v.toFixed(2)}`,
+  },
 ];
 
-const fmtVal = (v: number | null, fmt: (n: number) => string): string =>
-  v === null ? '∞' : fmt(v);
+const DIRECTION_COLORS: Record<DeltaDirection, string> = {
+  improved: 'text-[var(--cs-success)]',
+  worse: 'text-[var(--cs-danger)]',
+  neutral: 'text-[var(--cs-muted)]',
+};
 
 export function ComparisonView({ projects }: { projects: SavedProject[] }) {
   const [aId, setAId] = useState<number | null>(null);
@@ -24,94 +58,115 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
   const b = projects.find((p) => p.id === bId) ?? projects[1];
 
   return (
-    <div className="glass-card anim-fade-up delay-3 p-6">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
-        Compare projects
-      </h3>
+    <div className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="Project comparison section">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--cs-text)]">
+            Compare Saved Snapshots
+          </h3>
+          <p className="text-xs text-[var(--cs-muted)]">
+            Evaluation convention: <strong>B − A</strong> (Project A is baseline, Project B is comparison target).
+          </p>
+        </div>
+      </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-3">
-        {[
-          { val: a.id, set: setAId, label: 'Project A' },
-          { val: b.id, set: setBId, label: 'Project B' },
-        ].map((sel) => (
-          <label key={sel.label} className="block text-xs">
-            <span className="mb-1 block text-gray-400">{sel.label}</span>
-            <select
-              value={sel.val}
-              onChange={(e) => sel.set(Number(e.target.value))}
-              aria-label={sel.label}
-              className="w-full rounded-lg border border-black/15 bg-transparent px-2 py-1.5 text-sm outline-none focus:border-accent dark:border-white/20"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-background">
-                  {p.projectName} · {new Date(p.createdAt).toLocaleDateString()}
-                </option>
-              ))}
-            </select>
+      {/* Snapshot Selectors */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="compare-a" className="block text-xs font-semibold text-[var(--cs-text)] mb-1">
+            Baseline (Snapshot A)
           </label>
-        ))}
+          <select
+            id="compare-a"
+            value={a.id}
+            onChange={(e) => setAId(Number(e.target.value))}
+            className="input-control text-xs"
+          >
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.projectName} · {new Date(p.createdAt).toLocaleDateString()} (#{p.id})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="compare-b" className="block text-xs font-semibold text-[var(--cs-text)] mb-1">
+            Comparison Target (Snapshot B)
+          </label>
+          <select
+            id="compare-b"
+            value={b.id}
+            onChange={(e) => setBId(Number(e.target.value))}
+            className="input-control text-xs"
+          >
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.projectName} · {new Date(p.createdAt).toLocaleDateString()} (#{p.id})
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Colour legend for the comparison bars (#3.4). */}
-      <div className="mb-3 flex items-center gap-4 text-xs text-gray-400">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-3 rounded-full bg-accent" aria-hidden="true" />
-          {a.projectName}
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-3 rounded-full bg-gray-400/70 dark:bg-gray-500/70" aria-hidden="true" />
-          {b.projectName}
-        </span>
-      </div>
+      {a.id === b.id && (
+        <div className="rounded-md border border-[var(--cs-border)] bg-[var(--cs-bg)] p-2.5 text-xs text-[var(--cs-muted)]">
+          You are comparing a snapshot with itself. Select two different snapshots to see meaningful deltas.
+        </div>
+      )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-black/5 text-left text-gray-500 dark:border-white/10">
-              <th className="py-2 pr-4 font-medium">Metric</th>
-              <th className="py-2 pr-4 text-right font-medium">{a.projectName}</th>
-              <th className="py-2 pr-4 text-right font-medium">{b.projectName}</th>
-              <th className="py-2 pr-4 text-right font-medium">Δ</th>
-              <th className="w-28 py-2 font-medium">Visual</th>
+      {/* Comparison Table */}
+      <div className="overflow-x-auto rounded-lg border border-[var(--cs-border)]">
+        <table className="w-full text-left text-xs" aria-label="Comparison metrics table">
+          <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
+            <tr>
+              <th scope="col" className="px-4 py-3 font-medium">Metric</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Baseline (A)
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Target (B)
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Delta (B − A)
+              </th>
+              <th scope="col" className="px-4 py-3 text-left font-medium">
+                Assessment
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {METRICS.map((m) => {
+          <tbody className="divide-y divide-[var(--cs-border)]">
+            {METRICS_CONFIG.map((m) => {
               const va = a.metrics[m.key];
               const vb = b.metrics[m.key];
-              // A delta is only meaningful when both sides are numeric; an
-              // undefined (∞) LTV on either side shows a dash instead (#5.2).
-              const comparable = typeof va === 'number' && typeof vb === 'number';
-              const diff = comparable ? va - vb : 0;
-              // Colour the delta by whether A is better than B for this metric.
-              const better = m.lowerIsBetter ? diff < 0 : diff > 0;
-              const worse = m.lowerIsBetter ? diff > 0 : diff < 0;
-              const color = diff === 0 ? 'text-gray-400' : better ? 'text-green-500' : worse ? 'text-red-500' : '';
-              // Bar widths are relative to the larger of the two values so the
-              // longer bar always fills the cell; a null (∞) side renders empty.
-              const maxAbs = Math.max(Math.abs(va ?? 0), Math.abs(vb ?? 0)) || 1;
-              const wa = va === null ? 0 : Math.round((Math.abs(va) / maxAbs) * 100);
-              const wb = vb === null ? 0 : Math.round((Math.abs(vb) / maxAbs) * 100);
+              const delta = calculateComparisonDelta(va, vb, m.type, m.lowerIsBetter);
+
               return (
-                <tr key={m.key} className="border-b border-black/5 dark:border-white/5">
-                  <td className="py-2 pr-4 text-gray-500">{m.label}</td>
-                  <td className="py-2 pr-4 text-right font-mono">{fmtVal(va, m.fmt)}</td>
-                  <td className="py-2 pr-4 text-right font-mono">{fmtVal(vb, m.fmt)}</td>
-                  <td className={`py-2 pr-4 text-right font-mono ${comparable ? color : 'text-gray-400'}`}>
-                    {comparable ? `${diff > 0 ? '+' : ''}${m.fmt(Math.abs(diff))}` : '—'}
+                <tr key={m.key} className="hover:bg-[var(--cs-bg)]/40">
+                  <td className="px-4 py-3 font-medium text-[var(--cs-text)]">
+                    {m.label}
                   </td>
-                  <td className="py-2">
-                    <div
-                      className="space-y-1"
-                      aria-hidden="true"
-                      title={`${a.projectName}: ${fmtVal(va, m.fmt)} · ${b.projectName}: ${fmtVal(vb, m.fmt)}`}
+                  <td className="px-4 py-3 text-right font-tabular text-[var(--cs-text)]">
+                    {va === null ? 'Not defined' : m.format(va)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-tabular text-[var(--cs-text)]">
+                    {vb === null ? 'Not defined' : m.format(vb)}
+                  </td>
+                  <td
+                    className={`px-4 py-3 text-right font-tabular font-bold ${
+                      DIRECTION_COLORS[delta.direction]
+                    }`}
+                  >
+                    {delta.display}
+                  </td>
+                  <td className="px-4 py-3 text-left">
+                    <span
+                      className={`inline-flex items-center gap-1 text-[11px] font-medium ${
+                        DIRECTION_COLORS[delta.direction]
+                      }`}
                     >
-                      <div className="h-1.5 rounded-full bg-accent transition-all" style={{ width: `${wa}%` }} />
-                      <div
-                        className="h-1.5 rounded-full bg-gray-400/70 transition-all dark:bg-gray-500/70"
-                        style={{ width: `${wb}%` }}
-                      />
-                    </div>
+                      {delta.directionText}
+                    </span>
                   </td>
                 </tr>
               );

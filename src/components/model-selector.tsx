@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AVAILABLE_MODELS,
   getStoredModel,
   storeModel,
-  TIER_GLOW,
   type ModelTier,
 } from '@/lib/models';
 
@@ -14,9 +13,9 @@ interface Props {
 }
 
 const TIER_LABEL: Record<ModelTier, string> = {
-  premium: 'Premium · smartest',
-  strong: 'Strong · general',
-  fast: 'Fast · lightweight',
+  premium: 'Premium',
+  strong: 'Standard',
+  fast: 'Fast',
 };
 
 const TIER_ORDER: ModelTier[] = ['premium', 'strong', 'fast'];
@@ -24,82 +23,125 @@ const TIER_ORDER: ModelTier[] = ['premium', 'strong', 'fast'];
 export function ModelSelector({ onModelChange }: Props) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(getStoredModel());
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const current = AVAILABLE_MODELS.find((m) => m.id === selected) ?? AVAILABLE_MODELS[0];
-  const glow = TIER_GLOW[current.tier];
 
   function pick(modelId: string) {
     setSelected(modelId);
     storeModel(modelId);
     onModelChange(modelId);
     setOpen(false);
+    triggerRef.current?.focus();
   }
+
+  // Handle Escape key and outside click
+  useEffect(() => {
+    if (!open) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
 
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setOpen(!open)}
-        aria-label="Select AI model"
-        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
-        style={{
-          border: `1px solid ${glow}`,
-          // Subtle cinematic border-glow tinted by the model's tier.
-          boxShadow: `0 0 10px -1px ${glow}66, inset 0 0 6px -3px ${glow}`,
-          background: `color-mix(in srgb, ${glow} 8%, transparent)`,
-        }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`AI model: ${current.label} (${current.provider})`}
+        className="inline-flex min-h-[36px] items-center gap-2 rounded-lg border border-[var(--cs-control-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-xs font-medium text-[var(--cs-text)] transition-colors hover:border-[var(--cs-focus)]"
       >
-        <span className="h-2 w-2 rounded-full" style={{ background: glow, boxShadow: `0 0 6px ${glow}` }} />
-        <span className="hidden max-w-[9rem] truncate sm:inline">{current.label}</span>
-        <span className="sm:hidden">AI</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <path d="M3 5L6 8L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{
+            backgroundColor:
+              current.tier === 'premium'
+                ? 'var(--cs-primary)'
+                : current.tier === 'strong'
+                  ? 'var(--cs-accent)'
+                  : 'var(--cs-muted)',
+          }}
+        />
+        <span className="max-w-[110px] truncate sm:max-w-[150px]">{current.label}</span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden="true"
+          className={`text-[var(--cs-muted)] transition-transform ${open ? 'rotate-180' : ''}`}
+        >
+          <path d="M2.5 3.75L5 6.25L7.5 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
       {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div
-            className="glass-card anim-scale absolute right-0 z-50 mt-1 max-h-[70vh] w-64 overflow-y-auto py-1"
-            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.25)' }}
-          >
-            {TIER_ORDER.map((tier) => {
-              const models = AVAILABLE_MODELS.filter((m) => m.tier === tier);
-              if (models.length === 0) return null;
-              const tierGlow = TIER_GLOW[tier];
-              return (
-                <div key={tier}>
-                  <div
-                    className="flex items-center gap-1.5 px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest"
-                    style={{ color: tierGlow }}
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: tierGlow }} />
-                    {TIER_LABEL[tier]}
-                  </div>
-                  {models.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => pick(m.id)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/10 ${
-                        m.id === selected ? 'bg-black/[0.04] font-semibold dark:bg-white/[0.06]' : ''
-                      }`}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm">{m.label}</span>
-                        <span className="block text-gray-400">{m.provider}</span>
-                      </span>
-                      {m.id === selected && (
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ color: tierGlow }}>
-                          <path d="M3 7.5L5.5 10L11 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
+        <div
+          ref={menuRef}
+          role="listbox"
+          aria-label="Available AI models"
+          className="absolute right-0 z-50 mt-1 max-h-[70vh] w-64 overflow-y-auto rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] p-1 text-[var(--cs-text)] shadow-xl outline-none"
+        >
+          {TIER_ORDER.map((tier) => {
+            const models = AVAILABLE_MODELS.filter((m) => m.tier === tier);
+            if (models.length === 0) return null;
+            return (
+              <div key={tier} className="mb-1">
+                <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+                  {TIER_LABEL[tier]}
                 </div>
-              );
-            })}
-          </div>
-        </>
+                {models.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    role="option"
+                    aria-selected={m.id === selected}
+                    onClick={() => pick(m.id)}
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs transition-colors hover:bg-[var(--cs-bg)] ${
+                      m.id === selected ? 'bg-[var(--cs-accent-surface)] font-semibold text-[var(--cs-primary)]' : ''
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-xs font-medium text-[var(--cs-text)]">
+                        {m.label}
+                      </div>
+                      <div className="text-[10px] text-[var(--cs-muted)]">{m.provider}</div>
+                    </div>
+                    {m.id === selected && (
+                      <span className="text-xs text-[var(--cs-primary)] font-bold">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

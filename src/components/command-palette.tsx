@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useId } from 'react';
 
-interface Action {
+export interface Action {
   id: string;
   label: string;
   shortcut?: string;
@@ -18,27 +18,36 @@ export function CommandPalette({ actions, onClose }: Props) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const listboxId = useId();
 
   const filtered = actions.filter((a) =>
     a.label.toLowerCase().includes(query.toLowerCase())
   );
 
   useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
     inputRef.current?.focus();
+
+    return () => {
+      previouslyFocusedRef.current?.focus?.();
+    };
   }, []);
 
   const handleKey = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelected((s) => Math.min(s + 1, filtered.length - 1));
+        setSelected((s) => (filtered.length === 0 ? 0 : Math.min(s + 1, filtered.length - 1)));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelected((s) => Math.max(s - 1, 0));
       } else if (e.key === 'Enter' && filtered[selected]) {
+        e.preventDefault();
         filtered[selected].onSelect();
         onClose();
       } else if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
       }
     },
@@ -47,61 +56,88 @@ export function CommandPalette({ actions, onClose }: Props) {
 
   return (
     <div
-      className="anim-fade fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh] sm:pt-[15vh]"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       style={{
-        background: 'rgba(0,0,0,0.35)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: 'rgba(10, 15, 12, 0.72)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
       }}
     >
       <div
-        className="anim-scale w-full max-w-lg glass-card overflow-hidden"
-        style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.25)' }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
+        className="w-full max-w-lg overflow-hidden rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text)] shadow-2xl"
       >
-        <div className="border-b border-black/10 p-3 dark:border-white/15">
+        <div className="flex items-center border-b border-[var(--cs-border)] px-3 py-2.5">
+          <span className="mr-2.5 text-xs text-[var(--cs-muted)] font-mono">⌘</span>
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setSelected(0); // reset highlight when the query changes
+              setSelected(0);
             }}
             onKeyDown={handleKey}
-            placeholder="Search actions..."
-            aria-label="Command palette search"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
+            placeholder="Type a command or search actions..."
+            aria-label="Command search"
+            aria-autocomplete="list"
+            aria-controls={listboxId}
+            className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--cs-muted)]"
           />
+          <kbd className="rounded border border-[var(--cs-border)] bg-[var(--cs-bg)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--cs-muted)]">
+            ESC
+          </kbd>
         </div>
-        <div className="max-h-64 overflow-y-auto p-2">
-          {filtered.length === 0 && (
-            <p className="p-2 text-sm text-gray-400">No results.</p>
+
+        <div
+          id={listboxId}
+          role="listbox"
+          aria-label="Commands"
+          className="max-h-64 overflow-y-auto p-1.5"
+        >
+          {filtered.length === 0 ? (
+            <p className="p-3 text-center text-xs text-[var(--cs-muted)]">
+              No matching actions found.
+            </p>
+          ) : (
+            filtered.map((a, i) => {
+              const isSelected = i === selected;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => {
+                    a.onSelect();
+                    onClose();
+                  }}
+                  className={`flex min-h-[40px] w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+                    isSelected
+                      ? 'bg-[var(--cs-accent-surface)] font-medium text-[var(--cs-primary)]'
+                      : 'text-[var(--cs-text)] hover:bg-[var(--cs-bg)]'
+                  }`}
+                >
+                  <span>{a.label}</span>
+                  {a.shortcut && (
+                    <span className="text-[10px] text-[var(--cs-muted)] font-mono">
+                      {a.shortcut}
+                    </span>
+                  )}
+                </button>
+              );
+            })
           )}
-          {filtered.map((a, i) => (
-            <button
-              key={a.id}
-              onClick={() => { a.onSelect(); onClose(); }}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                i === selected ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'
-              }`}
-            >
-              <span>{a.label}</span>
-              {a.shortcut && (
-                <span className="text-xs text-gray-400">{a.shortcut}</span>
-              )}
-            </button>
-          ))}
         </div>
       </div>
     </div>
   );
 }
 
-/**
- * Hook: call `useCommandPalette(actions)` to get `{ open, setOpen, bindKey }`.
- * Renders the CommandPalette when open is true. Your component must call
- * `bindKey` in a useEffect.
- */
 export function useCommandPalette(actions: Action[]) {
   const [open, setOpen] = useState(false);
 

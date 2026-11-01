@@ -1,27 +1,37 @@
+import React from 'react';
 import type { AnalyticsResult } from '@/types';
 
-interface BadgeProps {
-  variant?: AnalyticsResult['riskStatus'] | 'spike' | 'drop' | 'normal' | 'insufficient-data' | 'info' | 'default';
+export interface BadgeProps {
+  variant?:
+    | AnalyticsResult['riskStatus']
+    | 'spike'
+    | 'drop'
+    | 'normal'
+    | 'insufficient-data'
+    | 'info'
+    | 'default';
   children: React.ReactNode;
   className?: string;
 }
 
 const STYLES: Record<string, string> = {
-  Low: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  Medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  High: 'bg-red-500/10 text-red-600 dark:text-red-400',
-  spike: 'bg-red-500/10 text-red-600 dark:text-red-400',
-  drop: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  normal: 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
-  'insufficient-data': 'bg-gray-500/5 text-gray-400',
-  info: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
-  default: 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
+  Low: 'bg-[var(--cs-accent-surface)] text-[var(--cs-primary)] border border-[var(--cs-primary)]/20',
+  Medium: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25',
+  High: 'bg-red-500/10 text-[var(--cs-danger)] border border-[var(--cs-danger)]/25',
+  spike: 'bg-red-500/10 text-[var(--cs-danger)] border border-[var(--cs-danger)]/25',
+  drop: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25',
+  normal: 'bg-[var(--cs-bg)] text-[var(--cs-muted)] border border-[var(--cs-border)]',
+  'insufficient-data': 'bg-[var(--cs-bg)] text-[var(--cs-muted)] border border-[var(--cs-border)]',
+  info: 'bg-[var(--cs-accent-surface)] text-[var(--cs-accent)] border border-[var(--cs-accent)]/20',
+  default: 'bg-[var(--cs-bg)] text-[var(--cs-muted)] border border-[var(--cs-border)]',
 };
 
 export function Badge({ variant = 'default', children, className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${STYLES[variant] ?? STYLES.default} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-0.5 text-xs font-medium ${
+        STYLES[variant] ?? STYLES.default
+      } ${className}`}
     >
       {children}
     </span>

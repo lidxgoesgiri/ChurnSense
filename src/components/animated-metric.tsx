@@ -11,7 +11,7 @@ export function AnimatedMetric({
   prefix = '',
   suffix = '',
   decimals = 2,
-  duration = 800,
+  duration = 600,
 }: {
   value: number;
   prefix?: string;
@@ -19,7 +19,7 @@ export function AnimatedMetric({
   decimals?: number;
   duration?: number;
 }) {
-  const [display, setDisplay] = useState(0);
+  const [display, setDisplay] = useState(value);
   const raf = useRef<number>(0);
 
   useEffect(() => {
@@ -27,8 +27,9 @@ export function AnimatedMetric({
     const prefersReduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     if (prefersReduced) {
-      // Intentional: snap to the final value for reduced-motion users.
+      // Intentional: snap to final value for reduced-motion users.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplay(value);
       return;
@@ -51,18 +52,22 @@ export function AnimatedMetric({
     return () => cancelAnimationFrame(raf.current);
   }, [value, duration]);
 
-  // Thousands separators + fixed decimals (e.g. 1,250.00).
-  const formatted = display.toLocaleString('en-US', {
+  const finalFormatted = `${prefix}${value.toLocaleString('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  });
+  })}${suffix}`;
 
-  // aria-live so assistive tech announces the settled figure, not each frame.
+  const currentFormatted = `${prefix}${display.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })}${suffix}`;
+
   return (
-    <span aria-live="polite" aria-atomic="true">
-      {prefix}
-      {formatted}
-      {suffix}
+    <span className="font-tabular">
+      {/* Visual display during RAF */}
+      <span aria-hidden="true">{currentFormatted}</span>
+      {/* Screen-reader friendly semantic text */}
+      <span className="sr-only">{finalFormatted}</span>
     </span>
   );
 }

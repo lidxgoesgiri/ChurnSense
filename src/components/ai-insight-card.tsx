@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { AIInsightResult } from '@/types';
 
 type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
@@ -10,105 +9,117 @@ interface Props {
   loading: boolean;
   onGenerate: () => void;
   disabled: boolean;
+  projectName?: string;
+  modelName?: string;
 }
 
-// Reveal text progressively for a subtle "streaming" feel while reading.
-function useTypewriter(text: string, speedMs = 12) {
-  const [shown, setShown] = useState('');
-  useEffect(() => {
-    // Intentional: reset + interval-driven reveal is a legitimate animation.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShown('');
-    if (!text) return;
-    let i = 0;
-    const id = setInterval(() => {
-      i += 1;
-      setShown(text.slice(0, i));
-      if (i >= text.length) clearInterval(id);
-    }, speedMs);
-    return () => clearInterval(id);
-  }, [text, speedMs]);
-  return shown;
-}
-
-export function AIInsightCard({ insight, loading, onGenerate, disabled }: Props) {
-  const streamedSummary = useTypewriter(insight?.summary ?? '');
-
+export function AIInsightCard({
+  insight,
+  loading,
+  onGenerate,
+  disabled,
+  projectName,
+  modelName,
+}: Props) {
   return (
-    <div className="glass-card anim-fade-up delay-5 overflow-hidden">
-      <div
-        className="flex items-center justify-between px-6 py-4"
-        style={{ borderBottom: '1px solid var(--card-border)' }}
-      >
-        <div className="flex items-center gap-2">
-          <div className="gradient-bg flex h-7 w-7 items-center justify-center rounded-lg text-xs">🤖</div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide">AI insight</span>
-            {insight?.source === 'mock' && (
-              <span className="text-[10px]" style={{ color: 'var(--muted)' }}>
-                Rule-based
+    <div className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="AI retention insight card">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-[var(--cs-text)]">
+              Retention Insight
+            </h3>
+            {insight && (
+              <span
+                className={`rounded px-2 py-0.5 text-[10px] font-semibold border ${
+                  insight.source === 'mock'
+                    ? 'border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]'
+                    : 'border-[var(--cs-primary)]/20 bg-[var(--cs-accent-surface)] text-[var(--cs-primary)]'
+                }`}
+              >
+                {insight.source === 'mock' ? 'Rule-Based Fallback' : `AI: ${modelName ?? 'Standard'}`}
               </span>
             )}
           </div>
+          <p className="text-xs text-[var(--cs-muted)]">
+            {projectName ? `Context: ${projectName}` : 'Requires active calculation'}
+          </p>
         </div>
-        <button onClick={onGenerate} disabled={disabled || loading} className="btn-primary px-4 py-2 text-xs">
+
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={disabled || loading}
+          className="btn-primary min-h-[38px] px-4 py-1.5 text-xs font-semibold"
+        >
           {loading ? (
             <span className="flex items-center gap-2">
               <span
-                className="inline-block h-3 w-3 rounded-full border-2 border-white/30 border-t-white"
+                className="inline-block h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent"
                 style={{ animation: 'spin-slow 0.8s linear infinite' }}
               />
-              Analyzing…
+              Generating…
             </span>
           ) : insight ? (
-            '🔄 Regenerate'
+            'Regenerate insight'
           ) : (
-            '✨ Generate'
+            'Generate insight'
           )}
         </button>
       </div>
 
+      {/* Loading State */}
       {loading && (
-        <div style={{ background: 'color-mix(in srgb, var(--muted) 10%, transparent)' }}>
-          <div className="progress-bar" />
+        <div className="space-y-3 py-4" aria-busy="true">
+          <div className="flex items-center gap-2 text-xs text-[var(--cs-muted)]">
+            <span
+              className="inline-block h-3 w-3 rounded-full border-2 border-[var(--cs-primary)] border-t-transparent"
+              style={{ animation: 'spin-slow 0.8s linear infinite' }}
+            />
+            Analyzing retention metrics and evaluating recommendations…
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 w-full rounded bg-[var(--cs-bg)] animate-pulse" />
+            <div className="h-4 w-4/5 rounded bg-[var(--cs-bg)] animate-pulse" />
+            <div className="h-4 w-3/5 rounded bg-[var(--cs-bg)] animate-pulse" />
+          </div>
         </div>
       )}
 
+      {/* Loaded Insight Content */}
       {!loading && insight && (
-        <div className="anim-fade space-y-4 p-6">
-          <div>
-            <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
-              Summary
-            </h4>
-            <p className="text-sm leading-relaxed">
-              {streamedSummary}
-              <span
-                className="ml-0.5 inline-block h-4 w-0.5 animate-pulse align-text-bottom"
-                style={{ background: 'var(--accent)' }}
-              />
+        <div className="space-y-4 text-xs leading-relaxed">
+          {/* Summary */}
+          <div className="space-y-1">
+            <div className="font-semibold uppercase tracking-wider text-[var(--cs-muted)] text-[10px]">
+              Executive Summary
+            </div>
+            <p className="text-sm text-[var(--cs-text)] leading-relaxed">
+              {insight.summary}
             </p>
           </div>
 
-          <div
-            className="rounded-xl p-4"
-            style={{
-              background: 'color-mix(in srgb, var(--accent) 6%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
-            }}
-          >
-            <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>
-              💡 Recommendation
-            </h4>
-            <p className="text-sm leading-relaxed">{insight.recommendation}</p>
+          {/* Actionable Recommendation */}
+          <div className="rounded-lg border border-[var(--cs-primary)]/20 bg-[var(--cs-accent-surface)] p-4 text-[var(--cs-text)] space-y-1">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-primary)]">
+              Tactical Recommendation
+            </div>
+            <p className="text-xs leading-relaxed text-[var(--cs-text)]">
+              {insight.recommendation}
+            </p>
           </div>
         </div>
       )}
 
+      {/* Empty State */}
       {!loading && !insight && (
-        <div className="flex flex-col items-center p-10 text-center">
-          <div className="anim-float mb-3 text-4xl">🔮</div>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Calculate metrics first, then generate an AI insight on what to do next.
+        <div className="py-6 text-center space-y-1 text-xs text-[var(--cs-muted)]">
+          <p className="font-medium text-[var(--cs-text)]">No insight generated yet</p>
+          <p>
+            {disabled
+              ? 'Calculate your project metrics first to enable AI retention evaluation.'
+              : 'Click "Generate insight" to receive actionable recommendations for this project.'}
           </p>
         </div>
       )}

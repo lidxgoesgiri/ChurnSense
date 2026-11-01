@@ -4,33 +4,24 @@ import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import type { AnalyticsResult } from '@/types';
 import { AnimatedMetric } from './animated-metric';
 
-const GRADIENTS = {
-  churn: 'linear-gradient(135deg, #ef4444, #f97316)',
-  retention: 'linear-gradient(135deg, #10b981, #06b6d4)',
-  arpu: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-  mrr: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-  ltv: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-};
+interface Props {
+  metrics: AnalyticsResult;
+  churnSeries?: number[];
+}
 
-const RISK_STYLES: Record<AnalyticsResult['riskStatus'], { bg: string; color: string; glow: string }> = {
-  Low: { bg: 'rgba(16,185,129,0.1)', color: '#10b981', glow: 'rgba(16,185,129,0.25)' },
-  Medium: { bg: 'rgba(245,158,11,0.1)', color: '#f59e0b', glow: 'rgba(245,158,11,0.25)' },
-  High: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', glow: 'rgba(239,68,68,0.25)' },
-};
-
-function Sparkline({ series }: { series: number[] }) {
+function ChurnSparkline({ series }: { series: number[] }) {
   if (series.length < 2) return null;
   const data = series.map((v, i) => ({ i, v }));
-  const rising = series[series.length - 1] >= series[0];
+  const rising = series[series.length - 1] > series[0];
   return (
-    <div className="mt-2 h-8 w-full">
+    <div className="mt-2 h-7 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <Line
             type="monotone"
             dataKey="v"
-            stroke={rising ? '#ef4444' : '#22c55e'}
-            strokeWidth={2}
+            stroke={rising ? 'var(--cs-danger)' : 'var(--cs-success)'}
+            strokeWidth={1.5}
             dot={false}
             isAnimationActive={false}
           />
@@ -40,154 +31,132 @@ function Sparkline({ series }: { series: number[] }) {
   );
 }
 
-function StatCard({
-  label,
-  icon,
-  gradient,
-  rawValue,
-  prefix,
-  suffix,
-  decimals = 2,
-  series,
-  delay,
-  hint,
-}: {
-  label: string;
-  icon: string;
-  gradient: string;
-  rawValue: number;
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-  series?: number[];
-  delay: number;
-  hint: string;
-}) {
-  return (
-    <div
-      className="glass-card anim-fade-up relative overflow-hidden p-4"
-      style={{ animationDelay: `${delay * 0.06}s` }}
-    >
-      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: gradient }} />
-      <div className="mb-2 flex items-center gap-1.5">
-        <span className="text-base">{icon}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
-          {label}
-        </span>
-        <span
-          className="ml-auto cursor-help text-[10px] text-gray-400 transition-colors hover:text-foreground"
-          title={hint}
-          tabIndex={0}
-          role="note"
-          aria-label={`${label}: ${hint}`}
-        >
-          ⓘ
-        </span>
-      </div>
-      <div className="font-mono text-xl font-bold" aria-label={`${label}: ${prefix ?? ''}${rawValue}${suffix ?? ''}`}>
-        <AnimatedMetric value={rawValue} prefix={prefix} suffix={suffix} decimals={decimals} />
-      </div>
-      {series && <Sparkline series={series} />}
-    </div>
-  );
-}
-
-/** Variant of StatCard for a metric that is mathematically undefined (#5.2). */
-function UndefinedStatCard({
-  label,
-  icon,
-  gradient,
-  display,
-  delay,
-  hint,
-}: {
-  label: string;
-  icon: string;
-  gradient: string;
-  display: string;
-  delay: number;
-  hint: string;
-}) {
-  return (
-    <div
-      className="glass-card anim-fade-up relative overflow-hidden p-4"
-      style={{ animationDelay: `${delay * 0.06}s` }}
-    >
-      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: gradient }} />
-      <div className="mb-2 flex items-center gap-1.5">
-        <span className="text-base">{icon}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
-          {label}
-        </span>
-        <span
-          className="ml-auto cursor-help text-[10px] text-gray-400 transition-colors hover:text-foreground"
-          title={hint}
-          tabIndex={0}
-          role="note"
-          aria-label={`${label}: ${hint}`}
-        >
-          ⓘ
-        </span>
-      </div>
-      <div
-        className="font-mono text-xl font-bold"
-        title="No churn — LTV is undefined (theoretically infinite)"
-        aria-label={`${label}: undefined (no churn)`}
-      >
-        {display}
-        <span className="ml-1.5 align-middle text-[10px] font-normal text-gray-400">no churn</span>
-      </div>
-    </div>
-  );
-}
-
-export function MetricsSummary({
-  metrics,
-  churnSeries = [],
-}: {
-  metrics: AnalyticsResult;
-  churnSeries?: number[];
-}) {
-  const risk = RISK_STYLES[metrics.riskStatus];
+export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
+  const isHighRisk = metrics.riskStatus === 'High';
+  const isMediumRisk = metrics.riskStatus === 'Medium';
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatCard
-          label="Churn rate"
-          icon="📉"
-          gradient={GRADIENTS.churn}
-          rawValue={metrics.churnRate * 100}
-          suffix="%"
-          series={churnSeries.length >= 2 ? churnSeries : undefined}
-          delay={1}
-          hint="Share of users lost this period (churned ÷ total users). Lower is better."
-        />
-        <StatCard label="Retention" icon="💪" gradient={GRADIENTS.retention} rawValue={metrics.retentionRate * 100} suffix="%" delay={2} hint="Share of users retained (active ÷ total users). Higher is better." />
-        <StatCard label="ARPU" icon="💰" gradient={GRADIENTS.arpu} rawValue={metrics.arpu} prefix="$" delay={3} hint="Average Revenue Per User = monthly revenue ÷ total users." />
-        <StatCard label="MRR" icon="📈" gradient={GRADIENTS.mrr} rawValue={metrics.mrr} prefix="$" delay={4} hint="Monthly Recurring Revenue — total revenue booked this month." />
-        {metrics.estimatedLtv === null ? (
-          <UndefinedStatCard
-            label="Est. LTV"
-            icon="🏆"
-            gradient={GRADIENTS.ltv}
-            display="∞"
-            delay={5}
-            hint="LTV = ARPU ÷ churn rate. With zero churn the expected lifetime is infinite, so LTV is undefined."
+    <div className="space-y-4" aria-label="Metrics summary">
+      {/* Risk Status Indicator Banner */}
+      <div className="flex items-center justify-between rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{
+              backgroundColor: isHighRisk
+                ? 'var(--cs-danger)'
+                : isMediumRisk
+                  ? 'var(--cs-warning)'
+                  : 'var(--cs-success)',
+            }}
           />
-        ) : (
-          <StatCard label="Est. LTV" icon="🏆" gradient={GRADIENTS.ltv} rawValue={metrics.estimatedLtv} prefix="$" delay={5} hint="Estimated Lifetime Value = ARPU ÷ churn rate (expected revenue per user)." />
-        )}
+          <span className="text-xs font-semibold text-[var(--cs-text)]">
+            Risk evaluation: {metrics.riskStatus} Risk
+          </span>
+        </div>
+        <span className="text-[11px] text-[var(--cs-muted)]">
+          {metrics.riskStatus === 'High'
+            ? 'Churn > 15.0% threshold'
+            : metrics.riskStatus === 'Medium'
+              ? 'Churn > 5.0% threshold'
+              : 'Churn ≤ 5.0% threshold'}
+        </span>
       </div>
 
-      <div className="anim-fade-up" style={{ animationDelay: '0.36s' }}>
-        <span
-          className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold"
-          style={{ background: risk.bg, color: risk.color, boxShadow: `0 0 12px ${risk.glow}` }}
-        >
-          <span className="h-2 w-2 rounded-full" style={{ background: risk.color }} />
-          Risk status: {metrics.riskStatus}
-        </span>
+      {/* Primary KPI Row: Churn Rate & Retention Rate */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Churn Rate */}
+        <div className="workbench-panel p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+              Churn Rate
+            </span>
+            <span
+              className="text-[11px] text-[var(--cs-muted)]"
+              title="Formula: Churned Users ÷ Total Users (lower is better)"
+            >
+              Lower is better
+            </span>
+          </div>
+          <div className="mt-2 text-3xl font-bold tracking-tight text-[var(--cs-danger)] sm:text-4xl">
+            <AnimatedMetric value={metrics.churnRate * 100} suffix="%" decimals={1} />
+          </div>
+          <p className="mt-1 text-xs text-[var(--cs-muted)]">
+            Percentage of customers lost during this period.
+          </p>
+          {churnSeries.length >= 2 && <ChurnSparkline series={churnSeries} />}
+        </div>
+
+        {/* Retention Rate */}
+        <div className="workbench-panel p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+              Retention Rate
+            </span>
+            <span
+              className="text-[11px] text-[var(--cs-muted)]"
+              title="Formula: Active Users ÷ Total Users (higher is better)"
+            >
+              Higher is better
+            </span>
+          </div>
+          <div className="mt-2 text-3xl font-bold tracking-tight text-[var(--cs-primary)] sm:text-4xl">
+            <AnimatedMetric value={metrics.retentionRate * 100} suffix="%" decimals={1} />
+          </div>
+          <p className="mt-1 text-xs text-[var(--cs-muted)]">
+            Percentage of customers actively retained.
+          </p>
+        </div>
+      </div>
+
+      {/* Secondary Financial Indicators: ARPU, MRR, Est. LTV */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {/* ARPU */}
+        <div className="workbench-panel p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+            ARPU
+          </div>
+          <div className="mt-1.5 text-xl font-bold text-[var(--cs-text)]">
+            <AnimatedMetric value={metrics.arpu} prefix="$" decimals={2} />
+          </div>
+          <p className="mt-1 text-[11px] text-[var(--cs-muted)]">
+            Revenue ÷ Total Users
+          </p>
+        </div>
+
+        {/* MRR */}
+        <div className="workbench-panel p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+            MRR
+          </div>
+          <div className="mt-1.5 text-xl font-bold text-[var(--cs-text)]">
+            <AnimatedMetric value={metrics.mrr} prefix="$" decimals={2} />
+          </div>
+          <p className="mt-1 text-[11px] text-[var(--cs-muted)]">
+            Monthly recurring revenue
+          </p>
+        </div>
+
+        {/* Estimated LTV */}
+        <div className="workbench-panel p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+            Estimated LTV
+          </div>
+          <div className="mt-1.5 text-xl font-bold text-[var(--cs-text)]">
+            {metrics.estimatedLtv === null ? (
+              <span className="text-sm font-medium text-[var(--cs-muted)]">
+                Not defined
+              </span>
+            ) : (
+              <AnimatedMetric value={metrics.estimatedLtv} prefix="$" decimals={2} />
+            )}
+          </div>
+          <p className="mt-1 text-[11px] text-[var(--cs-muted)]">
+            {metrics.estimatedLtv === null
+              ? 'Zero churn · LTV undefined'
+              : 'ARPU ÷ Churn Rate'}
+          </p>
+        </div>
       </div>
     </div>
   );

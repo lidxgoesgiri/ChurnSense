@@ -10,12 +10,11 @@ import { RetentionChart } from '@/components/retention-chart';
 import { AIInsightCard } from '@/components/ai-insight-card';
 import { AnomalyBadge } from '@/components/anomaly-badge';
 import { AIChat } from '@/components/ai-chat';
-import { ProjectsHistory } from '@/components/projects-history';
 import { RetentionTable } from '@/components/retention-table';
+import { ComparisonView } from '@/components/comparison-view';
 import { Navbar } from '@/components/navbar';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useCommandPalette } from '@/components/command-palette';
-import { ComparisonView } from '@/components/comparison-view';
 import { useToast } from '@/components/toast';
 import { getStoredModel } from '@/lib/models';
 import { exportProjectsCsv } from '@/lib/export';
@@ -29,15 +28,37 @@ export function DashboardClient({ email }: { email: string }) {
     getStoredModel(),
     makeInitialState
   );
+
   const {
-    input, metrics, insight, trend, loadingMetrics, loadingInsight, error,
-    inputMode, aiModel, history, loadingHistory, justSaved, dbAvailable,
+    input,
+    metrics,
+    insight,
+    trend,
+    loadingMetrics,
+    loadingInsight,
+    error,
+    inputMode,
+    aiModel,
+    history,
+    loadingHistory,
+    loadingMoreHistory,
+    historyError,
+    page,
+    totalHistory,
+    hasMoreHistory,
+    justSaved,
+    saveStatus,
+    saveError,
+    deletingId,
+    deleteError,
+    dbAvailable,
   } = state;
 
+  // Initial load of history (page 1, limit 20)
   const loadHistory = useCallback(async () => {
     dispatch({ type: 'HISTORY_LOADING' });
     try {
-      const res = await fetch('/api/projects');
+      const res = await fetch('/api/projects?page=1&limit=20');
       if (res.status === 503) {
         dispatch({ type: 'DB_UNAVAILABLE' });
         dispatch({ type: 'HISTORY_DONE' });
@@ -45,12 +66,22 @@ export function DashboardClient({ email }: { email: string }) {
       }
       const data = await res.json();
       if (res.ok) {
-        dispatch({ type: 'HISTORY_LOADED', history: data.projects ?? [] });
+        dispatch({
+          type: 'HISTORY_LOADED',
+          history: data.projects ?? [],
+          total: data.total ?? data.projects?.length ?? 0,
+          page: data.page ?? 1,
+          limit: data.limit ?? 20,
+          hasMore: Boolean(data.hasMore),
+        });
       } else {
-        dispatch({ type: 'HISTORY_DONE' });
+        dispatch({ type: 'HISTORY_ERROR', error: data.error ?? 'Failed to load history' });
       }
-    } catch {
-      dispatch({ type: 'HISTORY_DONE' });
+    } catch (err: unknown) {
+      dispatch({
+        type: 'HISTORY_ERROR',
+        error: err instanceof Error ? err.message : 'Network error loading history',
+      });
     }
   }, []);
 
@@ -58,6 +89,39 @@ export function DashboardClient({ email }: { email: string }) {
     loadHistory();
   }, [loadHistory]);
 
+  // Load next page of history
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMoreHistory || !hasMoreHistory) return;
+    dispatch({ type: 'HISTORY_MORE_START' });
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/projects?page=${nextPage}&limit=20`);
+      if (res.status === 503) {
+        dispatch({ type: 'DB_UNAVAILABLE' });
+        dispatch({ type: 'HISTORY_MORE_ERROR', error: 'Storage unavailable' });
+        return;
+      }
+      const data = await res.json();
+      if (res.ok) {
+        dispatch({
+          type: 'HISTORY_MORE_LOADED',
+          history: data.projects ?? [],
+          total: data.total,
+          page: nextPage,
+          hasMore: Boolean(data.hasMore),
+        });
+      } else {
+        dispatch({ type: 'HISTORY_MORE_ERROR', error: data.error ?? 'Failed to load more' });
+        toast(data.error ?? 'Failed to load more snapshots', 'error');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load more snapshots';
+      dispatch({ type: 'HISTORY_MORE_ERROR', error: msg });
+      toast(msg, 'error');
+    }
+  }, [loadingMoreHistory, hasMoreHistory, page, toast]);
+
+  // Handle Calculate & best-effort auto-save
   async function handleAnalyze(values: ProjectInput) {
     dispatch({ type: 'ANALYZE_START' });
     try {
@@ -68,10 +132,13 @@ export function DashboardClient({ email }: { email: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to calculate metrics');
-      dispatch({ type: 'ANALYZE_SUCCESS', input: values, metrics: data.metrics });
-      toast('Metrics calculated', 'success');
 
+      dispatch({ type: 'ANALYZE_SUCCESS', input: values, metrics: data.metrics });
+      toast('Metrics calculated successfully', 'success');
+
+      // Best-effort auto-save to backend
       if (dbAvailable) {
+        dispatch({ type: 'SAVE_START' });
         try {
           const saveRes = await fetch('/api/projects', {
             method: 'POST',
@@ -81,15 +148,23 @@ export function DashboardClient({ email }: { email: string }) {
             },
             body: JSON.stringify(values),
           });
+
           if (saveRes.status === 503) {
             dispatch({ type: 'DB_UNAVAILABLE' });
+            toast('Database unavailable: snapshot not saved', 'warning');
           } else if (saveRes.ok) {
             dispatch({ type: 'SAVED' });
-            toast('Saved to history', 'success');
+            toast('Snapshot saved to history', 'success');
             await loadHistory();
+          } else {
+            const errData = await saveRes.json().catch(() => ({}));
+            const errMsg = errData.error ?? 'Failed to save snapshot';
+            dispatch({ type: 'SAVE_ERROR', error: errMsg });
+            toast(`Metrics calculated; snapshot not saved (${errMsg})`, 'warning');
           }
         } catch {
-          /* saving is best-effort */
+          dispatch({ type: 'SAVE_ERROR', error: 'Network error saving snapshot' });
+          toast('Metrics calculated; snapshot not saved due to network error', 'warning');
         }
       }
     } catch (err) {
@@ -99,6 +174,7 @@ export function DashboardClient({ email }: { email: string }) {
     }
   }
 
+  // Handle AI Insight generation
   async function handleGenerate() {
     if (!input) return;
     dispatch({ type: 'INSIGHT_START' });
@@ -113,13 +189,14 @@ export function DashboardClient({ email }: { email: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Failed to generate insight');
+
       dispatch({
         type: 'INSIGHT_SUCCESS',
         metrics: data.metrics,
         insight: data.insight,
         trend: data.trend ?? null,
       });
-      toast('AI insight generated', 'info');
+      toast('Retention insight generated', 'info');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to generate insight';
       dispatch({ type: 'INSIGHT_ERROR', error: msg });
@@ -127,6 +204,7 @@ export function DashboardClient({ email }: { email: string }) {
     }
   }
 
+  // Handle Logout
   async function handleLogout() {
     await fetch('/api/auth/logout', {
       method: 'POST',
@@ -135,27 +213,38 @@ export function DashboardClient({ email }: { email: string }) {
     router.push('/');
   }
 
+  // Handle Delete Snapshot
   async function handleDelete(id: number) {
-    // Remember the deleted row's name so we can clear the active view if it
-    // was the project currently on screen (avoids showing stale data).
     const deletedName = history.find((p) => p.id === id)?.projectName;
+    dispatch({ type: 'DELETE_START', id });
+
     try {
       const res = await fetch(`/api/projects?id=${id}`, {
         method: 'DELETE',
         headers: { 'X-Requested-With': 'ChurnSense' },
       });
+
       if (res.ok) {
-        toast('Project deleted', 'success');
+        dispatch({ type: 'DELETE_SUCCESS', id });
+        toast('Snapshot deleted', 'success');
         if (deletedName && deletedName === input?.projectName) {
           dispatch({ type: 'RESET_ANALYSIS' });
         }
         await loadHistory();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error ?? 'Failed to delete snapshot';
+        dispatch({ type: 'DELETE_ERROR', error: errMsg });
+        toast(`Delete failed: ${errMsg}`, 'error');
       }
-    } catch {
-      /* best-effort */
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Network error during delete';
+      dispatch({ type: 'DELETE_ERROR', error: msg });
+      toast(`Delete failed: ${msg}`, 'error');
     }
   }
 
+  // Historical churn series for sparkline
   const churnSeries =
     input && history.length
       ? history
@@ -165,16 +254,47 @@ export function DashboardClient({ email }: { email: string }) {
           .map((p) => p.metrics.churnRate)
       : [];
 
-  // Scroll to a section by ID — helper for the command palette.
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const { palette } = useCommandPalette([
-    { id: 'analyze', label: 'Analyze a project', shortcut: '', onSelect: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
-    { id: 'insight', label: 'Generate AI insight', shortcut: '', onSelect: () => scrollTo('ai-insight') },
-    { id: 'table', label: 'View retention table', shortcut: '', onSelect: () => scrollTo('retention-table') },
-    { id: 'logout', label: 'Sign out', shortcut: '', onSelect: handleLogout },
+  const { setOpen, palette } = useCommandPalette([
+    {
+      id: 'analyze',
+      label: 'Go to Analysis form',
+      shortcut: 'G A',
+      onSelect: () => scrollTo('analyze-section'),
+    },
+    {
+      id: 'results',
+      label: 'View current metrics',
+      shortcut: 'G M',
+      onSelect: () => scrollTo('results-section'),
+    },
+    {
+      id: 'snapshots',
+      label: 'View snapshots ledger',
+      shortcut: 'G S',
+      onSelect: () => scrollTo('snapshots-section'),
+    },
+    {
+      id: 'insight',
+      label: 'Go to AI insight',
+      shortcut: 'G I',
+      onSelect: () => scrollTo('ai-section'),
+    },
+    {
+      id: 'export',
+      label: 'Export loaded snapshots to CSV',
+      shortcut: '⌘ E',
+      onSelect: () => exportProjectsCsv(history, `churnsense-loaded-${history.length}-snapshots.csv`),
+    },
+    {
+      id: 'logout',
+      label: 'Sign out of ChurnSense',
+      shortcut: '',
+      onSelect: handleLogout,
+    },
   ]);
 
   return (
@@ -183,109 +303,217 @@ export function DashboardClient({ email }: { email: string }) {
       <Navbar
         email={email}
         onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })}
-        onExport={() => exportProjectsCsv(history)}
+        onExport={() =>
+          exportProjectsCsv(history, `churnsense-loaded-${history.length}-snapshots.csv`)
+        }
         showExport={history.length > 0}
+        onOpenCommands={() => setOpen(true)}
         onLogout={handleLogout}
       />
-      <main id="main-content" className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6 md:p-10">
-        <p className="truncate text-sm text-gray-400">Signed in as {email}</p>
 
-        <div className="anim-fade-down delay-1 rounded-lg border border-indigo-500/20 bg-indigo-500/5 px-4 py-2 text-xs text-indigo-600 dark:text-indigo-400">
-          Press <kbd className="rounded border border-current px-1 font-mono">Cmd+K</kbd> or{' '}
-          <kbd className="rounded border border-current px-1 font-mono">Ctrl+K</kbd> to open the command palette.
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-6xl space-y-8 p-4 outline-none sm:p-6 md:p-8"
+      >
+        {/* Workspace Header Context */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--cs-border)] pb-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-[var(--cs-text)] sm:text-2xl">
+              Retention Overview
+            </h1>
+            <p className="text-xs text-[var(--cs-muted)] mt-0.5">
+              Account: <strong className="text-[var(--cs-text)]">{email}</strong> · Immutable snapshot workspace
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-control-border)] bg-[var(--cs-surface)] px-2.5 py-1.5 text-xs font-medium text-[var(--cs-muted)] hover:border-[var(--cs-focus)] hover:text-[var(--cs-text)]"
+            >
+              <span>Commands</span>
+              <kbd className="rounded border border-[var(--cs-border)] bg-[var(--cs-bg)] px-1 font-mono text-[10px]">
+                Ctrl/⌘K
+              </kbd>
+            </button>
+          </div>
         </div>
 
+        {/* Persistence Unavailable Banner */}
+        {!dbAvailable && (
+          <div
+            role="alert"
+            className="flex items-center justify-between rounded-lg border border-amber-500/25 bg-amber-500/10 p-3.5 text-xs text-amber-800 dark:text-amber-200"
+          >
+            <div>
+              <strong>Storage unavailable:</strong> The database connection is offline. You can
+              still calculate metrics, run batch CSV analyses, and generate AI insights in this session.
+            </div>
+            <button
+              type="button"
+              onClick={loadHistory}
+              className="ml-3 rounded border border-amber-500/30 px-2 py-1 text-xs font-semibold hover:bg-amber-500/20"
+            >
+              Retry connection
+            </button>
+          </div>
+        )}
+
+        {/* Global Error Notice */}
         {error && (
-          <div className="anim-fade-down rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+          <div
+            role="alert"
+            className="rounded-lg border border-[var(--cs-danger)]/25 bg-red-500/10 p-3.5 text-xs text-[var(--cs-danger)]"
+          >
             {error}
           </div>
         )}
 
-        <div className="anim-fade-up delay-2 grid gap-6 lg:grid-cols-2">
-          <div id="project-form" className="space-y-3">
-            <div className="relative flex rounded-lg border border-black/10 p-0.5 text-sm dark:border-white/15">
-              <span
-                aria-hidden
-                className="absolute bottom-0.5 left-0.5 top-0.5 w-24 rounded-md bg-foreground transition-transform duration-300 ease-out"
-                style={{ transform: inputMode === 'batch' ? 'translateX(6rem)' : 'translateX(0)' }}
-              />
-              {(['manual', 'batch'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => dispatch({ type: 'SET_INPUT_MODE', mode })}
-                  className={`relative z-10 w-24 rounded-md py-1 text-center capitalize transition-colors ${
-                    inputMode === mode ? 'text-background' : 'text-gray-500 hover:text-foreground'
-                  }`}
-                >
-                  {mode === 'manual' ? 'Manual' : 'Batch'}
-                </button>
-              ))}
+        {/* WORKBENCH SECTION: Input Form Rail + Results Canvas */}
+        <div id="analyze-section" className="grid gap-6 lg:grid-cols-12">
+          {/* Input Rail (Left 5 cols) */}
+          <div className="space-y-4 lg:col-span-5">
+            {/* Manual vs Batch Segmented Control */}
+            <div
+              role="group"
+              aria-label="Input mode selection"
+              className="flex rounded-lg border border-[var(--cs-control-border)] bg-[var(--cs-bg)] p-1 text-xs font-medium"
+            >
+              <button
+                type="button"
+                aria-pressed={inputMode === 'manual'}
+                onClick={() => dispatch({ type: 'SET_INPUT_MODE', mode: 'manual' })}
+                className={`flex-1 rounded-md py-1.5 text-center transition-colors ${
+                  inputMode === 'manual'
+                    ? 'bg-[var(--cs-surface)] font-semibold text-[var(--cs-text)] shadow-xs'
+                    : 'text-[var(--cs-muted)] hover:text-[var(--cs-text)]'
+                }`}
+              >
+                Manual Input
+              </button>
+              <button
+                type="button"
+                aria-pressed={inputMode === 'batch'}
+                onClick={() => dispatch({ type: 'SET_INPUT_MODE', mode: 'batch' })}
+                className={`flex-1 rounded-md py-1.5 text-center transition-colors ${
+                  inputMode === 'batch'
+                    ? 'bg-[var(--cs-surface)] font-semibold text-[var(--cs-text)] shadow-xs'
+                    : 'text-[var(--cs-muted)] hover:text-[var(--cs-text)]'
+                }`}
+              >
+                Batch CSV
+              </button>
             </div>
+
             {inputMode === 'manual' ? (
-              <ProjectForm onAnalyze={handleAnalyze} loading={loadingMetrics} />
+              <ProjectForm
+                onAnalyze={handleAnalyze}
+                loading={loadingMetrics}
+                saveStatus={saveStatus}
+                saveError={saveError}
+              />
             ) : (
               <CsvUploader
                 onSelectProject={(values) => {
-                  // Promote the chosen batch row into the main dashboard and
-                  // switch back to the single-project view (#6.1).
                   dispatch({ type: 'SET_INPUT_MODE', mode: 'manual' });
                   handleAnalyze(values);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollTo('analyze-section');
                 }}
               />
             )}
           </div>
 
-          <div className="space-y-6">
+          {/* Results Canvas (Right 7 cols) */}
+          <div id="results-section" className="space-y-6 lg:col-span-7">
             {metrics ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-[var(--cs-text)]">
+                      {input?.projectName ?? 'Current Project'}
+                    </span>
+                    <span className="text-[var(--cs-muted)]">· Active Calculation</span>
+                  </div>
+                  {justSaved && dbAvailable && (
+                    <span className="rounded bg-[var(--cs-accent-surface)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cs-primary)]">
+                      ✓ Saved to history
+                    </span>
+                  )}
+                </div>
+
                 <MetricsSummary metrics={metrics} churnSeries={churnSeries} />
                 {trend && <AnomalyBadge trend={trend} />}
-                {dbAvailable && justSaved && (
-                  <p className="text-sm text-green-600 dark:text-green-400">
-                    Saved to history ✓
-                  </p>
-                )}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-black/15 p-6 text-sm text-gray-400 dark:border-white/20">
-                Enter your project data and calculate metrics to see churn,
-                retention, and ARPU.
+              <div className="workbench-panel flex flex-col items-center justify-center p-10 text-center space-y-2">
+                <span className="text-3xl text-[var(--cs-muted)] font-mono">📊</span>
+                <p className="text-sm font-medium text-[var(--cs-text)]">
+                  Retention metrics will appear here
+                </p>
+                <p className="text-xs text-[var(--cs-muted)] max-w-sm">
+                  Enter your project name, total users, active users, churned users, and monthly revenue
+                  on the left to calculate churn, retention, and ARPU.
+                </p>
               </div>
             )}
 
-            <div id="ai-insight">
+            {/* AI Insight Card */}
+            <div id="ai-section">
               <AIInsightCard
                 insight={insight}
                 loading={loadingInsight}
                 onGenerate={handleGenerate}
                 disabled={!input}
+                projectName={input?.projectName}
+                modelName={aiModel}
               />
             </div>
           </div>
         </div>
 
-        {input && metrics && <RetentionChart project={input} history={history} />}
+        {/* CHART SECTION: Single Snapshot / Multi-Snapshot Trend */}
+        {input && metrics && (
+          <div className="pt-2">
+            <RetentionChart project={input} history={history} />
+          </div>
+        )}
 
-        <AIChat project={input} metrics={metrics} model={aiModel} userEmail={email} />
-
-        <div id="retention-table">
-          {dbAvailable && (
-            <>
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
-                Retention data table
-              </h3>
-              <RetentionTable projects={history} loading={loadingHistory} />
-            </>
-          )}
+        {/* AI CONVERSATION SECTION */}
+        <div className="pt-2">
+          <AIChat project={input} metrics={metrics} model={aiModel} userEmail={email} />
         </div>
 
-        {dbAvailable && history.length >= 2 && <ComparisonView projects={history} />}
+        {/* SNAPSHOTS LEDGER & HISTORY */}
+        <div id="snapshots-section" className="space-y-6 pt-4">
+          {historyError && (
+            <div className="rounded-lg border border-[var(--cs-danger)]/25 bg-red-500/10 p-3 text-xs text-[var(--cs-danger)]">
+              {historyError}
+            </div>
+          )}
 
-        {dbAvailable && (
-          <ProjectsHistory projects={history} loading={loadingHistory} onDelete={handleDelete} />
-        )}
+          {dbAvailable && (
+            <RetentionTable
+              projects={history}
+              loading={loadingHistory}
+              totalHistory={totalHistory}
+              hasMore={hasMoreHistory}
+              loadingMore={loadingMoreHistory}
+              onLoadMore={handleLoadMore}
+              onDelete={handleDelete}
+              deletingId={deletingId}
+              deleteError={deleteError}
+            />
+          )}
+
+          {/* Comparison View when >= 2 snapshots are available */}
+          {dbAvailable && history.length >= 2 && (
+            <div className="pt-2">
+              <ComparisonView projects={history} />
+            </div>
+          )}
+        </div>
       </main>
     </ErrorBoundary>
   );

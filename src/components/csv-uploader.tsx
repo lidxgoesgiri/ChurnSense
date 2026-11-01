@@ -19,10 +19,11 @@ Acme Inc,1000,850,150,5000
 Globex,500,400,100,2000
 Initech,2000,1800,200,15000`;
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export function CsvUploader({
   onSelectProject,
 }: {
-  // Promote one analyzed batch row into the main dashboard (#6.1).
   onSelectProject?: (input: ProjectInput) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,13 +37,20 @@ export function CsvUploader({
   function loadFile(f: File) {
     setError(null);
     setResult(null);
+
+    // Pre-read size validation (5MB max)
+    if (f.size > MAX_FILE_SIZE) {
+      setError(`File exceeds maximum size limit of 5MB (${(f.size / (1024 * 1024)).toFixed(1)}MB).`);
+      setFile(null);
+      setPreview([]);
+      return;
+    }
+
     setFile(f);
     const reader = new FileReader();
     reader.onload = () => {
       let text = String(reader.result ?? '');
-      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1); // strip BOM
-      // Use the SAME quote/multiline-aware parser as the backend so the preview
-      // matches what the server will actually process (#6.2, #7.6).
+      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1); // strip UTF-8 BOM
       const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
       const sep = detectSeparator(firstLine);
       const rows = parseCsvRecords(text, sep)
@@ -58,6 +66,13 @@ export function CsvUploader({
     setDragOver(false);
     const f = e.dataTransfer.files?.[0];
     if (f) loadFile(f);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      inputRef.current?.click();
+    }
   }
 
   async function analyze() {
@@ -90,24 +105,34 @@ export function CsvUploader({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'sample-projects.csv';
+    a.download = 'sample-churn-data.csv';
     a.click();
     URL.revokeObjectURL(url);
   }
 
   return (
-    <div className="glass-card space-y-4 p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Batch upload (CSV)</h2>
+    <div className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="CSV batch upload section">
+      <div className="flex items-center justify-between border-b border-[var(--cs-border)] pb-3">
+        <div>
+          <h2 className="text-sm font-semibold text-[var(--cs-text)]">Batch Upload (CSV)</h2>
+          <p className="text-xs text-[var(--cs-muted)]">Upload up to 500 rows and 5MB per file.</p>
+        </div>
         <button
           type="button"
           onClick={downloadSample}
-          className="text-xs text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+          className="text-xs font-medium text-[var(--cs-primary)] underline underline-offset-2 hover:opacity-80"
         >
-          Download sample CSV
+          Download template
         </button>
       </div>
 
+      {error && (
+        <div className="rounded-lg border border-[var(--cs-danger)]/25 bg-red-500/10 p-3 text-xs text-[var(--cs-danger)]" role="alert">
+          {error}
+        </div>
+      )}
+
+      {/* Accessible Drop Zone */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -116,23 +141,37 @@ export function CsvUploader({
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={handleKeyDown}
         role="button"
         tabIndex={0}
-        aria-label="Upload CSV file"
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-8 text-center text-sm transition-colors ${
+        aria-label="Upload CSV file. Click or press Enter to browse files."
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-2 focus-visible:outline-[var(--cs-focus)] ${
           dragOver
-            ? 'border-indigo-500 bg-indigo-500/5'
-            : 'border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40'
+            ? 'border-[var(--cs-primary)] bg-[var(--cs-accent-surface)]'
+            : 'border-[var(--cs-border)] bg-[var(--cs-bg)]/50 hover:border-[var(--cs-control-border)]'
         }`}
       >
-        <p className="font-medium">Drag &amp; drop your CSV here</p>
-        <p className="text-gray-400">or click to browse · .csv (max 5MB)</p>
-        {file && <p className="mt-2 text-xs text-indigo-500">Selected: {file.name}</p>}
+        <span className="text-2xl mb-1 text-[var(--cs-muted)] font-mono">📁</span>
+        <p className="text-xs font-semibold text-[var(--cs-text)]">
+          Drag &amp; drop your CSV file here
+        </p>
+        <p className="text-[11px] text-[var(--cs-muted)] mt-0.5">
+          or click to browse (.csv, max 5MB, up to 500 rows)
+        </p>
+
+        {file && (
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-[var(--cs-accent-surface)] px-2.5 py-1 text-xs font-medium text-[var(--cs-primary)]">
+            <span>Selected: {file.name}</span>
+            <span className="text-[10px] text-[var(--cs-muted)]">({(file.size / 1024).toFixed(1)} KB)</span>
+          </div>
+        )}
+
         <input
           ref={inputRef}
           type="file"
           accept=".csv"
-          className="hidden"
+          className="sr-only"
+          tabIndex={-1}
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) loadFile(f);
@@ -140,125 +179,154 @@ export function CsvUploader({
         />
       </div>
 
-      {preview.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-black/10 dark:border-white/15">
-          <table className="w-full text-left text-xs">
-            <tbody>
-              {preview.map((row, i) => (
-                <tr
-                  key={i}
-                  className={i === 0 ? 'font-semibold' : 'border-t border-black/5 dark:border-white/10'}
-                >
-                  {row.map((cell, j) => (
-                    <td key={j} className="px-3 py-1.5">
-                      {cell}
-                    </td>
+      {/* Preview Table */}
+      {preview.length > 0 && !result && (
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-[var(--cs-muted)] uppercase tracking-wider">
+            Preview (first {preview.length - 1} rows)
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-[var(--cs-border)]">
+            <table className="w-full text-left text-xs" aria-label="CSV preview table">
+              <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
+                <tr>
+                  {preview[0].map((header, i) => (
+                    <th key={i} scope="col" className="px-3 py-2 font-medium">
+                      {header}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={analyze}
-        disabled={!file || loading}
-        className="btn-primary w-full px-4 py-2.5 text-sm"
-      >
-        {loading ? 'Analyzing…' : 'Analyze batch'}
-      </button>
-
-      {error && (
-        <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
-          {error}
-        </div>
-      )}
-
-      {result && (
-        <div className="space-y-4">
-          <p className="text-xs text-gray-400">
-            {result.validRows} of {result.totalRows} rows analyzed
-            {result.failedRows > 0 && ` · ${result.failedRows} skipped`}
-          </p>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="Avg churn" value={`${(result.aggregate.avgChurnRate * 100).toFixed(1)}%`} />
-            <Stat label="Avg retention" value={`${(result.aggregate.avgRetentionRate * 100).toFixed(1)}%`} />
-            <Stat label="Total revenue" value={`$${result.aggregate.totalMonthlyRevenue.toLocaleString()}`} />
-            <Stat label="High risk" value={String(result.aggregate.highRiskProjects)} />
-          </div>
-
-          {result.aggregate.anomaliesDetected && (
-            <div className="space-y-1 rounded-lg bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
-              {result.aggregate.anomalyDetails.map((d, i) => (
-                <p key={i}>⚠ {d}</p>
-              ))}
-            </div>
-          )}
-
-          {onSelectProject && (
-            <p className="text-xs text-gray-400">
-              Pick a project below to load it into the dashboard — metrics, chart,
-              AI insight, and chat.
-            </p>
-          )}
-          <div className="overflow-x-auto rounded-lg border border-black/10 dark:border-white/15">
-            <table className="w-full text-left text-xs">
-              <thead className="text-gray-400">
-                <tr className="border-b border-black/10 dark:border-white/15">
-                  <th className="px-3 py-2">Project</th>
-                  <th className="px-3 py-2">Churn</th>
-                  <th className="px-3 py-2">Retention</th>
-                  <th className="px-3 py-2">ARPU</th>
-                  <th className="px-3 py-2">Risk</th>
-                  {onSelectProject && <th className="px-3 py-2" />}
-                </tr>
               </thead>
-              <tbody>
-                {result.results.map((r, i) => (
-                  <tr key={i} className="border-t border-black/5 dark:border-white/10">
-                    <td className="px-3 py-1.5">{r.projectName}</td>
-                    <td className="px-3 py-1.5">{(r.metrics.churnRate * 100).toFixed(1)}%</td>
-                    <td className="px-3 py-1.5">{(r.metrics.retentionRate * 100).toFixed(1)}%</td>
-                    <td className="px-3 py-1.5">${r.metrics.arpu}</td>
-                    <td className="px-3 py-1.5">{r.metrics.riskStatus}</td>
-                    {onSelectProject && (
-                      <td className="px-3 py-1.5 text-right">
-                        <button
-                          type="button"
-                          onClick={() => onSelectProject(r.input)}
-                          className="rounded-md border border-indigo-500/40 px-2 py-0.5 text-[11px] font-semibold text-indigo-600 transition-colors hover:bg-indigo-500/10 dark:text-indigo-400"
-                        >
-                          Use
-                        </button>
+              <tbody className="divide-y divide-[var(--cs-border)]">
+                {preview.slice(1).map((row, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-[var(--cs-bg)]/40">
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx} className="px-3 py-2 font-tabular">
+                        {cell}
                       </td>
-                    )}
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
+          <button
+            type="button"
+            onClick={analyze}
+            disabled={loading}
+            className="btn-primary min-h-[44px] w-full text-sm font-semibold mt-2"
+          >
+            {loading ? 'Analyzing CSV…' : `Analyze batch (${file?.name})`}
+          </button>
+        </div>
+      )}
+
+      {/* Batch Results & Partial Error Summary */}
+      {result && (
+        <div className="space-y-4 pt-2">
+          {/* Summary Banner */}
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] p-3.5 text-xs">
+            <div>
+              <span className="font-semibold text-[var(--cs-text)]">
+                Processed {result.totalRows} row{result.totalRows === 1 ? '' : 's'}:
+              </span>{' '}
+              <span className="text-[var(--cs-success)] font-medium">
+                {result.validRows} valid
+              </span>
+              {result.failedRows > 0 && (
+                <span className="text-[var(--cs-danger)] font-medium ml-2">
+                  · {result.failedRows} failed
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setFile(null);
+                setPreview([]);
+                setResult(null);
+              }}
+              className="text-[11px] text-[var(--cs-muted)] hover:text-[var(--cs-text)] underline"
+            >
+              Upload another file
+            </button>
+          </div>
+
+          {/* Row errors */}
           {result.errors.length > 0 && (
-            <div className="rounded-lg bg-red-500/5 px-4 py-3 text-xs text-red-600 dark:text-red-400">
-              {result.errors.map((e, i) => (
-                <p key={i}>Row {e.row}: {e.error}</p>
-              ))}
+            <div className="rounded-lg border border-[var(--cs-danger)]/25 bg-red-500/10 p-3 space-y-1 text-xs">
+              <div className="font-semibold text-[var(--cs-danger)]">Validation errors:</div>
+              <ul className="list-disc pl-4 space-y-0.5 text-[var(--cs-danger)]">
+                {result.errors.map((err, i) => (
+                  <li key={i}>
+                    Row {err.row}: {err.error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Valid rows with action to load into workbench */}
+          {result.results.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-[var(--cs-muted)] uppercase tracking-wider">
+                Valid Results
+              </div>
+              <div className="overflow-x-auto rounded-lg border border-[var(--cs-border)]">
+                <table className="w-full text-left text-xs" aria-label="Batch results table">
+                  <thead className="border-b border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
+                    <tr>
+                      <th scope="col" className="px-3 py-2 font-medium">Project</th>
+                      <th scope="col" className="px-3 py-2 font-medium text-right">Churn</th>
+                      <th scope="col" className="px-3 py-2 font-medium text-right">Retention</th>
+                      <th scope="col" className="px-3 py-2 font-medium text-right">ARPU</th>
+                      <th scope="col" className="px-3 py-2 font-medium text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--cs-border)]">
+                    {result.results.map((row, idx) => (
+                      <tr key={`${row.projectName}-${idx}`} className="hover:bg-[var(--cs-bg)]/40">
+                        <td className="px-3 py-2 font-medium text-[var(--cs-text)] truncate max-w-[120px]">
+                          {row.projectName}
+                        </td>
+                        <td className="px-3 py-2 font-tabular text-right text-[var(--cs-danger)]">
+                          {(row.metrics.churnRate * 100).toFixed(1)}%
+                        </td>
+                        <td className="px-3 py-2 font-tabular text-right text-[var(--cs-primary)]">
+                          {(row.metrics.retentionRate * 100).toFixed(1)}%
+                        </td>
+                        <td className="px-3 py-2 font-tabular text-right text-[var(--cs-text)]">
+                          ${row.metrics.arpu.toFixed(2)}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onSelectProject) {
+                                onSelectProject({
+                                  projectName: row.projectName,
+                                  totalUsers: row.input.totalUsers,
+                                  activeUsers: row.input.activeUsers,
+                                  churnedUsers: row.input.churnedUsers,
+                                  monthlyRevenue: row.input.monthlyRevenue,
+                                });
+                              }
+                            }}
+                            aria-label={`Analyze and save ${row.projectName}`}
+                            className="inline-flex min-h-[32px] items-center rounded-md border border-[var(--cs-control-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text)] hover:border-[var(--cs-focus)]"
+                          >
+                            Analyze
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-black/10 px-3 py-2 dark:border-white/15">
-      <p className="text-[11px] uppercase tracking-wide text-gray-400">{label}</p>
-      <p className="text-lg font-semibold">{value}</p>
     </div>
   );
 }
