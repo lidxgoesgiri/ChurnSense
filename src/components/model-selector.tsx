@@ -7,6 +7,7 @@ import {
   storeModel,
   type ModelTier,
 } from '@/lib/models';
+import { CheckIcon } from './ui/icons';
 
 interface Props {
   onModelChange: (model: string) => void;
@@ -134,7 +135,7 @@ export function ModelSelector({ onModelChange }: Props) {
                       <div className="text-[10px] text-[var(--cs-muted)]">{m.provider}</div>
                     </div>
                     {m.id === selected && (
-                      <span className="text-xs text-[var(--cs-primary)] font-bold">✓</span>
+                      <CheckIcon size={14} className="text-[var(--cs-primary)] shrink-0" />
                     )}
                   </button>
                 ))}

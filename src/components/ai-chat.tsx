@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { AnalyticsResult, ProjectInput } from '@/types';
+import { SendIcon, TrendingDownIcon } from './ui/icons';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -216,14 +217,17 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
         <div>
-          <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+            {'// AUTONOMOUS AGENT · CONTEXTUAL CLI'}
+          </span>
+          <div className="flex items-center gap-2 pt-0.5">
             <h3 className="text-sm font-semibold text-[var(--cs-text)]">AI Assistant</h3>
-            <span className="rounded bg-[var(--cs-accent-surface)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cs-accent)] border border-[var(--cs-accent)]/20">
-              Context-Aware
+            <span className="rounded bg-[var(--cs-accent-surface)] px-2 py-0.5 font-mono text-[10px] font-semibold text-[var(--cs-accent)] border border-[var(--cs-accent)]/20">
+              AGENT: ONLINE
             </span>
           </div>
-          <p className="text-xs text-[var(--cs-muted)]">
-            {project ? `Discussing: ${project.projectName}` : 'Calculate a project to enable contextual chat'}
+          <p className="font-mono text-[11px] text-[var(--cs-muted)]">
+            {project ? `SCOPE // ${project.projectName}` : 'Calculate a project to enable contextual chat'}
           </p>
         </div>
 
@@ -233,9 +237,9 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
             onClick={clearHistory}
             disabled={loading || streaming}
             aria-label="Clear chat messages"
-            className="text-xs text-[var(--cs-muted)] hover:text-[var(--cs-danger)] disabled:opacity-40"
+            className="font-mono text-xs text-[var(--cs-muted)] hover:text-[var(--cs-danger)] disabled:opacity-40 transition-colors"
           >
-            Clear conversation
+            [CLEAR CONVERSATION]
           </button>
         )}
       </div>
@@ -257,14 +261,14 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
                 m.role === 'user' ? 'ml-auto items-end' : 'items-start'
               }`}
             >
-              <span className="text-[10px] font-medium text-[var(--cs-muted)]">
-                {m.role === 'user' ? 'You' : 'ChurnSense Assistant'}
+              <span className="font-mono text-[10px] uppercase text-[var(--cs-muted)]">
+                {m.role === 'user' ? 'USER // LOCAL' : 'AGENT // CHURNSENSE'}
               </span>
               <div
                 className={`rounded-xl px-3.5 py-2 leading-relaxed whitespace-pre-wrap ${
                   m.role === 'user'
-                    ? 'bg-[var(--cs-primary)] text-[var(--cs-on-primary)] rounded-br-sm'
-                    : 'bg-[var(--cs-surface)] text-[var(--cs-text)] border border-[var(--cs-border)] rounded-bl-sm'
+                    ? 'bg-[var(--cs-primary)] text-[var(--cs-on-primary)] rounded-br-sm shadow-xs'
+                    : 'bg-[var(--cs-surface)] text-[var(--cs-text)] border border-[var(--cs-border)] rounded-bl-sm shadow-xs'
                 }`}
               >
                 {m.content}
@@ -273,12 +277,12 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           ))}
 
           {loading && !streaming && (
-            <div className="flex items-center gap-2 text-xs text-[var(--cs-muted)] py-1">
+            <div className="flex items-center gap-2 text-xs text-[var(--cs-muted)] py-1 font-mono">
               <span
                 className="inline-block h-3 w-3 rounded-full border-2 border-[var(--cs-primary)] border-t-transparent"
                 style={{ animation: 'spin-slow 0.8s linear infinite' }}
               />
-              Thinking…
+              ANALYZING PROTOCOL TELEMETRY…
             </div>
           )}
         </div>
@@ -288,9 +292,10 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           <button
             type="button"
             onClick={() => scrollToBottom()}
-            className="absolute bottom-2 right-2 rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--cs-primary)] shadow-md hover:bg-[var(--cs-bg)]"
+            className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-[11px] font-mono text-[var(--cs-primary)] shadow-md hover:bg-[var(--cs-bg)]"
           >
-            ↓ Jump to latest
+            <TrendingDownIcon className="h-3 w-3" />
+            <span>Latest</span>
           </button>
         )}
       </div>
@@ -302,7 +307,7 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           onChange={(e) => setInput(e.target.value)}
           placeholder={
             project
-              ? `Ask about ${project.projectName} retention, pricing, or benchmarks…`
+              ? `Prompt agent regarding ${project.projectName} retention, pricing, or benchmarks…`
               : 'Calculate project metrics above to enable chat…'
           }
           disabled={!project || loading || streaming}
@@ -313,9 +318,16 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
           type="submit"
           disabled={!project || loading || streaming || !input.trim()}
           aria-label="Send chat message"
-          className="btn-primary min-h-[40px] px-4 text-xs font-semibold"
+          className="btn-primary min-h-[40px] px-4 text-xs font-semibold inline-flex items-center gap-1.5"
         >
-          {loading || streaming ? 'Sending…' : 'Send'}
+          {loading || streaming ? (
+            <span>Sending…</span>
+          ) : (
+            <>
+              <SendIcon className="h-3.5 w-3.5" />
+              <span>Prompt</span>
+            </>
+          )}
         </button>
       </form>
     </div>

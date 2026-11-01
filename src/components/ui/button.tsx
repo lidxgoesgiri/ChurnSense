@@ -15,17 +15,17 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    'inline-flex items-center justify-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2';
+    'inline-flex items-center justify-center font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2';
 
   const variants: Record<string, string> = {
     primary:
-      'bg-[var(--cs-primary)] text-[var(--cs-on-primary)] hover:opacity-90 active:scale-[0.99] focus-visible:outline-[var(--cs-focus)]',
+      'btn-primary focus-visible:outline-[var(--cs-focus)]',
     secondary:
-      'bg-[var(--cs-surface)] text-[var(--cs-text)] border border-[var(--cs-control-border)] hover:bg-[var(--cs-bg)] focus-visible:outline-[var(--cs-focus)]',
+      'btn-secondary focus-visible:outline-[var(--cs-focus)]',
     ghost:
-      'text-[var(--cs-text)] hover:bg-[var(--cs-bg)] focus-visible:outline-[var(--cs-focus)]',
+      'text-[var(--cs-text)] hover:bg-[var(--cs-elevated)] hover:text-white focus-visible:outline-[var(--cs-focus)]',
     destructive:
-      'bg-[var(--cs-danger)] text-white hover:opacity-90 focus-visible:outline-[var(--cs-danger)]',
+      'bg-[var(--cs-danger)] text-white hover:brightness-110 active:scale-[0.99] focus-visible:outline-[var(--cs-danger)] shadow-sm',
   };
 
   const sizes: Record<string, string> = {

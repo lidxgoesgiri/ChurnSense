@@ -19,6 +19,7 @@ import { useToast } from '@/components/toast';
 import { getStoredModel } from '@/lib/models';
 import { exportProjectsCsv } from '@/lib/export';
 import { dashboardReducer, makeInitialState } from './dashboard-reducer';
+import { CheckCircle2Icon, BarChart3Icon } from '@/components/ui/icons';
 
 export function DashboardClient({ email }: { email: string }) {
   const router = useRouter();
@@ -437,8 +438,9 @@ export function DashboardClient({ email }: { email: string }) {
                     <span className="text-[var(--cs-muted)]">· Active Calculation</span>
                   </div>
                   {justSaved && dbAvailable && (
-                    <span className="rounded bg-[var(--cs-accent-surface)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cs-primary)]">
-                      ✓ Saved to history
+                    <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--cs-primary)]/20 bg-[var(--cs-accent-surface)] px-2.5 py-0.5 text-[11px] font-mono font-medium text-[var(--cs-primary)]">
+                      <CheckCircle2Icon size={12} />
+                      SNAPSHOT RECORDED
                     </span>
                   )}
                 </div>
@@ -447,14 +449,15 @@ export function DashboardClient({ email }: { email: string }) {
                 {trend && <AnomalyBadge trend={trend} />}
               </div>
             ) : (
-              <div className="workbench-panel flex flex-col items-center justify-center p-10 text-center space-y-2">
-                <span className="text-3xl text-[var(--cs-muted)] font-mono">📊</span>
-                <p className="text-sm font-medium text-[var(--cs-text)]">
-                  Retention metrics will appear here
+              <div className="workbench-panel flex flex-col items-center justify-center p-12 text-center space-y-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]">
+                  <BarChart3Icon size={22} />
+                </div>
+                <p className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--cs-text)]">
+                  Awaiting Pipeline Calculation
                 </p>
-                <p className="text-xs text-[var(--cs-muted)] max-w-sm">
-                  Enter your project name, total users, active users, churned users, and monthly revenue
-                  on the left to calculate churn, retention, and ARPU.
+                <p className="text-xs text-[var(--cs-muted)] max-w-sm font-mono">
+                  Input aggregate parameters on the left to compute real-time retention, churn, and revenue metrics.
                 </p>
               </div>
             )}

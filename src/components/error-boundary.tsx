@@ -1,6 +1,7 @@
 'use client';
 
 import { Component } from 'react';
+import { AlertTriangleIcon } from './ui/icons';
 
 interface Props {
   children: React.ReactNode;
@@ -22,17 +23,22 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!this.state.hasError) return this.props.children;
 
     return (
-      <div className="mx-auto flex min-h-[300px] max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
-        <span className="text-4xl">⚠</span>
-        <h2 className="text-lg font-semibold">Something went wrong</h2>
-        <p className="text-sm text-gray-500">
-          {this.state.error?.message || 'An unexpected error occurred.'}
-        </p>
+      <div className="mx-auto flex min-h-[320px] max-w-md flex-col items-center justify-center gap-4 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] p-8 text-center text-[var(--cs-text)] shadow-xl">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-[var(--cs-danger)]">
+          <AlertTriangleIcon size={24} />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-base font-semibold">System Exception Caught</h2>
+          <p className="text-xs text-[var(--cs-muted)] font-mono leading-relaxed">
+            {this.state.error?.message || 'An unexpected runtime error occurred.'}
+          </p>
+        </div>
         <button
+          type="button"
           onClick={() => this.setState({ hasError: false, error: null })}
-          className="rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+          className="btn-primary min-h-[38px] px-5 py-1.5 text-xs font-semibold"
         >
-          Try again
+          Reset and Retry
         </button>
       </div>
     );

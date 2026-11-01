@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { ThemeToggle } from './theme-toggle';
 import { ModelSelector } from './model-selector';
+import { FileSpreadsheetIcon } from './ui/icons';
 
 interface Props {
   email: string;
@@ -27,21 +28,32 @@ export function Navbar({
     >
       <div className="mx-auto flex min-h-[60px] max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
         {/* Brand */}
-        <div className="flex items-center gap-2.5">
-          <Image
-            src="/churn.jpg"
-            alt="ChurnSense logo"
-            width={32}
-            height={32}
-            priority
-            className="rounded-lg border border-[var(--cs-border)]"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Image
+              src="/churn.jpg"
+              alt="ChurnSense logo"
+              width={34}
+              height={34}
+              priority
+              className="rounded-lg border border-[var(--cs-border)] shadow-sm"
+            />
+            <span
+              className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"
+              title="Protocol Engine Online"
+            />
+          </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-tight text-[var(--cs-text)]">
-              ChurnSense
-            </span>
-            <span className="hidden text-[10px] text-[var(--cs-muted)] sm:inline">
-              Retention Workbench
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold tracking-tight text-[var(--cs-text)]">
+                ChurnSense
+              </span>
+              <span className="hidden rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.2 text-[9px] font-mono font-medium text-emerald-400 sm:inline">
+                v2.4-net
+              </span>
+            </div>
+            <span className="hidden font-mono text-[10px] text-[var(--cs-muted)] sm:inline">
+              PROTOCOL WORKBENCH
             </span>
           </div>
         </div>
@@ -99,7 +111,8 @@ export function Navbar({
               aria-label="Export loaded snapshots as CSV"
               className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[var(--cs-control-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-xs font-medium text-[var(--cs-text)] transition-colors hover:bg-[var(--cs-bg)]"
             >
-              <span>Export</span>
+              <FileSpreadsheetIcon className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Export CSV</span>
             </button>
           )}
 

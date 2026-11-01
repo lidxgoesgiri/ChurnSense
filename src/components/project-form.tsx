@@ -56,8 +56,15 @@ export function ProjectForm({ onAnalyze, loading, saveStatus = 'idle', saveError
     <form onSubmit={submit} className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="Manual metric calculation form">
       <div className="flex items-center justify-between border-b border-[var(--cs-border)] pb-3">
         <div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+              {'// PROTOCOL PARAMETERS'}
+            </span>
+          </div>
           <h2 className="text-sm font-semibold text-[var(--cs-text)]">Project Input</h2>
-          <p className="text-xs text-[var(--cs-muted)]">Calculate metrics from aggregate user counts and revenue.</p>
+          <p className="text-xs text-[var(--cs-muted)]">
+            Calculate retention, churn rate, and LTV telemetry from user activity and MRR.
+          </p>
         </div>
       </div>
 

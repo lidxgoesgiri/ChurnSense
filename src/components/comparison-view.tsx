@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { SavedProject } from './projects-history';
 import { calculateComparisonDelta, type DeltaDirection } from '@/lib/format';
+import { ArrowDownRightIcon, ArrowUpRightIcon } from './ui/icons';
 
 const METRICS_CONFIG = [
   {
@@ -61,6 +62,9 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
     <div className="workbench-panel space-y-4 p-5 sm:p-6" aria-label="Project comparison section">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
         <div>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+            {'// SNAPSHOT DUAL AUDIT (B − A)'}
+          </span>
           <h3 className="text-sm font-semibold text-[var(--cs-text)]">
             Compare Saved Snapshots
           </h3>
@@ -161,11 +165,16 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
                   </td>
                   <td className="px-4 py-3 text-left">
                     <span
-                      className={`inline-flex items-center gap-1 text-[11px] font-medium ${
+                      className={`inline-flex items-center gap-1 font-mono text-[11px] font-semibold ${
                         DIRECTION_COLORS[delta.direction]
                       }`}
                     >
-                      {delta.directionText}
+                      {delta.direction === 'improved' ? (
+                        <ArrowUpRightIcon className="h-3.5 w-3.5" />
+                      ) : delta.direction === 'worse' ? (
+                        <ArrowDownRightIcon className="h-3.5 w-3.5" />
+                      ) : null}
+                      <span>{delta.directionText}</span>
                     </span>
                   </td>
                 </tr>

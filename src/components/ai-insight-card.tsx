@@ -1,6 +1,7 @@
 'use client';
 
 import type { AIInsightResult } from '@/types';
+import { SparklesIcon } from './ui/icons';
 
 type Insight = AIInsightResult & { source?: 'ai' | 'mock' };
 
@@ -27,23 +28,31 @@ export function AIInsightCard({
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <SparklesIcon className="h-3.5 w-3.5" />
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+              {'// AI AGENT: CHURNSENSE ANALYST'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 pt-0.5">
             <h3 className="text-sm font-semibold text-[var(--cs-text)]">
               Retention Insight
             </h3>
             {insight && (
               <span
-                className={`rounded px-2 py-0.5 text-[10px] font-semibold border ${
+                className={`rounded px-2 py-0.5 text-[10px] font-mono font-semibold border ${
                   insight.source === 'mock'
                     ? 'border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-muted)]'
                     : 'border-[var(--cs-primary)]/20 bg-[var(--cs-accent-surface)] text-[var(--cs-primary)]'
                 }`}
               >
-                {insight.source === 'mock' ? 'Rule-Based Fallback' : `AI: ${modelName ?? 'Standard'}`}
+                {insight.source === 'mock' ? 'RULE-BASED FALLBACK' : `MODEL // ${modelName ?? 'STANDARD'}`}
               </span>
             )}
           </div>
-          <p className="text-xs text-[var(--cs-muted)]">
-            {projectName ? `Context: ${projectName}` : 'Requires active calculation'}
+          <p className="font-mono text-[11px] text-[var(--cs-muted)]">
+            {projectName ? `CONTEXT: ${projectName}` : 'Requires active calculation'}
           </p>
         </div>
 

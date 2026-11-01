@@ -4,25 +4,27 @@
    theme toggle (not prefers-color-scheme), so the in-app switch fully works. */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-/* Retention Workbench Design System - Semantic Tokens */
+/* ==========================================================================
+   WEB3 PROTOCOL TERMINAL — SEMANTIC DESIGN SYSTEM
+   ========================================================================== */
 :root {
-  --cs-bg: #F6F8F6;
+  /* Clean Light Protocol Mode */
+  --cs-bg: #F8FAFC;
   --cs-surface: #FFFFFF;
-  --cs-elevated: #FFFFFF;
-  --cs-text: #17251E;
-  --cs-muted: #526259;
-  --cs-primary: #225C43;
+  --cs-elevated: #F1F5F9;
+  --cs-text: #0F172A;
+  --cs-muted: #64748B;
+  --cs-primary: #059669;
   --cs-on-primary: #FFFFFF;
-  --cs-accent: #245B78;
-  --cs-accent-surface: #E5F1F7;
-  --cs-border: #D8E1DB;
-  --cs-control-border: #76877C;
-  --cs-focus: #225C43;
-  --cs-success: #1F6B43;
-  --cs-warning: #865400;
-  --cs-danger: #B73535;
+  --cs-accent: #0284C7;
+  --cs-accent-surface: #E0F2FE;
+  --cs-border: #E2E8F0;
+  --cs-control-border: #CBD5E1;
+  --cs-focus: #059669;
+  --cs-success: #059669;
+  --cs-warning: #D97706;
+  --cs-danger: #E11D48;
 
-  /* Backward-compatible aliases */
   --background: var(--cs-bg);
   --foreground: var(--cs-text);
   --card: var(--cs-surface);
@@ -33,23 +35,23 @@
 }
 
 :root[data-theme='dark'] {
-  --cs-bg: #0D1712;
-  --cs-surface: #14221B;
-  --cs-elevated: #1B2D23;
-  --cs-text: #EAF2ED;
-  --cs-muted: #A2B7A9;
-  --cs-primary: #A8D8BA;
-  --cs-on-primary: #112219;
-  --cs-accent: #A9CDE3;
-  --cs-accent-surface: #1A3340;
-  --cs-border: #30483A;
-  --cs-control-border: #769581;
-  --cs-focus: #B2DDC3;
-  --cs-success: #A3D5B2;
-  --cs-warning: #E9C985;
-  --cs-danger: #F1AAAA;
+  /* Web3 Cyber Obsidian Mode */
+  --cs-bg: #07090E;
+  --cs-surface: #0E121A;
+  --cs-elevated: #151B26;
+  --cs-text: #F1F5F9;
+  --cs-muted: #94A3B8;
+  --cs-primary: #10B981;
+  --cs-on-primary: #042F2E;
+  --cs-accent: #06B6D4;
+  --cs-accent-surface: #083344;
+  --cs-border: rgba(255, 255, 255, 0.08);
+  --cs-control-border: rgba(255, 255, 255, 0.16);
+  --cs-focus: #10B981;
+  --cs-success: #10B981;
+  --cs-warning: #F59E0B;
+  --cs-danger: #F43F5E;
 
-  /* Backward-compatible aliases */
   --background: var(--cs-bg);
   --foreground: var(--cs-text);
   --card: var(--cs-surface);
@@ -59,24 +61,23 @@
   --accent-foreground: var(--cs-on-primary);
 }
 
-/* Pre-mount fallback for users whose OS prefers dark */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --cs-bg: #0D1712;
-    --cs-surface: #14221B;
-    --cs-elevated: #1B2D23;
-    --cs-text: #EAF2ED;
-    --cs-muted: #A2B7A9;
-    --cs-primary: #A8D8BA;
-    --cs-on-primary: #112219;
-    --cs-accent: #A9CDE3;
-    --cs-accent-surface: #1A3340;
-    --cs-border: #30483A;
-    --cs-control-border: #769581;
-    --cs-focus: #B2DDC3;
-    --cs-success: #A3D5B2;
-    --cs-warning: #E9C985;
-    --cs-danger: #F1AAAA;
+    --cs-bg: #07090E;
+    --cs-surface: #0E121A;
+    --cs-elevated: #151B26;
+    --cs-text: #F1F5F9;
+    --cs-muted: #94A3B8;
+    --cs-primary: #10B981;
+    --cs-on-primary: #042F2E;
+    --cs-accent: #06B6D4;
+    --cs-accent-surface: #083344;
+    --cs-border: rgba(255, 255, 255, 0.08);
+    --cs-control-border: rgba(255, 255, 255, 0.16);
+    --cs-focus: #10B981;
+    --cs-success: #10B981;
+    --cs-warning: #F59E0B;
+    --cs-danger: #F43F5E;
 
     --background: var(--cs-bg);
     --foreground: var(--cs-text);
@@ -105,8 +106,16 @@ body {
   background-color: var(--cs-bg);
   color: var(--cs-text);
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 100dvh;
+}
+
+/* Web3 Subtle Technical Mesh Pattern */
+:root[data-theme='dark'] body {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 /* Tabular figures for numbers */
@@ -114,7 +123,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Visible, high-contrast keyboard focus ring */
+/* Visible, crisp keyboard focus ring */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--cs-focus);
   outline-offset: 2px;
@@ -122,44 +131,52 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--cs-primary) 30%, transparent);
-  color: var(--cs-text);
+  background: color-mix(in srgb, var(--cs-primary) 35%, transparent);
+  color: #FFFFFF;
 }
 
-/* Slim scrollbars */
+/* Slim Terminal Scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--cs-muted) 35%, transparent) transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
 }
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--cs-muted) 30%, transparent);
+  background: rgba(148, 163, 184, 0.2);
   border-radius: 9999px;
 }
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
 
-/* Clean, opaque panels with hairline borders (replacing generic glassmorphism) */
-.glass-card,
-.workbench-panel {
+/* ==========================================================================
+   WEB3 PROTOCOL COMPONENTS & UTILITIES
+   ========================================================================== */
+
+/* Web3 Terminal Panel: Frosted glass with hairline border & subtle neon rim */
+.workbench-panel,
+.glass-card {
   background-color: var(--cs-surface);
   border: 1px solid var(--cs-border);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-:root[data-theme='dark'] .glass-card,
-:root[data-theme='dark'] .workbench-panel {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+:root[data-theme='dark'] .workbench-panel:hover,
+:root[data-theme='dark'] .glass-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4), 0 0 12px -2px rgba(16, 185, 129, 0.1);
 }
 
-/* Clean primary button */
+/* Primary Protocol Button: Emerald glow action */
 .btn-primary {
-  background-color: var(--cs-primary);
+  background: linear-gradient(180deg, var(--cs-primary) 0%, color-mix(in srgb, var(--cs-primary) 85%, #000) 100%);
   color: var(--cs-on-primary);
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -167,24 +184,29 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.15s ease;
 }
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.92;
+  filter: brightness(1.08);
+  box-shadow: 0 0 16px -2px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-0.5px);
 }
 .btn-primary:active:not(:disabled) {
-  transform: scale(0.99);
+  transform: translateY(0.5px);
+  filter: brightness(0.96);
 }
 .btn-primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  filter: grayscale(0.5);
 }
 
-/* Secondary button */
+/* Secondary Button: Dark Inset / Outline */
 .btn-secondary {
   background-color: var(--cs-surface);
   color: var(--cs-text);
-  border: 1px solid var(--cs-control-border);
+  border: 1px solid var(--cs-border);
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
@@ -192,22 +214,23 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: all 0.15s ease;
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--cs-muted) 10%, transparent);
+  border-color: var(--cs-control-border);
+  background-color: var(--cs-elevated);
 }
 .btn-secondary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Input control */
+/* Inset Dark Terminal Input Controls */
 .input-glow,
 .input-control {
   width: 100%;
-  background-color: var(--cs-surface);
-  border: 1px solid var(--cs-control-border);
+  background-color: color-mix(in srgb, var(--cs-bg) 60%, var(--cs-surface));
+  border: 1px solid var(--cs-border);
   border-radius: 8px;
   color: var(--cs-text);
   outline: none;
@@ -216,10 +239,15 @@ body {
   line-height: 1.25rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.input-glow:hover,
+.input-control:hover {
+  border-color: var(--cs-control-border);
+}
 .input-glow:focus,
 .input-control:focus {
   border-color: var(--cs-focus);
-  box-shadow: 0 0 0 1px var(--cs-focus);
+  box-shadow: 0 0 0 1px var(--cs-focus), 0 0 10px -2px rgba(16, 185, 129, 0.25);
+  background-color: var(--cs-surface);
 }
 .input-glow::placeholder,
 .input-control::placeholder {
@@ -227,17 +255,17 @@ body {
 }
 .input-glow:disabled,
 .input-control:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Skeleton loader */
+/* Skeleton Loading Shimmer */
 .skeleton {
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--cs-muted) 12%, transparent) 25%,
-    color-mix(in srgb, var(--cs-muted) 6%, transparent) 50%,
-    color-mix(in srgb, var(--cs-muted) 12%, transparent) 75%
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
@@ -255,20 +283,20 @@ body {
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes toast-out {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-6px); }
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-8px) scale(0.98); }
 }
 
-/* Subtle, restrained animations for feedback */
+/* Subtle, crisp micro-animations */
 .anim-fade {
-  animation: fade-in 0.18s ease-out both;
+  animation: fade-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .anim-scale {
-  animation: scale-in 0.18s cubic-bezier(0.2, 0, 0, 1) both;
+  animation: scale-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes fade-in {
@@ -280,14 +308,35 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Pre-existing utility placeholders kept for backward safety */
-.gradient-text {
-  color: var(--cs-primary);
-  font-weight: 700;
+/* Pulsing live status dot */
+.live-pulse {
+  position: relative;
+  display: inline-flex;
+  height: 8px;
+  width: 8px;
 }
-.gradient-bg {
+.live-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
   background-color: var(--cs-primary);
-  color: var(--cs-on-primary);
+  opacity: 0.75;
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.live-pulse::before {
+  content: '';
+  position: relative;
+  display: inline-flex;
+  border-radius: 9999px;
+  height: 8px;
+  width: 8px;
+  background-color: var(--cs-primary);
+}
+
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(2.2); opacity: 0; }
 }
 
 /* Reduced motion preference */

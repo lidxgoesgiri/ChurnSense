@@ -38,28 +38,40 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
   return (
     <div className="space-y-4" aria-label="Metrics summary">
       {/* Risk Status Indicator Banner */}
-      <div className="flex items-center justify-between rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            style={{
-              backgroundColor: isHighRisk
-                ? 'var(--cs-danger)'
-                : isMediumRisk
-                  ? 'var(--cs-warning)'
-                  : 'var(--cs-success)',
-            }}
-          />
-          <span className="text-xs font-semibold text-[var(--cs-text)]">
-            Risk evaluation: {metrics.riskStatus} Risk
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-4 py-3 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex h-2.5 w-2.5">
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+              style={{
+                backgroundColor: isHighRisk
+                  ? 'var(--cs-danger)'
+                  : isMediumRisk
+                    ? 'var(--cs-warning)'
+                    : 'var(--cs-success)',
+              }}
+            />
+            <span
+              className="relative inline-flex h-2.5 w-2.5 rounded-full"
+              style={{
+                backgroundColor: isHighRisk
+                  ? 'var(--cs-danger)'
+                  : isMediumRisk
+                    ? 'var(--cs-warning)'
+                    : 'var(--cs-success)',
+              }}
+            />
+          </span>
+          <span className="font-mono text-xs font-semibold tracking-wide text-[var(--cs-text)]">
+            RISK ASSESSMENT // {metrics.riskStatus.toUpperCase()} RISK
           </span>
         </div>
-        <span className="text-[11px] text-[var(--cs-muted)]">
+        <span className="font-mono text-[11px] text-[var(--cs-muted)]">
           {metrics.riskStatus === 'High'
-            ? 'Churn > 15.0% threshold'
+            ? 'THRESHOLD: CHURN > 15.0%'
             : metrics.riskStatus === 'Medium'
-              ? 'Churn > 5.0% threshold'
-              : 'Churn ≤ 5.0% threshold'}
+              ? 'THRESHOLD: CHURN > 5.0%'
+              : 'THRESHOLD: CHURN ≤ 5.0%'}
         </span>
       </div>
 
@@ -68,17 +80,17 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         {/* Churn Rate */}
         <div className="workbench-panel p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              Churn Rate
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+              METRIC // CHURN_RATE
             </span>
             <span
-              className="text-[11px] text-[var(--cs-muted)]"
+              className="font-mono text-[10px] uppercase text-[var(--cs-muted)]"
               title="Formula: Churned Users ÷ Total Users (lower is better)"
             >
-              Lower is better
+              [LOWER IS BETTER]
             </span>
           </div>
-          <div className="mt-2 text-3xl font-bold tracking-tight text-[var(--cs-danger)] sm:text-4xl">
+          <div className="mt-2 text-3xl font-bold font-mono tracking-tight text-[var(--cs-danger)] sm:text-4xl">
             <AnimatedMetric value={metrics.churnRate * 100} suffix="%" decimals={1} />
           </div>
           <p className="mt-1 text-xs text-[var(--cs-muted)]">
@@ -90,17 +102,17 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         {/* Retention Rate */}
         <div className="workbench-panel p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              Retention Rate
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+              METRIC // RETENTION_RATE
             </span>
             <span
-              className="text-[11px] text-[var(--cs-muted)]"
+              className="font-mono text-[10px] uppercase text-[var(--cs-muted)]"
               title="Formula: Active Users ÷ Total Users (higher is better)"
             >
-              Higher is better
+              [HIGHER IS BETTER]
             </span>
           </div>
-          <div className="mt-2 text-3xl font-bold tracking-tight text-[var(--cs-primary)] sm:text-4xl">
+          <div className="mt-2 text-3xl font-bold font-mono tracking-tight text-[var(--cs-primary)] sm:text-4xl">
             <AnimatedMetric value={metrics.retentionRate * 100} suffix="%" decimals={1} />
           </div>
           <p className="mt-1 text-xs text-[var(--cs-muted)]">
@@ -113,10 +125,10 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* ARPU */}
         <div className="workbench-panel p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-            ARPU
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+            METRIC // ARPU
           </div>
-          <div className="mt-1.5 text-xl font-bold text-[var(--cs-text)]">
+          <div className="mt-1.5 font-mono text-xl font-bold text-[var(--cs-text)]">
             <AnimatedMetric value={metrics.arpu} prefix="$" decimals={2} />
           </div>
           <p className="mt-1 text-[11px] text-[var(--cs-muted)]">
@@ -126,10 +138,10 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
 
         {/* MRR */}
         <div className="workbench-panel p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-            MRR
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+            METRIC // MRR
           </div>
-          <div className="mt-1.5 text-xl font-bold text-[var(--cs-text)]">
+          <div className="mt-1.5 font-mono text-xl font-bold text-[var(--cs-text)]">
             <AnimatedMetric value={metrics.mrr} prefix="$" decimals={2} />
           </div>
           <p className="mt-1 text-[11px] text-[var(--cs-muted)]">
@@ -139,10 +151,10 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
 
         {/* Estimated LTV */}
         <div className="workbench-panel p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-            Estimated LTV
+          <div className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
+            METRIC // EST_LTV
           </div>
-          <div className="mt-1.5 text-xl font-bold text-[var(--cs-text)]">
+          <div className="mt-1.5 font-mono text-xl font-bold text-[var(--cs-text)]">
             {metrics.estimatedLtv === null ? (
               <span className="text-sm font-medium text-[var(--cs-muted)]">
                 Not defined

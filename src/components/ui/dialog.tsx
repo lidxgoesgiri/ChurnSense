@@ -26,21 +26,17 @@ export function Dialog({
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  // Focus trap, Escape key handling, and background scroll lock
   useEffect(() => {
     if (!open) return;
 
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
-    // Scroll lock on body
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Focus inside dialog
     const focusableSelector =
       'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-    // Small delay or RAF to ensure DOM is rendered before focusing
     const rafId = requestAnimationFrame(() => {
       if (!dialogRef.current) return;
       const firstFocusable = dialogRef.current.querySelector<HTMLElement>(focusableSelector);
@@ -92,7 +88,6 @@ export function Dialog({
       cancelAnimationFrame(rafId);
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
-      // Restore focus to previous trigger
       previouslyFocusedRef.current?.focus?.();
     };
   }, [open, onClose]);
@@ -103,9 +98,9 @@ export function Dialog({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
       style={{
-        background: 'rgba(10, 15, 12, 0.72)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
+        background: 'rgba(5, 7, 10, 0.8)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -118,34 +113,38 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className={`w-full ${maxWidth} relative flex flex-col max-h-[calc(100dvh-32px)] rounded-2xl border border-[var(--cs-border,rgba(0,0,0,0.1))] bg-[var(--cs-surface,#ffffff)] text-[var(--cs-text,#17251e)] shadow-2xl outline-none overflow-hidden ${className}`}
+        className={`w-full ${maxWidth} relative flex flex-col max-h-[calc(100dvh-32px)] rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)]/95 text-[var(--cs-text)] shadow-2xl outline-none overflow-hidden ${className}`}
         style={{
-          boxShadow: '0 20px 48px -12px rgba(0, 0, 0, 0.35)',
+          boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(16, 185, 129, 0.1)',
         }}
       >
-        <div className="flex items-start justify-between border-b border-[var(--cs-border,rgba(0,0,0,0.08))] px-6 py-4">
-          <div>
-            <h2 id={titleId} className="text-base font-semibold text-[var(--cs-text,#17251e)]">
+        {/* Terminal Header */}
+        <div className="flex items-center justify-between border-b border-[var(--cs-border)] bg-[var(--cs-elevated)]/50 px-5 py-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[var(--cs-primary)] opacity-80" />
+            <h2 id={titleId} className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--cs-text)]">
               {title}
             </h2>
-            {description && (
-              <p id={descId} className="mt-1 text-xs text-[var(--cs-muted,#526259)]">
-                {description}
-              </p>
-            )}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="flex h-11 w-11 -mr-2 -mt-1 items-center justify-center rounded-lg text-[var(--cs-muted,#526259)] transition-colors hover:bg-[var(--cs-bg,rgba(0,0,0,0.05))] hover:text-[var(--cs-text,#17251e)] focus-visible:outline-2 focus-visible:outline-[var(--cs-focus,#225c43)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cs-muted)] transition-colors hover:bg-[var(--cs-surface)] hover:text-[var(--cs-text)] focus-visible:outline-2 focus-visible:outline-[var(--cs-focus)]"
           >
-            <span aria-hidden="true" className="text-xl leading-none">
-              ×
+            <span aria-hidden="true" className="text-base font-mono leading-none">
+              &times;
             </span>
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+
+        {description && (
+          <div className="border-b border-[var(--cs-border)]/50 px-5 py-2 text-[11px] font-mono text-[var(--cs-muted)] bg-[var(--cs-surface)]">
+            <p id={descId}>{description}</p>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   );

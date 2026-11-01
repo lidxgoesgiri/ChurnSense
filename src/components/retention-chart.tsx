@@ -46,12 +46,13 @@ export function RetentionChart({ project, history = [] }: Props) {
   const hasTrend = matchingHistory.length >= 2;
 
   const tooltipStyle = {
-    borderRadius: '8px',
-    border: '1px solid var(--cs-border, #d8e1db)',
-    backgroundColor: 'var(--cs-surface, #ffffff)',
-    color: 'var(--cs-text, #17251e)',
-    fontSize: '12px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    borderRadius: '10px',
+    border: '1px solid var(--cs-border, rgba(255,255,255,0.08))',
+    backgroundColor: 'var(--cs-surface, #0B0F17)',
+    color: 'var(--cs-text, #F0F4F8)',
+    fontSize: '11px',
+    fontFamily: 'monospace',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
   };
 
   return (
@@ -62,6 +63,9 @@ export function RetentionChart({ project, history = [] }: Props) {
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--cs-border)] pb-3">
         <div>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+            {'// TELEMETRY CURVE'}
+          </span>
           <h3 className="text-sm font-semibold text-[var(--cs-text)]">
             {hasTrend
               ? `Historical Trend · ${project.projectName}`
@@ -76,9 +80,9 @@ export function RetentionChart({ project, history = [] }: Props) {
         <button
           type="button"
           onClick={() => setShowTable(!showTable)}
-          className="text-xs font-medium text-[var(--cs-muted)] hover:text-[var(--cs-text)] underline"
+          className="font-mono text-xs text-[var(--cs-muted)] hover:text-emerald-400 underline decoration-dotted transition-colors"
         >
-          {showTable ? 'Hide data table' : 'View as data table'}
+          {showTable ? '[HIDE TABLE]' : '[VIEW DATA TABLE]'}
         </button>
       </div>
 

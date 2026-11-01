@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import type { AggregateResult, BatchError, BatchRowResult, ProjectInput } from '@/types';
 import { detectSeparator, parseCsvRecords } from '@/lib/csv-parser';
+import { UploadCloudIcon } from './ui/icons';
 
 interface BatchResponse {
   success: boolean;
@@ -151,7 +152,7 @@ export function CsvUploader({
             : 'border-[var(--cs-border)] bg-[var(--cs-bg)]/50 hover:border-[var(--cs-control-border)]'
         }`}
       >
-        <span className="text-2xl mb-1 text-[var(--cs-muted)] font-mono">📁</span>
+        <UploadCloudIcon size={28} className="text-[var(--cs-primary)] mb-2" />
         <p className="text-xs font-semibold text-[var(--cs-text)]">
           Drag &amp; drop your CSV file here
         </p>
