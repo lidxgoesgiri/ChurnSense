@@ -66,27 +66,27 @@ export function Navbar({
         <nav aria-label="Dashboard sections" className="hidden items-center gap-1.5 lg:flex">
           <a
             href="#analyze-section"
-            className="rounded-lg px-3 py-1.5 text-xs font-mono font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
           >
-            {'// ANALYZE'}
+            Analyze
           </a>
           <a
             href="#results-section"
-            className="rounded-lg px-3 py-1.5 text-xs font-mono font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
           >
-            {'// METRICS'}
+            Metrics
           </a>
           <a
             href="#snapshots-section"
-            className="rounded-lg px-3 py-1.5 text-xs font-mono font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
           >
-            {'// SNAPSHOTS'}
+            Snapshots
           </a>
           <a
             href="#ai-section"
-            className="rounded-lg px-3 py-1.5 text-xs font-mono font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--cs-muted)] transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
           >
-            {'// AI AGENT'}
+            AI Agent
           </a>
         </nav>
 

@@ -8,6 +8,7 @@ import { Dialog } from '@/components/ui/dialog';
 import {
   CyberBackground,
   AnimatedRibbon,
+  PipelineRibbon,
   MagneticButton,
   SpotlightCard,
   RevealAnimation,
@@ -148,8 +149,15 @@ function HomeContent() {
 
   return (
     <div className="relative min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)] selection:bg-emerald-500/30 selection:text-emerald-200">
-      {/* Dynamic Cybernetic Web3 Background */}
-      <CyberBackground intensity="vibrant" showGrid showParticles showAurora showSpotlight />
+      {/* Dynamic Cybernetic Web3 Background (Retention Currents & Growth Loops) */}
+      <CyberBackground
+        intensity="vibrant"
+        showGrid
+        showRetentionStreams
+        showGrowthLoops
+        showAurora
+        showSpotlight
+      />
 
       {/* Top Protocol Bar */}
       <header className="sticky top-0 z-40 border-b border-[var(--cs-border)] bg-[var(--cs-surface)]/80 backdrop-blur-2xl">
@@ -186,30 +194,30 @@ function HomeContent() {
             </div>
           </div>
 
-          <nav aria-label="Quick links" className="hidden items-center gap-6 md:flex">
+          <nav aria-label="Quick links" className="hidden items-center gap-7 md:flex">
             <a
               href="#interactive-demo"
-              className="text-xs font-mono text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
+              className="text-xs font-medium text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
             >
-              {'// SIMULATOR'}
+              Simulator
             </a>
             <a
               href="#pipeline"
-              className="text-xs font-mono text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
+              className="text-xs font-medium text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
             >
-              {'// ARCHITECTURE'}
+              Architecture
             </a>
             <a
               href="#capabilities"
-              className="text-xs font-mono text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
+              className="text-xs font-medium text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
             >
-              {'// CAPABILITIES'}
+              Capabilities
             </a>
             <a
               href="#philosophy"
-              className="text-xs font-mono text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
+              className="text-xs font-medium text-[var(--cs-muted)] transition-colors hover:text-emerald-400"
             >
-              {'// PHILOSOPHY'}
+              Philosophy
             </a>
           </nav>
 
@@ -242,21 +250,44 @@ function HomeContent() {
             {/* Left Value Proposition */}
             <div className="space-y-6 lg:col-span-6">
               <RevealAnimation direction="down" delayMs={50}>
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-mono text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-mono text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                   <span className="live-pulse" />
-                  <span className="font-semibold uppercase tracking-widest text-[11px]">
-                    AUTONOMOUS RETENTION PROTOCOL
+                  <span className="font-semibold uppercase tracking-wider text-[11px]">
+                    Autonomous Retention Protocol
                   </span>
-                  <span className="text-emerald-600 dark:text-emerald-500">|</span>
-                  <span className="text-[10px] opacity-80">STABLE V2.4-NET</span>
+                  <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] opacity-80">v2.4 Mainnet</span>
                 </div>
               </RevealAnimation>
 
               <RevealAnimation direction="up" delayMs={120}>
-                <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-[54px] lg:leading-[1.1] text-[var(--cs-text)]">
+                <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-[54px] lg:leading-[1.15] text-[var(--cs-text)]">
                   Decentralized-Grade{' '}
-                  <span className="text-gradient-web3 text-glow-emerald">
-                    SaaS Retention
+                  <span className="relative inline-block">
+                    <span className="text-glow-gradient-web3">
+                      SaaS Retention
+                    </span>
+                    {/* Decorative Curved Underline SVG */}
+                    <svg
+                      className="absolute -bottom-2 left-0 w-full h-3.5 curved-underline-glow overflow-visible pointer-events-none"
+                      viewBox="0 0 260 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6 13C85 3 175 3 254 13"
+                        stroke="url(#retention-curve-grad)"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                      />
+                      <defs>
+                        <linearGradient id="retention-curve-grad" x1="6" y1="8" x2="254" y2="8" gradientUnits="userSpaceOnUse">
+                          <stop stopColor="#10B981" />
+                          <stop offset="0.5" stopColor="#2DD4BF" />
+                          <stop offset="1" stopColor="#38BDF8" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
                   </span>{' '}
                   Intelligence.
                 </h1>
@@ -330,7 +361,7 @@ function HomeContent() {
                       <span className="h-3 w-3 rounded-full bg-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
                       <span className="h-3 w-3 rounded-full bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                       <span className="ml-2 font-mono text-xs font-semibold text-[var(--cs-text)]">
-                        CORE://SIMULATOR_TELEMETRY
+                        CORE PROTOCOL TELEMETRY
                       </span>
                     </div>
                     <div className="flex items-center gap-2 font-mono text-[10px]">
@@ -505,13 +536,17 @@ function HomeContent() {
         </section>
 
         {/* 3-Stage Pipeline Specification */}
-        <section id="pipeline" className="border-t border-[var(--cs-border)] bg-[var(--cs-surface)]/40 py-20 relative">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section id="pipeline" className="border-t border-[var(--cs-border)] bg-[var(--cs-surface)]/40 py-24 relative overflow-hidden">
+          {/* Animated Wave Ribbon Connecting Pipeline Stages */}
+          <PipelineRibbon className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-[280px] w-full z-0 opacity-70" />
+
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
             <RevealAnimation direction="up" delayMs={50}>
-              <div className="text-center space-y-2.5 max-w-2xl mx-auto">
-                <span className="font-mono text-xs font-semibold uppercase tracking-widest text-emerald-400">
-                  [ PIPELINE SPECIFICATION ]
-                </span>
+              <div className="text-center space-y-3 max-w-2xl mx-auto">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-mono text-emerald-400">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-semibold uppercase tracking-wider text-[11px]">Pipeline Specification</span>
+                </div>
                 <h2 className="text-3xl font-extrabold tracking-tight text-[var(--cs-text)] sm:text-4xl">
                   Deterministic Processing Stages
                 </h2>
@@ -543,7 +578,7 @@ function HomeContent() {
                     </p>
 
                     <div className="pt-2 border-t border-[var(--cs-border)] font-mono text-[10px] text-emerald-400/80">
-                      {'>> '}{s.tag}
+                      {s.tag}
                     </div>
                   </SpotlightCard>
                 </RevealAnimation>
@@ -556,10 +591,11 @@ function HomeContent() {
         <section id="capabilities" className="border-t border-[var(--cs-border)] py-20 relative">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <RevealAnimation direction="up" delayMs={50}>
-              <div className="text-center space-y-2.5 max-w-2xl mx-auto">
-                <span className="font-mono text-xs font-semibold uppercase tracking-widest text-cyan-400">
-                  [ VERIFIED CAPABILITIES ]
-                </span>
+              <div className="text-center space-y-3 max-w-2xl mx-auto">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-xs font-mono text-cyan-400">
+                  <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="font-semibold uppercase tracking-wider text-[11px]">Verified Capabilities</span>
+                </div>
                 <h2 className="text-3xl font-extrabold tracking-tight text-[var(--cs-text)] sm:text-4xl">
                   Engineered for Absolute Integrity
                 </h2>
@@ -623,8 +659,9 @@ function HomeContent() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
-                      {'// BRAND PHILOSOPHY'}
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-mono text-emerald-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="font-semibold uppercase tracking-wider text-[11px]">Brand Identity &amp; Philosophy</span>
                     </div>
                     <h3 className="text-xl font-extrabold text-[var(--cs-text)] sm:text-2xl">
                       The Sustainable Growth Seedling
@@ -727,7 +764,7 @@ function HomeContent() {
                 htmlFor="auth-email"
                 className="block text-[11px] font-mono font-semibold uppercase tracking-wider text-[var(--cs-muted)]"
               >
-                OPERATOR IDENTITY // EMAIL
+                Operator Email Address
               </label>
               <input
                 id="auth-email"

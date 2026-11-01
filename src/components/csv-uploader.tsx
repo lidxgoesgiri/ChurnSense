@@ -122,8 +122,9 @@ export function CsvUploader({
       <div className="flex items-center justify-between border-b border-[var(--cs-border)] pb-3.5">
         <div>
           <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-cyan-400">
-              {'// BATCH DATA STREAM'}
+              Batch Dataset Ingestion
             </span>
           </div>
           <h2 className="text-base font-extrabold text-[var(--cs-text)]">Batch Ingestion (CSV)</h2>

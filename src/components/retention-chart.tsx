@@ -58,9 +58,12 @@ export function RetentionChart({ project, history = [] }: Props) {
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-4">
         <div>
-          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
-            {'// TELEMETRY CURVE & COGNITIVE VECTORS'}
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+              Telemetry Trend &amp; Cognitive Vectors
+            </span>
+          </div>
           <h3 className="text-base font-extrabold text-[var(--cs-text)]">
             {hasTrend
               ? `Historical Trend · ${project.projectName}`
@@ -77,7 +80,7 @@ export function RetentionChart({ project, history = [] }: Props) {
           onClick={() => setShowTable(!showTable)}
           className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] px-3 py-1 font-mono text-xs font-semibold text-[var(--cs-muted)] hover:border-emerald-500/40 hover:text-emerald-400 transition-all"
         >
-          {showTable ? '[HIDE AUDIT TABLE]' : '[VIEW AUDIT TABLE]'}
+          {showTable ? 'Hide Audit Table' : 'View Audit Table'}
         </button>
       </div>
 

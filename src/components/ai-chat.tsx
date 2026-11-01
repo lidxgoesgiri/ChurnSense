@@ -223,7 +223,7 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-3.5">
         <div>
           <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-cyan-400">
-            {'// AUTONOMOUS AGENT · CONTEXTUAL TERMINAL'}
+            Autonomous Cognitive Agent · Chat Interface
           </span>
           <div className="flex items-center gap-2.5 pt-0.5">
             <h3 className="text-base font-extrabold text-[var(--cs-text)]">Agent Console</h3>
@@ -233,7 +233,7 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
             </span>
           </div>
           <p className="font-mono text-[11px] text-[var(--cs-muted)]">
-            {project ? `SCOPE // ${project.projectName}` : 'Calculate a project to establish contextual session'}
+            {project ? `Project Scope: ${project.projectName}` : 'Calculate a project to establish contextual session'}
           </p>
         </div>
 
@@ -245,7 +245,7 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
             aria-label="Clear chat messages"
             className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-bg)] px-2.5 py-1 font-mono text-xs text-[var(--cs-muted)] hover:text-rose-400 hover:border-rose-500/30 disabled:opacity-40 transition-all"
           >
-            [PURGE LOG]
+            Clear Log
           </button>
         )}
       </div>
@@ -268,7 +268,7 @@ export function AIChat({ project, metrics, model, userEmail }: Props) {
               }`}
             >
               <span className="font-mono text-[10px] uppercase text-[var(--cs-muted)]">
-                {m.role === 'user' ? 'OPERATOR // SESSION' : 'AGENT // CHURNSENSE_LLM'}
+                {m.role === 'user' ? 'Operator' : 'ChurnSense AI'}
               </span>
               <div
                 className={`rounded-2xl px-4 py-2.5 leading-relaxed whitespace-pre-wrap ${

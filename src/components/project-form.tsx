@@ -63,8 +63,9 @@ export function ProjectForm({ onAnalyze, loading, saveStatus = 'idle', saveError
         <div className="flex items-center justify-between border-b border-[var(--cs-border)] pb-3.5">
           <div>
             <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
-                {'// TELEMETRY INGESTION'}
+                Telemetry Ingestion
               </span>
             </div>
             <h2 className="text-base font-extrabold text-[var(--cs-text)]">Project Parameters</h2>

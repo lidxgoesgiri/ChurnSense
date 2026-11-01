@@ -68,9 +68,12 @@ export function ComparisonView({ projects }: { projects: SavedProject[] }) {
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-3.5">
         <div>
-          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-indigo-400">
-            {'// SNAPSHOT DUAL AUDIT [ DELTA: B − A ]'}
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-indigo-400">
+              Snapshot Dual Audit (Delta: B − A)
+            </span>
+          </div>
           <h3 className="text-base font-extrabold text-[var(--cs-text)]">
             Compare Saved Snapshots
           </h3>

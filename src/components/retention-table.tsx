@@ -76,9 +76,12 @@ export function RetentionTable({
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cs-border)] pb-3.5">
         <div>
-          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
-            {'// IMMUTABLE PROTOCOL LEDGER'}
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+              Immutable Snapshot Ledger
+            </span>
+          </div>
           <h3 className="text-base font-extrabold text-[var(--cs-text)]">
             Saved Snapshots Ledger
           </h3>

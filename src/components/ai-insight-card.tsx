@@ -38,7 +38,7 @@ export function AIInsightCard({
               <SparklesIcon className="h-3 w-3" />
             </span>
             <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-emerald-400">
-              {'// COGNITIVE INTELLIGENCE // CHURNSENSE AGENT'}
+              Autonomous Cognitive Agent · Retention Synthesis
             </span>
           </div>
           <div className="flex items-center gap-2.5 pt-0.5">

@@ -302,7 +302,7 @@ export function DashboardClient({ email }: { email: string }) {
   return (
     <ErrorBoundary>
       {palette}
-      <CyberBackground intensity="subtle" showGrid showSpotlight showParticles={false} />
+      <CyberBackground intensity="subtle" showGrid showSpotlight showRetentionStreams={false} showGrowthLoops={false} />
       <Navbar
         email={email}
         onModelChange={(m) => dispatch({ type: 'SET_AI_MODEL', model: m })}
@@ -324,7 +324,7 @@ export function DashboardClient({ email }: { email: string }) {
           <div>
             <div className="flex items-center gap-2 font-mono text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
               <span className="live-pulse" />
-              <span>TERMINAL TELEMETRY // LEDGER WORKBENCH</span>
+              <span>Retention Ledger Workbench</span>
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-[var(--cs-text)] sm:text-3xl">
               Retention Intelligence Dashboard

@@ -72,7 +72,7 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
             />
           </span>
           <span className="font-mono text-xs font-bold uppercase tracking-wider text-[var(--cs-text)]">
-            RISK ASSESSMENT // {metrics.riskStatus} RISK CLUSTER
+            RISK CLUSTER: {metrics.riskStatus.toUpperCase()}
           </span>
         </div>
         <span className="font-mono text-[11px] opacity-80">
@@ -93,7 +93,7 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              METRIC // CHURN_RATE
+              CHURN RATE
             </span>
             <span
               className="rounded bg-rose-500/10 border border-rose-500/25 px-2 py-0.5 font-mono text-[10px] uppercase text-rose-400 font-semibold"
@@ -118,7 +118,7 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              METRIC // RETENTION_RATE
+              RETENTION RATE
             </span>
             <span
               className="rounded bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 font-mono text-[10px] uppercase text-emerald-400 font-semibold"
@@ -142,7 +142,7 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         <SpotlightCard glowColor="rgba(6, 182, 212, 0.2)" className="p-5">
           <div className="flex items-center justify-between">
             <div className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              METRIC // ARPU
+              ARPU
             </div>
             <span className="font-mono text-[10px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">
               REVENUE/USER
@@ -160,7 +160,7 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         <SpotlightCard glowColor="rgba(6, 182, 212, 0.2)" className="p-5">
           <div className="flex items-center justify-between">
             <div className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              METRIC // MRR
+              MRR
             </div>
             <span className="font-mono text-[10px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">
               AGGREGATE
@@ -178,7 +178,7 @@ export function MetricsSummary({ metrics, churnSeries = [] }: Props) {
         <SpotlightCard glowColor="rgba(99, 102, 241, 0.2)" className="p-5">
           <div className="flex items-center justify-between">
             <div className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--cs-muted)]">
-              METRIC // EST_LTV
+              EST. LTV
             </div>
             <span className="font-mono text-[10px] text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
               ASYMPTOTIC
